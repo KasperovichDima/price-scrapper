@@ -71,6 +71,3 @@
 ## MONITORING REPORTS:
 > - source: this system
 > - format: web-page/xls/xlsx/csv 
-
-
-
