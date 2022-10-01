@@ -1,2 +1,12 @@
-- [ ] for unchecked checkbox
-- [x] for checked checkbox
+- [ ] Project requirement
+- [x] Database schema
+- [ ] Create core code prototype using interfaces only
+- [ ] Create classes with empty realization
+- [ ] Write tests
+- [ ] Make sure all test fail
+- [ ] Implement classes realization
+- [ ] Help Denis with 
+- [ ] Make sure all test pass normally
+- [ ] Refactoring, if needed
+- [ ] Update documentation
+- [ ] Production
