@@ -1,0 +1,25 @@
+{% extends 'base.jinja' %}
+{% block title %}Choose groups{% endblock %}
+{% block head %}
+<style type="text/css">
+    .important { color: #023c76; }
+</style>
+{% endblock %}
+{% block content %}
+    <form action="/add_request_elements" method="post">
+        <fieldset>
+            <legend><b>Choose request elements:</b></legend>
+            <ol>
+            {% for el in elements: %}
+                <li>
+                    <label for="{{ el }}"><a href="/get_content_of/{{ el.__class__.__name__ }}/{{ el.id }}">{{ el }}</a></label>
+                    <input type="checkbox" id="{{ el }}" name="elements", value="{{ el.id }}">
+                </li>
+            {% endfor %}
+            </ol>
+        </fieldset>
+        <br><br>
+        <button autofocus type="submit" value="Submit">Submit</button>
+        <button type="reset" value="Reset">Reset</button>
+    </form>
+{% endblock %}

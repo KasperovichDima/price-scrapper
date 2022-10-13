@@ -1,9 +1,25 @@
 """Models validation by Pydantic"""
 from __future__ import annotations
+from datetime import datetime
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
-from .db_typing import UserType
+from project_typing import ShopName
+from project_typing import UserType
+
+
+class CatalogElementBase(BaseModel):
+    """CatalogElementBase validation."""
+    name: str
+
+
+class CatalogElementCreate(CatalogElementBase):
+    """CatalogElementCreate validation."""
+
+
+class CatalogElement(CatalogElementBase):
+    """CatalogElement validation."""
+    id: int
 
 
 class CategoryBase(BaseModel):
@@ -97,7 +113,6 @@ class Product(ProductBase):
     """Product validation."""
     id: int
     subgroup_id: int
-    subgroup: Group
 
     class Config:
         orm_mode = True
@@ -105,7 +120,7 @@ class Product(ProductBase):
 
 class ShopBase(BaseModel):
     """ShopBase validation."""
-    name: str
+    name: ShopName
     home_url: str
 
 
@@ -125,7 +140,7 @@ class UserBase(BaseModel):
     """UserBase validation."""
     first_name: str
     last_name: str
-    email: str
+    email: EmailStr
 
 
 class UserCreate(UserBase):
@@ -137,27 +152,65 @@ class User(UserBase):
     id: int
     is_active: bool
     type: UserType
-    reports: List[Report] = []
-    
+    reports: List[ReportHeader] = []
+
     class Config:
         orm_mode = True
 
 
-class ReportBase(BaseModel):
-    """ReportBase validation."""
+class ReportHeaderBase(BaseModel):
+    """ReportHeaderBase validation."""
     name: str
     note: str
 
 
-class ReportCreate(ReportBase):
-    """ReportCreate validation."""
+class ReportHeaderCreate(ReportHeaderBase):
+    """ReportHeaderCreate validation."""
+    user: User
 
 
-class Report(ReportBase):
-    """Report validation."""
+class ReportHeader(ReportHeaderBase):
+    """ReportHeader validation."""
+
     id: int
     user_id: int
-    user: User
+    time_created: datetime
+
+    class Config:
+        orm_mode = True
+
+# class ReportBase(BaseModel):
+#     """ReportBase validation."""
+#     name: str
+#     note: str
+
+
+# class ReportCreate(ReportBase):
+#     """ReportCreate validation."""
+
+
+# class Report(ReportBase):
+#     """Report validation."""
+#     id: int
+#     user_id: int
+#     user: User
+
+#     class Config:
+#         orm_mode = True
+
+
+class SubgroupURLBase(BaseModel):
+    """SubgroupURLBase validation."""
+    subgrp_url: str
+
+
+class SubgroupURLCreate(SubgroupURLBase):
+    """SubgroupURLCreate validation."""
+
+
+class SubgroupURL(SubgroupURLBase):
+    """SubgroupURL validation."""
+    id: int
 
     class Config:
         orm_mode = True
