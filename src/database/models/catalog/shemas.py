@@ -10,11 +10,11 @@ class GroupBase(BaseModel):
     name: str = Field(max_length=100)
 
 
-class Group(GroupBase):
+class GroupScheme(GroupBase):
     """Group validation schema."""
 
     id: int = Field(gt=0)
-    content: list[Product]
+    content: list[ProductScheme]
 
 
 class ProductBase(BaseModel):
@@ -24,9 +24,9 @@ class ProductBase(BaseModel):
     group_id: int = Field(gt=0)
 
 
-class Product(BaseModel):
+class ProductScheme(BaseModel):
     """Product validation schema."""
 
     id: int = Field(gt=0)
-    parent: Group
+    parent: GroupScheme
     links: list[str]

@@ -10,7 +10,7 @@ class WebPageBase(BaseModel):
     url_id: int = Field(gt=0)
 
 
-class WebPage(WebPageBase):
+class WebPageScheme(WebPageBase):
     """WebPage validation schema."""
 
     id: int = Field(gt=0)
@@ -22,7 +22,7 @@ class URLBase(BaseModel):
     url: str = Field(max_length=250)
 
 
-class URL(URLBase):
+class URLScheme(URLBase):
     """URLBase validation schema."""
 
     id: int = Field(gt=0)

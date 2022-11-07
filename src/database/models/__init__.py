@@ -1,5 +1,8 @@
-from .auth.models import User
-from .catalog.models import Group, Product
-from .report.models import ReportHeader, ReportLine
-from .retailer.models import Retailer
-from .url.models import Base, WebPage, URL
+from .catalog import Group, Product
+from .catalog import GroupScheme, ProductScheme
+from .report import ReportHeader, ReportLine
+from .report import ReportHeaderScheme, ReportLineScheme
+from .retailer import Retailer, RetailerScheme
+from .url import WebPage, URL
+
+from .url import Base

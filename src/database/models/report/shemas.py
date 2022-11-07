@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
-class BaseReportHeader(BaseModel):
+class ReportHeaderBase(BaseModel):
     """BaseReportHeader validation schema."""
 
     time_created: datetime
@@ -14,14 +15,14 @@ class BaseReportHeader(BaseModel):
     user_id: int = Field(gt=0)
 
 
-class ReportHeader(BaseReportHeader):
+class ReportHeaderScheme(ReportHeaderBase):
     """ReportHeader validation schema."""
 
     id: int = Field(gt=0)
-    content: list[ReportLine]
+    content: list[ReportLineScheme]
 
-    
-class BaseReportLine(BaseModel):
+
+class ReportLineBase(BaseModel):
     """BaseReportLine validation schema."""
 
     header_id: int = Field(gt=0)
@@ -31,8 +32,8 @@ class BaseReportLine(BaseModel):
     promo_price: float = Field(gt=0)
 
 
-class ReportLine(BaseReportLine):
+class ReportLineScheme(ReportLineBase):
     """ReportLine validation schema."""
-    
+
     id: int = Field(gt=0)
-    header: ReportHeader
+    header: ReportHeaderScheme

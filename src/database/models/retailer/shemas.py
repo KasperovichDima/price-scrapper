@@ -9,7 +9,7 @@ class RetailerBase(BaseModel):
     home_url: str = Field(max_length=100)
 
 
-class Retailer(RetailerBase):
+class RetailerScheme(RetailerBase):
     """Retailer validation schema."""
 
     id: int = Field(gt=0)
