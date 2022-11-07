@@ -1,5 +1,5 @@
 /documentation/schema.png
-app_database.db
+*.db
 settings.json
 
 # Byte-compiled / optimized / DLL files
