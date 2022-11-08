@@ -6,6 +6,7 @@ from authentication.schemas import TokenData, UserScheme
 import crud
 
 from database import SessionLocal
+from database import TestSession
 
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
@@ -18,6 +19,15 @@ from sqlalchemy.orm import Session
 def get_session():
     """Returns database connection."""
     session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+def get_test_session():
+    """Returns test database connection."""
+    session = TestSession()
     try:
         yield session
     finally:

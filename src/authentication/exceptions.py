@@ -12,3 +12,8 @@ email_exists_exeption = HTTPException(
     status_code=status.HTTP_409_CONFLICT,
     detail='Email already exists.'
 )
+
+user_not_exists_exeption = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail='User with this email not exists.'
+)

@@ -6,12 +6,18 @@ from database import Base
 from sqlalchemy.orm import Session
 
 
-def get_user(email: str, db: Session) -> User | None:
+def get_user(email: str, session: Session) -> User | None:
     """Get user instance by email."""
-    return db.query(User).filter(User.email == email).first()
+    return session.query(User).filter(User.email == email).first()
 
 
-def add_instance(instance: Base, db: Session):
+def delete_user(user: User, session: Session) -> None:
+    """Delete specified user."""
+    session.delete(user)
+    session.commit()
+
+
+def add_instance(instance: Base, session: Session):
     """Add new created instance to database."""
-    db.add(instance)
-    db.commit()
+    session.add(instance)
+    session.commit()
