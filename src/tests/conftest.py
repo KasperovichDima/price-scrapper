@@ -2,17 +2,15 @@
 from authentication.schemas import UserCreate, UserScheme
 from authentication.utils import create_access_token
 
-import crud
-
-from project_typing import UserType
-
-import pytest
+from dependencies import get_session, get_test_session
 
 from fastapi.testclient import TestClient
 
 from main import app
 
-from dependencies import get_session, get_test_session
+from project_typing import UserType
+
+import pytest
 
 
 app.dependency_overrides[get_session] = get_test_session
@@ -22,7 +20,7 @@ client = TestClient(app)
 
 
 @pytest.fixture(scope='module')
-def superuser_data() -> UserCreate:
+def superuser_data():
     """Fake data for superuser creation."""
     return UserCreate(
         first_name='Dima',
@@ -53,6 +51,20 @@ def fake_user_data() -> UserCreate:
         is_active=True,
         password='alex1986'
     )
+
+
+@pytest.fixture
+def create_fake_user(fake_user_data: UserCreate) -> UserScheme:
+    """Create fake user in database."""
+    rsp = client.post('/auth/create_user', data=fake_user_data.json())
+    return UserScheme(**rsp.json())
+
+
+@pytest.fixture
+def del_fake_user(fake_user_data: UserCreate):
+    """Delete fake user from database."""
+    yield
+    client.delete('/auth/delete_user', params={'email': fake_user_data.email})
 
 
 @pytest.fixture(scope='module')
