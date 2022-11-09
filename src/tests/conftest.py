@@ -81,12 +81,11 @@ def fake_products() -> list[AddInstanceSchema]:
     """Fake products payload."""
 
     return [
-        AddInstanceSchema(
-            class_name='Product',
-            ids=[1, 2, 3, 4, 5]
-        ),
-        AddInstanceSchema(
-            class_name='Group',
-            ids=[3, 5, 10]
-        )
+        {
+            'class_name': 'Product',
+            'ids': [1, 2, 3, 4, 5]
+        },{
+            'class_name': 'Group',
+            'ids': [3, 5, 10]
+        }
     ]
