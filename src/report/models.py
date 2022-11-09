@@ -1,11 +1,11 @@
 """Report models."""
 from __future__ import annotations
 
+from database import Base
+
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-
-from ...config import Base
 
 
 class ReportHeader(Base):

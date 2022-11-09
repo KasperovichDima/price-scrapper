@@ -7,7 +7,7 @@ from sqlalchemy import Boolean, Column, Enum, Integer, String
 
 
 class User(Base):
-    """User class."""
+    """System user representation."""
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True, index=True)

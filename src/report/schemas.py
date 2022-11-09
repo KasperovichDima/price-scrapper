@@ -37,3 +37,10 @@ class ReportLineScheme(ReportLineBase):
 
     id: int = Field(gt=0)
     header: ReportHeaderScheme
+
+
+class AddInstanceSchema(BaseModel):
+    """Add catalog isnstance validation schema."""
+
+    class_name: str
+    ids: list[int] | None = None

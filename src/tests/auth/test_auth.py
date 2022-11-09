@@ -5,11 +5,7 @@ TODO: Inmemory db for tests.
 """
 from authentication.schemas import UserCreate, UserScheme
 
-import pytest
-
 from ..conftest import client
-
-from pydantic import ValidationError
 
 
 class TestGetCurrentUser:
