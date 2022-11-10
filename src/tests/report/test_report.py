@@ -4,7 +4,7 @@ Report unit tests.
 from authentication.models import User
 from authentication.schemas import UserCreate
 
-from report.schemas import cat_elements
+from project_typing import cat_elements
 from report.support import report_mngr
 
 from requests import Response

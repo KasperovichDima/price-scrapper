@@ -2,6 +2,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Iterable
 
+from project_typing import cat_elements
+
 
 # class IElement(ABC):
 #     """Catalog element interface."""
@@ -19,16 +21,16 @@ class IReportManager(ABC):
     """ReportManager interface."""
 
     @abstractmethod
-    def get_elements(self, user: IUser) -> dict:
+    def get_elements(self, user: IUser) -> cat_elements:
         ...
 
     @abstractmethod
-    def add_elements(self, user: IUser, elements: dict) -> None:
+    def add_elements(self, user: IUser, elements: cat_elements) -> None:
         ...
 
     @abstractmethod
     def remove_elements(self, user: IUser,
-                        elements: Iterable[Any]) -> None:
+                        elements: cat_elements) -> None:
         ...
 
     @abstractmethod
@@ -51,15 +53,15 @@ class IRequest(ABC):
 
     @property
     @abstractmethod
-    def elements(self) -> dict[str, list[int]]:
+    def elements(self) -> cat_elements:
         ...
 
     @abstractmethod
-    def add_elements(self, elements: dict) -> None:
+    def add_elements(self, elements: cat_elements) -> None:
         ...
 
     @abstractmethod
-    def remove_elements(self, elements: Iterable[Any]) -> None:
+    def remove_elements(self, elements: cat_elements) -> None:
         ...
 
     @property

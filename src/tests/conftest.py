@@ -8,11 +8,9 @@ from fastapi.testclient import TestClient
 
 from main import app
 
-from project_typing import UserType
+from project_typing import UserType, cat_elements
 
 import pytest
-
-from report.schemas import cat_elements
 
 
 app.dependency_overrides[get_session] = get_test_session

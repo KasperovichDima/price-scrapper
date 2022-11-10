@@ -37,6 +37,3 @@ class ReportLineScheme(ReportLineBase):
 
     id: int = Field(gt=0)
     header: ReportHeaderScheme
-
-
-cat_elements = dict[str, list[int]]

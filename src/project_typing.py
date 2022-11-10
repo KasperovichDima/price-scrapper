@@ -7,3 +7,6 @@ class UserType(Enum):
     USER = auto()
     ADMIN = auto()
     SUPERUSER = auto()
+
+
+cat_elements = dict[str, list[int]]

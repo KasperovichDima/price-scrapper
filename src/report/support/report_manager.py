@@ -3,7 +3,7 @@ from typing import Any, Iterable
 
 import interfaces as i
 
-from report.schemas import cat_elements
+from project_typing import cat_elements
 
 from .request import Request
 
@@ -42,8 +42,10 @@ class ReportManager(i.IReportManager):
             return self.__requests[user]
 
     def remove_elements(self, user: i.IUser,
-                        elements: Iterable[Any]) -> None:
+                        elements: cat_elements) -> None:
         """Remove catalog elements from current user's report."""
+
+        self.__get_request(user).remove_elements(elements)
 
     def get_retailers(self, user: i.IUser) -> list:
         """Get retailers of current user's report."""

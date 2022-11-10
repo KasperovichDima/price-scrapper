@@ -3,7 +3,7 @@ from typing import Any, Iterable
 
 import interfaces as i
 
-from ..schemas import cat_elements
+from project_typing import cat_elements
 
 
 class Request(i.IRequest):
@@ -25,14 +25,18 @@ class Request(i.IRequest):
     def add_elements(self, elements: cat_elements) -> None:
         """Add catalog elements to current report."""
 
-        for k, v in elements.items():
-            if k in self.__elements:
-                self.__elements[k].update(v)
+        for cls_name, ids in elements.items():
+            if cls_name in self.__elements:
+                self.__elements[cls_name].update(ids)
             else:
-                self.__elements[k] = set(v)
+                self.__elements[cls_name] = set(ids)
 
-    def remove_elements(self, elements: Iterable[Any]) -> None:
-        ...
+    def remove_elements(self, elements: cat_elements) -> None:
+        """Remove catalog elements from current report.
+        TODO: Add exceptions."""
+
+        for cls_name, ids in elements.items():
+            self.__elements[cls_name].difference_update(ids)
 
     @property
     def retailers(self) -> list:

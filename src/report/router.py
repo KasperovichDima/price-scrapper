@@ -5,7 +5,8 @@ from dependencies import get_current_active_user, oauth2_scheme
 
 from fastapi import APIRouter, Depends
 
-from .schemas import cat_elements
+from project_typing import cat_elements
+
 from .support import report_mngr
 
 
@@ -28,15 +29,5 @@ def remove_products(
     user: User = Depends(get_current_active_user),
     token=Depends(oauth2_scheme)
 ):
-    """Remoce products from report of current authorized user."""
+    """Remove products from report of current authorized user."""
     report_mngr.remove_elements(user, products)
-
-
-# @router.post('/test')
-# def test(
-#     products: dict[str, list[int]],
-#     user: User = Depends(get_current_active_user),
-#     token=Depends(oauth2_scheme)
-# ):
-#     """just a test of validation"""
-#     pass
