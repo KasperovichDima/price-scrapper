@@ -77,14 +77,14 @@ def access_token(superuser_data: UserCreate) -> dict:
 
 
 @pytest.fixture(scope='module')
-def fake_products() -> list[AddInstanceSchema]:
+def fake_products() -> list:
     """Fake products payload."""
 
     return [
         {
             'class_name': 'Product',
             'ids': [1, 2, 3, 4, 5]
-        },{
+        }, {
             'class_name': 'Group',
             'ids': [3, 5, 10]
         }

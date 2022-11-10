@@ -5,22 +5,28 @@ from sqlalchemy.orm import relationship
 from ...config import Base
 
 
-class Group(Base):
+class Element(Base):
+    """Base class for all classes of product catalog."""
+
+    __abstract__ = True
+
+    id = Column(Integer, primary_key=True, index=True)
+
+
+class Group(Element):
     """Product group class."""
 
     __tablename__ = 'group'
 
-    id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), index=True)
     content = relationship('Product', back_populates='parent')
 
 
-class Product(Base):
+class Product(Element):
     """Product class."""
 
     __tablename__ = "product"
 
-    id = Column(Integer, primary_key=True, index=True)
     name = Column(String(150), index=True)
     group_id = Column(Integer, ForeignKey('group.id'))
 
