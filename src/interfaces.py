@@ -1,29 +1,80 @@
 """Project Interfaces."""
 from abc import ABC, abstractmethod
-from typing import Iterable
+from typing import Any, Iterable
 
-from project_typing import UserType
+
+# class IElement(ABC):
+#     """Catalog element interface."""
+
+
+# class IRetailer(ABC):
+#     """Shop interface."""
 
 
 class IUser(ABC):
     """User interface."""
-
-    id: int
-    first_name: str
-    last_name: str
-    email: str
-    password: str
-    is_active: bool
-    type: UserType
 
 
 class IReportManager(ABC):
     """ReportManager interface."""
 
     @abstractmethod
-    def add_products(self, user: IUser, products: Iterable):
-        """Add product instances to request of current user."""
+    def get_elements(self, user: IUser) -> dict:
+        ...
 
     @abstractmethod
-    def get_products(self, user: IUser) -> list:
-        """Returns product instances from current user's report."""
+    def add_elements(self, user: IUser, elements: Iterable[Any]) -> None:
+        ...
+
+    @abstractmethod
+    def remove_elements(self, user: IUser,
+                        elements: Iterable[Any]) -> None:
+        ...
+
+    @abstractmethod
+    def get_retailers(self, user: IUser) -> list:
+        ...
+
+    @abstractmethod
+    def add_retailers(self, user: IUser,
+                      retailers: Iterable[Any]) -> None:
+        ...
+
+    @abstractmethod
+    def remove_retailers(self, user: IUser,
+                         retailers: Iterable[Any]) -> None:
+        ...
+
+
+class IRequest(ABC):
+    """Request interface."""
+
+    @property
+    @abstractmethod
+    def elements(self) -> dict[str, list[int]]:
+        ...
+
+    @abstractmethod
+    def add_elements(self, elements: Iterable[Any]) -> None:
+        ...
+
+    @abstractmethod
+    def remove_elements(self, elements: Iterable[Any]) -> None:
+        ...
+
+    @property
+    @abstractmethod
+    def retailers(self) -> list:
+        ...
+
+    @abstractmethod
+    def add_retailers(self, retailers: Iterable[Any]) -> None:
+        ...
+
+    @abstractmethod
+    def remove_retailers(self, retailers: Iterable[Any]) -> None:
+        ...
+
+    @abstractmethod
+    def get_products(self) -> None:
+        ...

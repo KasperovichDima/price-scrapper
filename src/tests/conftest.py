@@ -2,8 +2,6 @@
 from authentication.schemas import UserCreate, UserScheme
 from authentication.utils import create_access_token
 
-from report.schemas import AddInstanceSchema
-
 from dependencies import get_session, get_test_session
 
 from fastapi.testclient import TestClient
@@ -77,7 +75,7 @@ def access_token(superuser_data: UserCreate) -> dict:
 
 
 @pytest.fixture(scope='module')
-def fake_products() -> list:
+def fake_products() -> list[dict]:
     """Fake products payload."""
 
     return [

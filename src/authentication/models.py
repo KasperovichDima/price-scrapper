@@ -1,12 +1,14 @@
 """Authentication models."""
 from database import Base
 
+from interfaces import IUser
+
 from project_typing import UserType
 
 from sqlalchemy import Boolean, Column, Enum, Integer, String
 
 
-class User(Base):
+class User(Base, IUser):
     """System user representation."""
     __tablename__ = 'user'
 

@@ -43,4 +43,4 @@ class AddInstanceSchema(BaseModel):
     """Add catalog isnstance validation schema."""
 
     class_name: str
-    ids: list[int] | None = None
+    ids: list[int]
