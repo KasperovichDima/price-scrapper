@@ -1,4 +1,5 @@
 """Fixtures for authentication tests."""
+from authentication.models import User
 from authentication.schemas import UserCreate, UserScheme
 from authentication.utils import create_access_token
 
@@ -37,7 +38,7 @@ def create_superuser(superuser_data: UserCreate):
     """Create and save superuser."""
     rsp = client.post('/auth/create_user', data=superuser_data.json())
     rsp_json = rsp.json()
-    yield UserScheme(**rsp_json)
+    yield User(**superuser_data.dict())
     client.delete('/auth/delete_user', params={'email': rsp_json['email']})
 
 

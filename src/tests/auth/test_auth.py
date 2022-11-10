@@ -12,7 +12,7 @@ class TestGetCurrentUser:
     """Test of '/auth/current_user' endpoint."""
 
     def test_get_current_user_ok(self, create_superuser: UserScheme,
-                                 access_token: dict):
+                                 access_token):
         """Attempt to get current user with correct token."""
 
         response = client.get(url='/auth/current_user', headers=access_token)

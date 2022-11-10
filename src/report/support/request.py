@@ -26,17 +26,19 @@ class Request(i.IRequest):
         """Add catalog elements to current report."""
 
         for cls_name, ids in elements.items():
-            if cls_name in self.__elements:
+            try:
                 self.__elements[cls_name].update(ids)
-            else:
+            except KeyError:
                 self.__elements[cls_name] = set(ids)
 
     def remove_elements(self, elements: cat_elements) -> None:
-        """Remove catalog elements from current report.
-        TODO: Add exceptions."""
+        """Remove catalog elements from current report."""
 
         for cls_name, ids in elements.items():
-            self.__elements[cls_name].difference_update(ids)
+            try:
+                self.__elements[cls_name].difference_update(ids)
+            except KeyError:
+                continue
 
     @property
     def retailers(self) -> list:
