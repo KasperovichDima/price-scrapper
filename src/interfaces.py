@@ -23,7 +23,7 @@ class IReportManager(ABC):
         ...
 
     @abstractmethod
-    def add_elements(self, user: IUser, elements: Iterable[Any]) -> None:
+    def add_elements(self, user: IUser, elements: dict) -> None:
         ...
 
     @abstractmethod
@@ -55,7 +55,7 @@ class IRequest(ABC):
         ...
 
     @abstractmethod
-    def add_elements(self, elements: Iterable[Any]) -> None:
+    def add_elements(self, elements: dict) -> None:
         ...
 
     @abstractmethod

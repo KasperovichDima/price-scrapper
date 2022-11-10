@@ -3,7 +3,7 @@ from typing import Any, Iterable
 
 import interfaces as i
 
-from ..schemas import AddInstanceSchema
+from ..schemas import cat_elements
 
 
 class Request(i.IRequest):
@@ -17,19 +17,19 @@ class Request(i.IRequest):
     __retailers: list = []
 
     @property
-    def elements(self) -> dict[str, list[int]]:
+    def elements(self) -> cat_elements:
         """Catalog elements of current report."""
         return {cls_name: sorted(list(ids))
                 for cls_name, ids in self.__elements.items()}
 
-    def add_elements(self, elements: Iterable[AddInstanceSchema]) -> None:
+    def add_elements(self, elements: cat_elements) -> None:
         """Add catalog elements to current report."""
 
-        for el in elements:
-            if el.class_name in self.__elements:
-                self.__elements[el.class_name].update(el.ids)
+        for k, v in elements.items():
+            if k in self.__elements:
+                self.__elements[k].update(v)
             else:
-                self.__elements[el.class_name] = set(el.ids)
+                self.__elements[k] = set(v)
 
     def remove_elements(self, elements: Iterable[Any]) -> None:
         ...

@@ -39,8 +39,4 @@ class ReportLineScheme(ReportLineBase):
     header: ReportHeaderScheme
 
 
-class AddInstanceSchema(BaseModel):
-    """Add catalog isnstance validation schema."""
-
-    class_name: str
-    ids: list[int]
+cat_elements = dict[str, list[int]]

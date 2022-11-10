@@ -12,6 +12,8 @@ from project_typing import UserType
 
 import pytest
 
+from report.schemas import cat_elements
+
 
 app.dependency_overrides[get_session] = get_test_session
 
@@ -75,15 +77,10 @@ def access_token(superuser_data: UserCreate) -> dict:
 
 
 @pytest.fixture(scope='module')
-def fake_products() -> list[dict]:
+def fake_products() -> cat_elements:
     """Fake products payload."""
 
-    return [
-        {
-            'class_name': 'Product',
-            'ids': [1, 2, 3, 4, 5]
-        }, {
-            'class_name': 'Group',
-            'ids': [3, 5, 10]
-        }
-    ]
+    return {
+        'Product': [1, 2, 3, 4, 5],
+        'Group': [3, 5, 10]
+    }

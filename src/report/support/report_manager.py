@@ -3,7 +3,7 @@ from typing import Any, Iterable
 
 import interfaces as i
 
-from report.schemas import AddInstanceSchema
+from report.schemas import cat_elements
 
 from .request import Request
 
@@ -19,13 +19,13 @@ class ReportManager(i.IReportManager):
 
     __requests: dict[i.IUser, Request] = {}
 
-    def get_elements(self, user: i.IUser) -> dict[str, list[int]]:
+    def get_elements(self, user: i.IUser) -> cat_elements:
         """Get catalog elements of current user's report."""
 
         return self.__get_request(user).elements
 
     def add_elements(self, user: i.IUser,
-                     elements: Iterable[AddInstanceSchema]) -> None:
+                     elements: cat_elements) -> None:
         """Add catalog elements to current user's report."""
 
         self.__get_request(user).add_elements(elements)
