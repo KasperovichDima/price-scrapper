@@ -1,13 +1,15 @@
-"""Report validation schemas."""
+"""Report validation schemes."""
 from __future__ import annotations
 
 from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from project_typing import cat_elements
+
 
 class ReportHeaderBase(BaseModel):
-    """BaseReportHeader validation schema."""
+    """BaseReportHeader validation scheme."""
 
     time_created: datetime
     name: str = Field(max_length=100)
@@ -16,14 +18,14 @@ class ReportHeaderBase(BaseModel):
 
 
 class ReportHeaderScheme(ReportHeaderBase):
-    """ReportHeader validation schema."""
+    """ReportHeader validation scheme."""
 
     id: int = Field(gt=0)
     content: list[ReportLineScheme]
 
 
 class ReportLineBase(BaseModel):
-    """BaseReportLine validation schema."""
+    """BaseReportLine validation scheme."""
 
     header_id: int = Field(gt=0)
     product_id: int = Field(gt=0)
@@ -33,7 +35,17 @@ class ReportLineBase(BaseModel):
 
 
 class ReportLineScheme(ReportLineBase):
-    """ReportLine validation schema."""
+    """ReportLine validation scheme."""
 
     id: int = Field(gt=0)
     header: ReportHeaderScheme
+
+
+class RequestDataScheme(BaseModel):
+    """RequestData  validation scheme."""
+
+    elements: cat_elements | None
+    retailers: list[str] | None
+
+    class Config:
+        orm_mode = True

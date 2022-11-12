@@ -21,31 +21,35 @@ class IReportManager(ABC):
     """ReportManager interface."""
 
     @abstractmethod
-    def get_elements(self, user: IUser) -> cat_elements:
+    def get_request(self, user: IUser) -> Any:
         ...
 
     @abstractmethod
-    def add_elements(self, user: IUser, elements: cat_elements) -> None:
+    def add_request_data(self, user: IUser, data: Any) -> Any:
         ...
 
     @abstractmethod
-    def remove_elements(self, user: IUser,
-                        elements: cat_elements) -> None:
+    def remove_request_data(self, user: IUser, data: Any) -> Any:
         ...
 
-    @abstractmethod
-    def get_retailers(self, user: IUser) -> list:
-        ...
+    # @abstractmethod
+    # def add_elements(self, user: IUser, elements: cat_elements) -> None:
+    #     ...
 
-    @abstractmethod
-    def add_retailers(self, user: IUser,
-                      retailers: Iterable[Any]) -> None:
-        ...
+    # @abstractmethod
+    # def remove_elements(self, user: IUser,
+    #                     elements: cat_elements) -> None:
+    #     ...
 
-    @abstractmethod
-    def remove_retailers(self, user: IUser,
-                         retailers: Iterable[Any]) -> None:
-        ...
+    # @abstractmethod
+    # def add_retailers(self, user: IUser,
+    #                   retailers: Iterable[Any]) -> None:
+    #     ...
+
+    # @abstractmethod
+    # def remove_retailers(self, user: IUser,
+    #                      retailers: Iterable[Any]) -> None:
+    #     ...
 
 
 class IRequest(ABC):
@@ -66,7 +70,7 @@ class IRequest(ABC):
 
     @property
     @abstractmethod
-    def retailers(self) -> list:
+    def retailers(self) -> list[str]:
         ...
 
     @abstractmethod

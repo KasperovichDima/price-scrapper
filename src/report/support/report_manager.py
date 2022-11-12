@@ -1,11 +1,8 @@
 """Report manager class and instance."""
-from typing import Any, Iterable
-
 import interfaces as i
 
-from project_typing import cat_elements
-
 from .request import Request
+from ..schemas import RequestDataScheme
 
 
 class ReportManager(i.IReportManager):
@@ -19,16 +16,14 @@ class ReportManager(i.IReportManager):
 
     __requests: dict[i.IUser, Request] = {}
 
-    def get_elements(self, user: i.IUser) -> cat_elements:
-        """Get catalog elements of current user's report."""
+    def get_request(self, user: i.IUser) -> RequestDataScheme:
+        """Get catalog elements and retailers of current user's report."""
 
-        return self.__get_request(user).elements
-
-    def add_elements(self, user: i.IUser,
-                     elements: cat_elements) -> None:
-        """Add catalog elements to current user's report."""
-
-        self.__get_request(user).add_elements(elements)
+        request = self.__get_request(user)
+        return RequestDataScheme(
+            elements=request.elements,
+            retailers=request.retailers
+        )
 
     def __get_request(self, user) -> i.IRequest:
         """Return request of current user, if exists.
@@ -41,22 +36,30 @@ class ReportManager(i.IReportManager):
         finally:
             return self.__requests[user]
 
-    def remove_elements(self, user: i.IUser,
-                        elements: cat_elements) -> None:
-        """Remove catalog elements from current user's report."""
+    def add_request_data(self, user: i.IUser,
+                         data: RequestDataScheme) -> RequestDataScheme:
+        """Add data to current user's report."""
 
-        self.__get_request(user).remove_elements(elements)
+        request = self.__get_request(user)
+        if data.elements:
+            request.add_elements(data.elements)
+        if data.retailers:
+            request.add_retailers(data.retailers)
+        return RequestDataScheme(
+            elements=request.elements,
+            retailers=request.retailers
+        )
 
-    def get_retailers(self, user: i.IUser) -> list:
-        """Get retailers of current user's report."""
+    def remove_request_data(self, user: i.IUser,
+                            data: RequestDataScheme) -> i.IRequest:
+        """Remove data from current user's report."""
 
-    def add_retailers(self, user: i.IUser,
-                      retailers: Iterable[Any]) -> None:
-        """Add retailers to current user's report."""
-
-    def remove_retailers(self, user: i.IUser,
-                         retailers: Iterable[Any]) -> None:
-        """Remove retailers from current user's report."""
+        request = self.__get_request(user)
+        if data.elements:
+            request.remove_elements(data.elements)
+        if data.retailers:
+            request.remove_retailers(data.retailers)
+        return request
 
 
 report_mngr = ReportManager()

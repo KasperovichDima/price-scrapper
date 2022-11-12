@@ -12,9 +12,9 @@ class Request(i.IRequest):
     remove request data. TODO: datatype for elements."""
 
     __elements: dict[str, set[int]] = {}
-    __products: list = []
+    __retailers: set[str] = set()
 
-    __retailers: list = []
+    __products: list = []
 
     @property
     def elements(self) -> cat_elements:
@@ -42,13 +42,19 @@ class Request(i.IRequest):
 
     @property
     def retailers(self) -> list:
-        ...
+        """Retailers of current report."""
 
-    def add_retailers(self, retailers: Iterable[Any]) -> None:
-        ...
+        return sorted(list(self.__retailers))
+
+    def add_retailers(self, retailers: Iterable[str]) -> None:
+        """Add retailers elements to current report."""
+
+        self.__retailers.update(retailers)
 
     def remove_retailers(self, retailers: Iterable[Any]) -> None:
-        ...
+        """Remove retailers from current report."""
+
+        self.__retailers.difference_update(retailers)
 
     def get_products(self) -> None:
         ...

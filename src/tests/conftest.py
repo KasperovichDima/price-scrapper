@@ -9,9 +9,11 @@ from fastapi.testclient import TestClient
 
 from main import app
 
-from project_typing import UserType, cat_elements
+from project_typing import UserType
 
 import pytest
+
+from report.schemas import RequestDataScheme
 
 
 app.dependency_overrides[get_session] = get_test_session
@@ -76,10 +78,13 @@ def access_token(superuser_data: UserCreate) -> dict:
 
 
 @pytest.fixture(scope='module')
-def fake_products() -> cat_elements:
-    """Fake products payload."""
+def fake_payload() -> RequestDataScheme:
+    """Fake request payload."""
 
-    return {
-        'Product': [1, 2, 3, 4, 5],
-        'Group': [3, 5, 10]
-    }
+    return RequestDataScheme(
+        elements={
+            'Product': [1, 2, 3, 4, 5],
+            'Group': [3, 5, 10]
+        },
+        retailers=['silpo', 'tavria']
+    )
