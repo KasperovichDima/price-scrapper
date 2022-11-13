@@ -1,4 +1,6 @@
 """Report manager class and instance."""
+from typing import Any
+
 import interfaces as i
 
 from .request import Request
@@ -63,6 +65,10 @@ class ReportManager(i.IReportManager):
             elements=request.elements,
             retailers=request.retailers
         )
+
+    def get_prices(self, user: i.IUser) -> Any:
+        """Start parsing process and get completed report."""
+        raise NotImplementedError
 
 
 report_mngr = ReportManager()

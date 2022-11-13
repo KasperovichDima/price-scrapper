@@ -32,24 +32,9 @@ class IReportManager(ABC):
     def remove_request_data(self, user: IUser, data: Any) -> Any:
         ...
 
-    # @abstractmethod
-    # def add_elements(self, user: IUser, elements: cat_elements) -> None:
-    #     ...
-
-    # @abstractmethod
-    # def remove_elements(self, user: IUser,
-    #                     elements: cat_elements) -> None:
-    #     ...
-
-    # @abstractmethod
-    # def add_retailers(self, user: IUser,
-    #                   retailers: Iterable[Any]) -> None:
-    #     ...
-
-    # @abstractmethod
-    # def remove_retailers(self, user: IUser,
-    #                      retailers: Iterable[Any]) -> None:
-    #     ...
+    @abstractmethod
+    def get_prices(self, user: IUser) -> Any:
+        ...
 
 
 class IRequest(ABC):
