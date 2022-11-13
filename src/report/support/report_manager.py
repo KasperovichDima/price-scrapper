@@ -51,7 +51,7 @@ class ReportManager(i.IReportManager):
         )
 
     def remove_request_data(self, user: i.IUser,
-                            data: RequestDataScheme) -> i.IRequest:
+                            data: RequestDataScheme) -> RequestDataScheme:
         """Remove data from current user's report."""
 
         request = self.__get_request(user)
@@ -59,7 +59,10 @@ class ReportManager(i.IReportManager):
             request.remove_elements(data.elements)
         if data.retailers:
             request.remove_retailers(data.retailers)
-        return request
+        return RequestDataScheme(
+            elements=request.elements,
+            retailers=request.retailers
+        )
 
 
 report_mngr = ReportManager()
