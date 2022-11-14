@@ -23,12 +23,13 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 load_dotenv()
 path.append(os.getenv('SRC_PATH'))
-print(path)
 from authentication.models import User
 from catalog.models import Group, Product
 from report.models import ReportHeader, ReportLine
 from database import Retailer
-from database import Base, WebPage, URL
+from database import WebPage, URL
+from database.config import Base
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

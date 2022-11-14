@@ -1,5 +1,5 @@
 """Authentication models."""
-from database import Base
+from database.config import Base
 
 from interfaces import IUser
 

@@ -1,5 +1,5 @@
 """Product catalog models."""
-from database import Base
+from database.config import Base
 
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship

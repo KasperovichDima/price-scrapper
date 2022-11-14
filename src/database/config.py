@@ -26,4 +26,3 @@ class DeclarativeABCMeta(DeclarativeMeta, ABCMeta):
 
 
 Base = declarative_base(metaclass=DeclarativeABCMeta)
-target_metadata = Base.metadata

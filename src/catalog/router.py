@@ -3,8 +3,6 @@ from dependencies import oauth2_scheme
 
 from fastapi import APIRouter, Depends
 
-from .schemas import RequestDataScheme
-
 
 router = APIRouter(prefix='/catalog', tags=['catalog'])
 

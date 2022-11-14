@@ -7,7 +7,7 @@ from catalog.models import Group, Product
 
 import crud
 
-from database import target_metadata, test_engine
+from database import Base, test_engine
 
 from dependencies import get_session, get_test_session
 
@@ -22,6 +22,7 @@ import pytest
 from report.schemas import RequestDataScheme
 
 
+target_metadata = Base.metadata
 target_metadata.create_all(test_engine)
 
 app.dependency_overrides[get_session] = get_test_session
