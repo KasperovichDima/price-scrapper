@@ -1,6 +1,4 @@
-"""
-Report unit tests.
-"""
+"""Report unit tests."""
 from authentication.models import User
 
 from report.schemas import RequestDataScheme

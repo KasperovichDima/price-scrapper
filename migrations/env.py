@@ -24,9 +24,9 @@ if config.config_file_name is not None:
 load_dotenv()
 path.append(os.getenv('SRC_PATH'))
 print(path)
-from database import User
-from database import Group, Product
-from database import ReportHeader, ReportLine
+from authentication.models import User
+from catalog.models import Group, Product
+from report.models import ReportHeader, ReportLine
 from database import Retailer
 from database import Base, WebPage, URL
 target_metadata = Base.metadata

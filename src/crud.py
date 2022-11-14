@@ -1,4 +1,6 @@
 """Database crud operations."""
+from typing import Iterable
+
 from authentication.models import User
 
 from database import Base
@@ -20,4 +22,10 @@ def delete_user(user: User, session: Session) -> None:
 def add_instance(instance: Base, session: Session):
     """Add new created instance to database."""
     session.add(instance)
+    session.commit()
+
+
+def add_instances(instances: Iterable[Base], session: Session):
+    """Add new created instance to database."""
+    session.add_all(instances)
     session.commit()

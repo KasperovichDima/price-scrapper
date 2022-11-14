@@ -1,5 +1,4 @@
-from .models import Group, Product
+from .config import Base, SessionLocal, TestSession, engine,\
+                    target_metadata, test_engine
 from .models import Retailer
-from .models import Base, WebPage, URL
-from .config import SessionLocal, engine
-from .config import TestSession
+from .models import URL, WebPage

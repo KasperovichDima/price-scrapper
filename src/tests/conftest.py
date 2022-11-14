@@ -3,6 +3,12 @@ from authentication.models import User
 from authentication.schemas import UserCreate, UserScheme
 from authentication.utils import create_access_token
 
+from catalog.models import Group, Product
+
+import crud
+
+from database import target_metadata, test_engine
+
 from dependencies import get_session, get_test_session
 
 from fastapi.testclient import TestClient
@@ -16,8 +22,9 @@ import pytest
 from report.schemas import RequestDataScheme
 
 
-app.dependency_overrides[get_session] = get_test_session
+target_metadata.create_all(test_engine)
 
+app.dependency_overrides[get_session] = get_test_session
 
 client = TestClient(app)
 
@@ -88,3 +95,34 @@ def fake_payload() -> RequestDataScheme:
         },
         retailers=['silpo', 'tavria']
     )
+
+
+@pytest.fixture(scope='session')
+def fake_session():
+    from database import TestSession
+    return TestSession()
+
+
+@pytest.fixture(scope='session')
+def fake_db_content(fake_session):
+    """Fill database catalog with fake content."""
+    content = [
+        Group(name='Alcohol'),
+        Group(name='Grocery'),
+        Group(name='Milk')
+    ]
+
+    content.extend((
+        Product(name='Beer Chernigovskoe 0,5', group_id=1),
+        Product(name='Vine Cartuli Vazi 0,7', group_id=1),
+        Product(name='Vodka Finlandia 0,7', group_id=1),
+        Product(name='Sunflower Oil 1l', group_id=2),
+        Product(name='Chips 500 gr', group_id=2),
+        Product(name='Sugar 1kg', group_id=2),
+        Product(name='Milk 1l', group_id=3),
+        Product(name='Jogurt Fructegut 400ml', group_id=3),
+        Product(name='Spred 200gr', group_id=3),
+    ))
+
+    crud.add_instances(content, fake_session)
+    return content
