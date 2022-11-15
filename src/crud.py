@@ -1,11 +1,13 @@
 """Database crud operations."""
-from typing import Iterable
+from typing import Iterable, Type
 
 from authentication.models import User
 
 from database import Base
 
 from sqlalchemy.orm import Session
+
+from interfaces import IElement
 
 
 def get_user(email: str, session: Session) -> User | None:
@@ -19,13 +21,18 @@ def delete_user(user: User, session: Session) -> None:
     session.commit()
 
 
-def add_instance(instance: Base, session: Session):
+def add_instance(instance: Base, session: Session) -> None:
     """Add new created instance to database."""
     session.add(instance)
     session.commit()
 
 
-def add_instances(instances: Iterable[Base], session: Session):
+def add_instances(instances: Iterable[Base], session: Session) -> None:
     """Add new created instance to database."""
     session.add_all(instances)
     session.commit()
+
+
+def get_element(cls: Type[IElement], id: int, session: Session) -> IElement | None:
+    """Returns instance with specified params, if exists."""
+    return session.get(cls, id)

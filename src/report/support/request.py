@@ -14,7 +14,7 @@ class Request(i.IRequest):
     __elements: dict[str, set[int]] = {}
     __retailers: set[str] = set()
 
-    __products: list = []
+    __products: list = []  # use stack here
 
     @property
     def elements(self) -> cat_elements:

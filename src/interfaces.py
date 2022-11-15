@@ -1,4 +1,5 @@
 """Project Interfaces."""
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, Iterable
 
@@ -68,4 +69,13 @@ class IRequest(ABC):
 
     @abstractmethod
     def get_products(self) -> None:
+        ...
+
+
+class IElement(ABC):
+    """Catalog element interface."""
+
+    @property
+    @abstractmethod
+    def content(self) -> Iterable[IElement]:
         ...

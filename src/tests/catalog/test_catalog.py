@@ -10,6 +10,9 @@ class TestGetContent:
     def test_get_content_ok(self, access_token, fake_db_content: list):
         """Correct attempt to get existing content."""
 
-        rsp = client.get(f'{self.__url}/Group/1', headers=access_token)
+        rsp = client.get(self.__url+'/{cls_name}/1?cls=Group',
+                         headers=access_token)
 
-        assert rsp.status_code == 200 and rsp.content == fake_db_content[3:6]
+        print(type(rsp.json()))
+
+        assert rsp.status_code == 200 and rsp.json() == fake_db_content

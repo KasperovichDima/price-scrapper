@@ -1,11 +1,16 @@
 """Product catalog models."""
+from typing import Iterable, Type
 from database.config import Base
 
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
+import interfaces as i
 
-class Element(Base):
+from project_typing import CatalogModels
+
+
+class Element(Base, i.IElement):
     """Base class for all classes of product catalog."""
 
     __abstract__ = True
@@ -32,3 +37,14 @@ class Product(Element):
 
     parent = relationship('Group', back_populates='content')
     pages = relationship('WebPage', back_populates='product')
+
+    @property
+    def content(self) -> Iterable[i.IElement]:
+        """Content of current catalog instance."""
+
+        return (self,)
+
+
+def get_model(name: CatalogModels) -> Type[Element]:
+    """Get catalog element class by class name."""
+    return eval(name.value)

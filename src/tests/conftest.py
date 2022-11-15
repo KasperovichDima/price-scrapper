@@ -126,4 +126,7 @@ def fake_db_content(fake_session):
     ))
 
     crud.add_instances(content, fake_session)
-    return content
+
+    td = [{'group_id': item.group_id, 'name': item.name, 'id': item.id}
+          for item in content[3:6]]
+    return td
