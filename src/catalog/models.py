@@ -1,13 +1,14 @@
-"""Product catalog models."""
+"""Product catalog models and get model function."""
 from typing import Iterable, Type
+
 from database.config import Base
+
+import interfaces as i
 
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-import interfaces as i
-
-from project_typing import CatalogModels
+from .exceptions import wrong_model_exception
 
 
 class Element(Base, i.IElement):
@@ -45,6 +46,9 @@ class Product(Element):
         return (self,)
 
 
-def get_model(name: CatalogModels) -> Type[Element]:
+def get_model(name: str) -> Type[Element]:
     """Get catalog element class by class name."""
-    return eval(name.value)
+    try:
+        return eval(name)
+    except NameError:
+        raise wrong_model_exception

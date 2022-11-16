@@ -30,3 +30,20 @@ class ProductScheme(BaseModel):
     id: int = Field(gt=0)
     parent: GroupScheme
     links: list[str]
+
+
+class ElementScheme(BaseModel):
+    """Validation scheme for content of catalog element."""
+
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class GetElementScheme(BaseModel):
+    """GetElement validation scheme to be used in get_content function."""
+
+    model: str | None = None
+    content: list[ElementScheme] | None = None

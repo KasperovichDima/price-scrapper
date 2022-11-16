@@ -10,11 +10,4 @@ class UserType(Enum):
     SUPERUSER = auto()
 
 
-class CatalogModels(Enum):
-    """Enum of catalog instances"""
-
-    GROUP = 'Group'
-    PRODUCT = 'Product'
-
-
 cat_elements = dict[str, list[int]]
