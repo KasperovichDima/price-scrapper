@@ -23,6 +23,7 @@ class ReportHeader(Base):
     user_id = Column(Integer, ForeignKey('user.id'))
 
     content = relationship('ReportLine', back_populates='header')
+    user = relationship('User', back_populates='headers')
 
 
 class ReportLine(Base):

@@ -66,7 +66,7 @@ class ReportManager(i.IReportManager):
             retailers=request.retailers
         )
 
-    def get_prices(self, user: i.IUser) -> Any:
+    def get_report(self, user: i.IUser) -> Any:
         """Start parsing process and get completed report."""
         raise NotImplementedError
 

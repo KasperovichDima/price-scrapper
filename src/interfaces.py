@@ -1,5 +1,6 @@
 """Project Interfaces."""
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import Any, Iterable
 
@@ -34,7 +35,7 @@ class IReportManager(ABC):
         ...
 
     @abstractmethod
-    def get_prices(self, user: IUser) -> Any:
+    def get_report(self, user: IUser) -> Any:
         ...
 
 

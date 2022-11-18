@@ -1,11 +1,13 @@
-"""Report validation schemes."""
+"""
+Report validation schames.
+"""
 from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
-
 from project_typing import cat_elements
+
+from pydantic import BaseModel, Field
 
 
 class ReportHeaderBase(BaseModel):

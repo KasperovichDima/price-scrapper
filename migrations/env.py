@@ -22,6 +22,22 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 load_dotenv()
+
+#########REMOVE LATER#############
+path.remove('/home/kasper/Documents/projects/ros2ws/install/database/lib/python3.8/site-packages')
+path.remove('/home/kasper/Documents/projects/ros2ws/install/database_exchange/lib/python3.8/site-packages')
+path.append(
+    [
+        '/home/kasper/Documents/projects/monitoring',
+        '/home/kasper/Documents/projects/monitoring/src',
+        '/usr/lib/python310.zip',
+        '/usr/lib/python3.10',
+        '/usr/lib/python3.10/lib-dynload',
+        '/home/kasper/Documents/projects/monitoring/venv/lib/python3.10/site-packages'
+    ]
+)
+#########REMOVE LATER#############
+
 path.append(os.getenv('SRC_PATH'))
 from authentication.models import User
 from catalog.models import Group, Product
