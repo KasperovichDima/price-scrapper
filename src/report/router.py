@@ -1,12 +1,12 @@
 """Report router."""
 from authentication.models import User
 
+from core import report_mngr
+from core.schemas import RequestDataScheme
+
 from dependencies import get_current_active_user, oauth2_scheme
 
 from fastapi import APIRouter, Depends
-
-from .schemas import RequestDataScheme
-from .support import report_mngr
 
 
 router = APIRouter(prefix='/report', tags=['reports'])

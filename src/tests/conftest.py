@@ -5,6 +5,8 @@ from authentication.utils import create_access_token
 
 from catalog.models import Group, Product
 
+from core.schemas import RequestDataScheme
+
 import crud
 
 from database import Base, test_engine
@@ -18,8 +20,6 @@ from main import app
 from project_typing import UserType
 
 import pytest
-
-from report.schemas import RequestDataScheme
 
 
 target_metadata = Base.metadata

@@ -1,8 +1,8 @@
 """Report unit tests."""
 from authentication.models import User
 
-from report.schemas import RequestDataScheme
-from report.support import report_mngr
+from core import report_mngr
+from core.schemas import RequestDataScheme
 
 from requests import Response
 
