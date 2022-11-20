@@ -94,7 +94,7 @@ def fake_payload() -> RequestDataScheme:
             'Product': [1, 2, 3, 4, 5],
             'Group': [3, 5, 10]
         },
-        retailers=['silpo', 'tavria']
+        retailers=['Silpo', 'Tavria V']
     )
 
 

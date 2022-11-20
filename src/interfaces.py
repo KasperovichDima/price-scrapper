@@ -7,16 +7,10 @@ from typing import Any, Iterable
 from project_typing import cat_elements
 
 
-# class IElement(ABC):
-#     """Catalog element interface."""
-
-
-# class IRetailer(ABC):
-#     """Shop interface."""
-
-
 class IUser(ABC):
     """User interface."""
+
+    id: int
 
 
 class IReportManager(ABC):
@@ -35,7 +29,7 @@ class IReportManager(ABC):
         ...
 
     @abstractmethod
-    def get_report(self, user: IUser) -> Any:
+    def get_report(self, header_payload: Any) -> Any:
         ...
 
 
@@ -61,15 +55,15 @@ class IRequest(ABC):
         ...
 
     @abstractmethod
-    def add_retailers(self, retailers: Iterable[Any]) -> None:
+    def add_retailers(self, retailers: Iterable[str]) -> None:
         ...
 
     @abstractmethod
-    def remove_retailers(self, retailers: Iterable[Any]) -> None:
+    def remove_retailers(self, retailers: Iterable[str]) -> None:
         ...
 
     @abstractmethod
-    def get_products(self) -> None:
+    def get_products(self) -> Iterable[IProduct]:
         ...
 
 
@@ -80,3 +74,15 @@ class IElement(ABC):
     @abstractmethod
     def content(self) -> Iterable[IElement]:
         ...
+
+
+class IProduct(ABC):
+    """Product intrface."""
+
+
+class IParser(ABC):
+    """Parser interface."""
+
+    def __call__(self, products: Iterable[IProduct]) -> Any:
+        ...
+    

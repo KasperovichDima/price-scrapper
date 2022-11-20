@@ -8,6 +8,8 @@ from dependencies import get_current_active_user, oauth2_scheme
 
 from fastapi import APIRouter, Depends
 
+from .schemas import ReportHeaderBase
+
 
 router = APIRouter(prefix='/report', tags=['reports'])
 
@@ -30,7 +32,12 @@ async def remove_request_data(data: RequestDataScheme,
     return report_mngr.remove_request_data(user, data)
 
 
-@router.post('/get_prices')
-async def get_prices(user: User = Depends(get_current_active_user),
-                     token=Depends(oauth2_scheme)):
-    """Start parsing process and get completed report."""
+# @router.post('/get_report')
+# async def get_report(name: str, note: str,
+#                      user: User = Depends(get_current_active_user),
+#                      token=Depends(oauth2_scheme)):
+#     """Start parsing process and get completed report."""
+
+#     header_payload = ReportHeaderBase(name=name, note=note, user_id=user.id)
+#     report_mngr.get_report
+

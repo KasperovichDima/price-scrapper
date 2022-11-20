@@ -5,9 +5,9 @@ from authentication.models import User
 
 from database import Base
 
-from sqlalchemy.orm import Session
-
 from interfaces import IElement
+
+from sqlalchemy.orm import Session
 
 
 def get_user(email: str, session: Session) -> User | None:
@@ -33,6 +33,7 @@ def add_instances(instances: Iterable[Base], session: Session) -> None:
     session.commit()
 
 
-def get_element(cls: Type[IElement], id: int, session: Session) -> IElement | None:
-    """Returns instance with specified params, if exists."""
+def get_element(cls: Type[IElement], id: int,
+                session: Session) -> IElement | None:
+    """Returns catalog instance with specified params, if exists."""
     return session.get(cls, id)

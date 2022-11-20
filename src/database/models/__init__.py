@@ -1,3 +1,3 @@
-from .retailer import Retailer, RetailerScheme
-from .url import WebPage, URL
-from .url import Base
+from .retailer import Retailer, RetailerScheme  # noqa: F401
+from .url import Base  # noqa: F401
+from .url import URL, WebPage  # noqa: F401

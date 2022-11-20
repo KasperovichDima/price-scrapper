@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 class ReportHeaderBase(BaseModel):
     """BaseReportHeader validation scheme."""
 
-    time_created: datetime
+    time_created: datetime = datetime.now()
     name: str = Field(max_length=100)
     note: str = Field(max_length=250)
     user_id: int = Field(gt=0)

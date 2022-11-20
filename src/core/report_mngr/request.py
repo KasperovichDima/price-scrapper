@@ -14,8 +14,6 @@ class Request(i.IRequest):
     __elements: dict[str, set[int]] = {}
     __retailers: set[str] = set()
 
-    __products: list = []  # use stack here
-
     @property
     def elements(self) -> cat_elements:
         """Catalog elements of current report."""
@@ -41,7 +39,7 @@ class Request(i.IRequest):
                 continue
 
     @property
-    def retailers(self) -> list:
+    def retailers(self) -> list[str]:
         """Retailers of current report."""
 
         return sorted(list(self.__retailers))
@@ -51,10 +49,13 @@ class Request(i.IRequest):
 
         self.__retailers.update(retailers)
 
-    def remove_retailers(self, retailers: Iterable[Any]) -> None:
+    def remove_retailers(self, retailers: Iterable[str]) -> None:
         """Remove retailers from current report."""
 
         self.__retailers.difference_update(retailers)
 
-    def get_products(self) -> None:
+    def get_products(self) -> Iterable[i.IProduct]:
+        """Returns products from all elements."""
+
         ...
+
