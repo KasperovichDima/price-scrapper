@@ -1,11 +1,12 @@
 """Database crud operations."""
-from typing import Iterable, Type
+from typing import Container, Iterable, Type
 
 from authentication.models import User
 
 from database import Base
+from database import Retailer
 
-from interfaces import IElement
+import interfaces as i
 
 from sqlalchemy.orm import Session
 
@@ -33,7 +34,14 @@ def add_instances(instances: Iterable[Base], session: Session) -> None:
     session.commit()
 
 
-def get_element(cls: Type[IElement], id: int,
-                session: Session) -> IElement | None:
+def get_element(cls: Type[i.IElement], id: int,
+                session: Session) -> i.IElement | None:
     """Returns catalog instance with specified params, if exists."""
     return session.get(cls, id)
+
+
+def get_retailers(retailers: Container[str],
+                  session: Session) -> Iterable[i.IRetailer]:
+    """Get retailer objects by retailer names."""
+
+    return session.query(Retailer).filter(Retailer.name.in_(retailers)).all()

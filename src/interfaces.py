@@ -40,7 +40,7 @@ class IRequest(ABC):
 
     @property
     @abstractmethod
-    def elements(self) -> cat_elements:
+    def el_names(self) -> cat_elements:
         ...
 
     @abstractmethod
@@ -53,7 +53,7 @@ class IRequest(ABC):
 
     @property
     @abstractmethod
-    def retailers(self) -> list[str]:
+    def shop_names(self) -> list[str]:
         ...
 
     @abstractmethod
@@ -64,9 +64,12 @@ class IRequest(ABC):
     def remove_retailers(self, retailers: Iterable[str]) -> None:
         ...
 
-    @property
     @abstractmethod
-    def products(self) -> Iterable[IProduct]:
+    def get_products(self, session: Session) -> Iterable[IProduct]:
+        ...
+
+    @abstractmethod
+    def get_retailers(self, session: Session) -> Iterable[IRetailer]:
         ...
 
 
@@ -88,4 +91,7 @@ class IParser(ABC):
 
     def __call__(self, products: Iterable[IProduct]) -> Any:
         ...
-    
+
+
+class IRetailer(ABC):
+    """Retailer interface."""

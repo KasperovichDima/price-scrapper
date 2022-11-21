@@ -90,11 +90,11 @@ def fake_payload() -> RequestDataScheme:
     """Fake request payload."""
 
     return RequestDataScheme(
-        elements={
+        el_names={
             'Product': [1, 2, 3, 4, 5],
             'Group': [3, 5, 10]
         },
-        retailers=['Silpo', 'Tavria V']
+        shop_names=['Silpo', 'Tavria V']
     )
 
 

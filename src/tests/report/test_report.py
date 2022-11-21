@@ -53,9 +53,9 @@ class TestEditReport:
 
         report_mngr.add_request_data(create_superuser, fake_payload)
         del_data = RequestDataScheme(
-            elements={'Product': [3, 4, 37],
+            el_names={'Product': [3, 4, 37],
                       'Group': [3, 10]},
-            retailers=['Tavria V']
+            shop_names=['Tavria V']
         )
 
         rsp = client.delete(self.__remove_url, data=del_data.json(),
@@ -63,11 +63,11 @@ class TestEditReport:
         request = report_mngr.get_request(create_superuser)
 
         assert rsp.status_code == 200\
-            and request.elements == {
+            and request.el_names == {
                 'Product': [1, 2, 5],
                 'Group': [5],
             }\
-            and request.retailers == ['Silpo']
+            and request.shop_names == ['Silpo']
 
     def test_remove_not_existing_items(self,
                                        create_superuser: User,
@@ -77,8 +77,8 @@ class TestEditReport:
 
         report_mngr.add_request_data(create_superuser, fake_payload)
         del_data = RequestDataScheme(
-            elements={'Product': [13, 24], "Category": [22, 36, 65]},
-            retailers=['Epicentr', 'Santim']
+            el_names={'Product': [13, 24], "Category": [22, 36, 65]},
+            shop_names=['Epicentr', 'Santim']
         )
         rsp = client.delete(self.__remove_url, data=del_data.json(),
                             headers=access_token)

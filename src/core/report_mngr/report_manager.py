@@ -30,8 +30,8 @@ class ReportManager(i.IReportManager):
 
         request = self.__get_request(user)
         return RequestDataScheme(
-            elements=request.elements,
-            retailers=request.retailers
+            el_names=request.el_names,
+            shop_names=request.shop_names
         )
 
     def __get_request(self, user: i.IUser) -> i.IRequest:
@@ -50,13 +50,13 @@ class ReportManager(i.IReportManager):
         """Add data to current user's report."""
 
         request = self.__get_request(user)
-        if data.elements:
-            request.add_elements(data.elements)
-        if data.retailers:
-            request.add_retailers(data.retailers)
+        if data.el_names:
+            request.add_elements(data.el_names)
+        if data.shop_names:
+            request.add_retailers(data.shop_names)
         return RequestDataScheme(
-            elements=request.elements,
-            retailers=request.retailers
+            el_names=request.el_names,
+            shop_names=request.shop_names
         )
 
     def remove_request_data(self, user: i.IUser,
@@ -64,13 +64,13 @@ class ReportManager(i.IReportManager):
         """Remove data from current user's report."""
 
         request = self.__get_request(user)
-        if data.elements:
-            request.remove_elements(data.elements)
-        if data.retailers:
-            request.remove_retailers(data.retailers)
+        if data.el_names:
+            request.remove_elements(data.el_names)
+        if data.shop_names:
+            request.remove_retailers(data.shop_names)
         return RequestDataScheme(
-            elements=request.elements,
-            retailers=request.retailers
+            el_names=request.el_names,
+            shop_names=request.shop_names
         )
 
     def get_report(self, header_payload: ReportHeaderBase,
@@ -81,8 +81,9 @@ class ReportManager(i.IReportManager):
         if not request:
             raise empty_request_exception
         header = ReportHeader(**header_payload.dict())
-        products = request.products
-        parsers = get_parsers(request.retailers)
+        products = request.get_products(session)
+        retailers = request.get_retailers(session)
+        # parsers = get_parsers(request.retailers)
         for parser in parsers:
             parser(products)
 
