@@ -3,10 +3,13 @@ from typing import Any
 
 import interfaces as i
 
-from report.schemas import ReportHeaderBase
 from report.models import ReportHeader
+from report.schemas import ReportHeaderBase
+
+from sqlalchemy.orm import Session
 
 from .request import Request
+from ..exceptions import empty_request_exception
 from ..parsers import get_parsers
 from ..schemas import RequestDataScheme
 
@@ -20,33 +23,33 @@ class ReportManager(i.IReportManager):
     report creation process.
     """
 
-    __requests: dict[int, Request] = {}
+    __requests: dict[i.IUser, Request] = {}
 
     def get_request(self, user: i.IUser) -> RequestDataScheme:
         """Get catalog elements and retailers of current user's report."""
 
-        request = self.__get_request(user.id)
+        request = self.__get_request(user)
         return RequestDataScheme(
             elements=request.elements,
             retailers=request.retailers
         )
 
-    def __get_request(self, user_id: int) -> i.IRequest:
+    def __get_request(self, user: i.IUser) -> i.IRequest:
         """Return request of current user, if exists.
         If not - empty request will be created."""
 
         try:
-            self.__requests[user_id]
+            self.__requests[user]
         except KeyError:
-            self.__requests[user_id] = Request()
+            self.__requests[user] = Request()
         finally:
-            return self.__requests[user_id]
+            return self.__requests[user]
 
     def add_request_data(self, user: i.IUser,
                          data: RequestDataScheme) -> RequestDataScheme:
         """Add data to current user's report."""
 
-        request = self.__get_request(user.id)
+        request = self.__get_request(user)
         if data.elements:
             request.add_elements(data.elements)
         if data.retailers:
@@ -60,7 +63,7 @@ class ReportManager(i.IReportManager):
                             data: RequestDataScheme) -> RequestDataScheme:
         """Remove data from current user's report."""
 
-        request = self.__get_request(user.id)
+        request = self.__get_request(user)
         if data.elements:
             request.remove_elements(data.elements)
         if data.retailers:
@@ -70,14 +73,17 @@ class ReportManager(i.IReportManager):
             retailers=request.retailers
         )
 
-    def get_report(self, header_payload: ReportHeaderBase) -> Any:
+    def get_report(self, header_payload: ReportHeaderBase,
+                   user: i.IUser, session: Session) -> Any:
         """Start parsing process and get completed report."""
 
+        request = self.__get_request(user)
+        if not request:
+            raise empty_request_exception
         header = ReportHeader(**header_payload.dict())
-        request = self.__get_request(header.user_id)  # type: ignore
-        products = request.get_products() #  get products for parsing
-        parsers = get_parsers(request.retailers) #  get parsers by retailer names
-        for parser in parsers: #  start parsing(creating report lines)
+        products = request.products
+        parsers = get_parsers(request.retailers)
+        for parser in parsers:
             parser(products)
 
 

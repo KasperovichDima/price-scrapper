@@ -6,6 +6,8 @@ from typing import Any, Iterable
 
 from project_typing import cat_elements
 
+from sqlalchemy.orm import Session
+
 
 class IUser(ABC):
     """User interface."""
@@ -29,7 +31,7 @@ class IReportManager(ABC):
         ...
 
     @abstractmethod
-    def get_report(self, header_payload: Any) -> Any:
+    def get_report(self, header_payload: Any, user: IUser, session: Session) -> Any:
         ...
 
 
@@ -62,8 +64,9 @@ class IRequest(ABC):
     def remove_retailers(self, retailers: Iterable[str]) -> None:
         ...
 
+    @property
     @abstractmethod
-    def get_products(self) -> Iterable[IProduct]:
+    def products(self) -> Iterable[IProduct]:
         ...
 
 

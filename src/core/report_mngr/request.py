@@ -14,6 +14,9 @@ class Request(i.IRequest):
     __elements: dict[str, set[int]] = {}
     __retailers: set[str] = set()
 
+    def __bool__(self):
+        return bool(self.__elements and self.retailers)
+
     @property
     def elements(self) -> cat_elements:
         """Catalog elements of current report."""
@@ -54,8 +57,8 @@ class Request(i.IRequest):
 
         self.__retailers.difference_update(retailers)
 
-    def get_products(self) -> Iterable[i.IProduct]:
+    @property
+    def products(self) -> Iterable[i.IProduct]:
         """Returns products from all elements."""
 
         ...
-

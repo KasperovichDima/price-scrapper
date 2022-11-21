@@ -10,13 +10,4 @@ class UserType(Enum):
     SUPERUSER = auto()
 
 
-class Retailers(Enum):
-    """Enum of retailer names."""
-
-    EPICENTR = 'Epicentr'
-    SANTIM = 'Santim'
-    SILPO = 'Silpo'
-    TAVRIA = 'Tavria V'
-
-
 cat_elements = dict[str, list[int]]
