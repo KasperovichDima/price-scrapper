@@ -15,7 +15,7 @@ def send_request(url: str, payload: RequestDataScheme,
     return client.post(url, data=payload.json(), headers=access_token)
 
 
-class TestEditReport:
+class TestReport:
     """
     Test of:
     /add_request_data endpoint

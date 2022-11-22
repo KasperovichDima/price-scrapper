@@ -1,12 +1,12 @@
 """Report router."""
-from authentication.models import User
-
 from core import report_mngr
 from core.schemas import RequestDataScheme
 
 from dependencies import get_current_active_user, get_session, oauth2_scheme
 
 from fastapi import APIRouter, Depends
+
+from interfaces import IUser
 
 from .schemas import ReportHeaderBase
 
@@ -16,7 +16,7 @@ router = APIRouter(prefix='/report', tags=['reports'])
 
 @router.post('/add_request_data', response_model=RequestDataScheme)
 async def add_request_data(data: RequestDataScheme,
-                           user: User = Depends(get_current_active_user),
+                           user: IUser = Depends(get_current_active_user),
                            token=Depends(oauth2_scheme)):
     """Add products or retailers to report of current authorized user."""
 
@@ -25,7 +25,7 @@ async def add_request_data(data: RequestDataScheme,
 
 @router.delete('/remove_request_data', response_model=RequestDataScheme)
 async def remove_request_data(data: RequestDataScheme,
-                              user: User = Depends(get_current_active_user),
+                              user: IUser = Depends(get_current_active_user),
                               token=Depends(oauth2_scheme)):
     """Remove products or retailers from report of current authorized user."""
 
@@ -34,7 +34,7 @@ async def remove_request_data(data: RequestDataScheme,
 
 @router.post('/get_report')
 async def get_report(name: str, note: str,
-                     user: User = Depends(get_current_active_user),
+                     user: IUser = Depends(get_current_active_user),
                      token=Depends(oauth2_scheme),
                      session=Depends(get_session)):
     """Start parsing process and get completed report."""
