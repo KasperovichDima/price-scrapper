@@ -7,6 +7,8 @@ import interfaces as i
 
 from project_typing import cat_elements
 
+from report.schemas import ReportHeaderBase
+
 from sqlalchemy.orm import Session
 
 
@@ -17,9 +19,20 @@ class Request(i.IRequest):
 
     __el_names: dict[str, set[int]] = {}
     __shop_names: set[str] = set()
+    __header_data: ReportHeaderBase
 
     def __bool__(self):
-        return bool(self.__el_names and self.shop_names)
+        return bool(self.__el_names
+                    and self.shop_names
+                    and self.__header_data)
+    
+    @property
+    def header_data(self) -> ReportHeaderBase:
+        return self.__header_data
+    
+    @header_data.setter
+    def header_data(self, data: ReportHeaderBase) -> None:
+        self.__header_data = data
 
     @property
     def el_names(self) -> cat_elements:

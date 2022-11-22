@@ -6,12 +6,17 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
-class ReportHeaderBase(BaseModel):
+class ReportHeaderIn(BaseModel):
+    """Validation of required user data for report header."""
+
+    name: str = Field(max_length=100)
+    note: str = Field(max_length=250)
+
+
+class ReportHeaderBase(ReportHeaderIn):
     """BaseReportHeader validation scheme."""
 
     time_created: datetime = datetime.now()
-    name: str = Field(max_length=100)
-    note: str = Field(max_length=250)
     user_id: int = Field(gt=0)
 
 

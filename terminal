@@ -1,5 +1,14 @@
+from sys import path
+path.append('/home/kasper/Documents/projects/monitoring/src')
+
 from database.config import SessionLocal
-from database import User
-from database import UserBase
-from project_typing import UserType
+from authentication.models import User
+from catalog.models import Group, Product
+from report.models import ReportHeader, ReportLine
+from database import Retailer
+from database import WebPage, URL
+
 db=SessionLocal()
+
+pivko = db.get(Product, 1)
+

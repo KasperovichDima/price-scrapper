@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends
 
 from interfaces import IUser
 
-from .schemas import ReportHeaderBase
+from .schemas import ReportHeaderIn
 
 
 router = APIRouter(prefix='/report', tags=['reports'])
@@ -33,11 +33,13 @@ async def remove_request_data(data: RequestDataScheme,
 
 
 @router.post('/get_report')
-async def get_report(name: str, note: str,
+async def get_report(header_data: ReportHeaderIn,
                      user: IUser = Depends(get_current_active_user),
                      token=Depends(oauth2_scheme),
                      session=Depends(get_session)):
-    """Start parsing process and get completed report."""
+    """
+    Start parsing process and get completed report.
+    TODO: Add response model.
+    """
 
-    header_payload = ReportHeaderBase(name=name, note=note, user_id=user.id)
-    report_mngr.get_report(header_payload, user, session)
+    return report_mngr.get_report(header_data, user, session)

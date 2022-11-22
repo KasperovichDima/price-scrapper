@@ -3,14 +3,14 @@ from typing import Any
 
 import interfaces as i
 
-from report.models import ReportHeader
+from report.schemas import ReportHeaderIn
 from report.schemas import ReportHeaderBase
 
 from sqlalchemy.orm import Session
 
 from .request import Request
 from ..exceptions import empty_request_exception
-from ..parsers import get_parsers
+from ..parsers import Parser
 from ..schemas import RequestDataScheme
 
 
@@ -73,19 +73,23 @@ class ReportManager(i.IReportManager):
             shop_names=request.shop_names
         )
 
-    def get_report(self, header_payload: ReportHeaderBase,
+    def get_report(self, header_data: ReportHeaderIn,
                    user: i.IUser, session: Session) -> Any:
-        """Start parsing process and get completed report."""
+        """
+        Start parsing process and get completed report.
+        TODO: Refactor this method.
+        """
 
         request = self.__get_request(user)
+        request.header_data = ReportHeaderBase(
+            **header_data.dict(),
+            user_id=user.id
+        )
         if not request:
             raise empty_request_exception
-        header = ReportHeader(**header_payload.dict())
-        products = request.get_products(session)
-        retailers = request.get_retailers(session)
-        # parsers = get_parsers(request.retailers)
-        for parser in parsers:
-            parser(products)
+        parser = Parser()
+
+        return parser(request, session)
 
 
 report_mngr = ReportManager()

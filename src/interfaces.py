@@ -8,12 +8,17 @@ from project_typing import cat_elements
 
 from sqlalchemy.orm import Session
 
+from pydantic import BaseModel
 
-class IUser(ABC):
-    """User interface."""
+
+class BaseWithID(ABC):
+    """Base interface, containing id: int."""
 
     id: int
 
+
+class IUser(BaseWithID):
+    """User interface."""
 
 class IReportManager(ABC):
     """ReportManager interface."""
@@ -31,12 +36,23 @@ class IReportManager(ABC):
         ...
 
     @abstractmethod
-    def get_report(self, header_payload: Any, user: IUser, session: Session) -> Any:
+    def get_report(self, header_payload: Any,
+                   user: IUser, session: Session) -> Any:
         ...
 
 
 class IRequest(ABC):
     """Request interface."""
+
+    @property
+    @abstractmethod
+    def header_data(self) -> BaseModel:
+        ...
+    
+    @header_data.setter
+    @abstractmethod
+    def header_data(self, data: BaseModel) -> None:
+        ...
 
     @property
     @abstractmethod
@@ -73,7 +89,7 @@ class IRequest(ABC):
         ...
 
 
-class IElement(ABC):
+class IElement(BaseWithID):
     """Catalog element interface."""
 
     @property
@@ -82,16 +98,20 @@ class IElement(ABC):
         ...
 
 
-class IProduct(ABC):
+class IProduct(BaseWithID):
     """Product intrface."""
 
 
 class IParser(ABC):
     """Parser interface."""
 
-    def __call__(self, products: Iterable[IProduct]) -> Any:
+    def __call__(self, request: IRequest, session: Session) -> Any:
         ...
 
 
-class IRetailer(ABC):
+class IRetailer(BaseWithID):
     """Retailer interface."""
+
+
+class IParserStrategy(ABC):
+    """Parser strategy interface."""

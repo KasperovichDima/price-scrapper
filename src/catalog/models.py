@@ -44,6 +44,9 @@ class Product(Element):
         """Content of current catalog instance."""
 
         return (self,)
+    
+    def __repr__(self) -> str:
+        return self.name
 
 
 def get_model(name: str) -> Type[Element]:

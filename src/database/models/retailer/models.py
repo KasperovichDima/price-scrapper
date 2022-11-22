@@ -11,3 +11,6 @@ class Retailer(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), index=True)
     home_url = Column(String(100))
+
+    def __repr__(self) -> str:
+        return self.name

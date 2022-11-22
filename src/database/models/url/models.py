@@ -21,7 +21,7 @@ class WebPage(Base):
     url = relationship('URL')
 
     def __repr__(self) -> str:
-        return self.url
+        return f'{self.retailer}: {self.url}'
 
 
 class URL(Base):
