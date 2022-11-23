@@ -36,8 +36,8 @@ class Product(Element, i.IProduct):
     name = Column(String(150), index=True)
     group_id = Column(Integer, ForeignKey('group.id'))
 
-    parent = relationship('Group', back_populates='content')
-    pages = relationship('WebPage', back_populates='product')
+    parent: Element = relationship('Group', back_populates='content')
+    pages: Iterable[i.IWebPage] = relationship('WebPage', back_populates='product')
 
     @property
     def content(self) -> Iterable[i.IElement]:
