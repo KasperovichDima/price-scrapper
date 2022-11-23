@@ -1,7 +1,11 @@
-"""Project Interfaces."""
+"""
+Project Interfaces.
+TODO: Move all docstrings here.
+"""
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections import deque
 from typing import Any, Iterable
 
 from project_typing import cat_elements
@@ -98,8 +102,16 @@ class IElement(BaseWithID):
         ...
 
 
+class IWebPage(BaseWithID):
+    """WebPage interface."""
+
+
 class IProduct(BaseWithID):
     """Product intrface."""
+
+    # @abstractmethod
+    # def get_page_by_retailer(self, retailer: IRetailer) -> str:
+    #     """Get web page, containing this product in specified retailers shop."""
 
 
 class IParser(ABC):
@@ -115,3 +127,6 @@ class IRetailer(BaseWithID):
 
 class IParserStrategy(ABC):
     """Parser strategy interface."""
+
+    def __call__(self, prod_by_url :dict[str, deque[IProduct]]) -> Any:
+        ...

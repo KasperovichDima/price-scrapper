@@ -28,7 +28,7 @@ class Group(Element):
     content = relationship('Product', back_populates='parent')
 
 
-class Product(Element):
+class Product(Element, i.IProduct):
     """Product class."""
 
     __tablename__ = "product"

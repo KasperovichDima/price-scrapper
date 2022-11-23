@@ -1,11 +1,12 @@
 """URL models."""
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+import interfaces as i
 
 from ...config import Base
 
 
-class WebPage(Base):
+class WebPage(Base, i.IWebPage):
     """Web page in concrete retailer where,
     concrete product is represented."""
 
@@ -23,7 +24,7 @@ class WebPage(Base):
     def __repr__(self) -> str:
         return f'{self.retailer}: {self.url}'
 
-
+        
 class URL(Base):
     """URL address."""
 
