@@ -39,7 +39,8 @@ class Parser(i.IParser):
                 finally:
                     prod_by_url[_.url].append(_.product)
             self.__set_strategy(_)
-            self.__report_data[_] = self.__strategy(prod_by_url)
+            data_for_parser = dict(header_id=header.id, retailer_id=_.id, prod_by_url=prod_by_url)
+            self.__report_data[_] = self.__strategy(data_for_parser)
 
         return self.__report_data
 

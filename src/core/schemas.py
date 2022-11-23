@@ -1,6 +1,9 @@
 """Core validation schamas."""
 from __future__ import annotations
 from datetime import datetime
+from collections import deque
+
+import interfaces as i
 
 from project_typing import cat_elements
 
@@ -42,3 +45,12 @@ class CompleteReportScheme(BaseModel):
 
     header: ReportHeaderScheme
     content: list[ReportLineScheme]
+
+
+class ParserData(BaseModel):
+    """Data model for parser strategy."""
+
+    header_id: int
+    retailer_id: int
+    prod_by_url: dict[str, deque[i.IProduct]]
+
