@@ -1,9 +1,10 @@
 """Core validation schamas."""
 from __future__ import annotations
-from datetime import datetime
-from collections import deque
 
-import interfaces as i
+from collections import deque
+from datetime import datetime
+
+from catalog.schemas import ProductScheme
 
 from project_typing import cat_elements
 
@@ -14,7 +15,7 @@ class RequestDataScheme(BaseModel):
     """RequestData  validation scheme."""
 
     el_names: cat_elements | None
-    shop_names: list[str] | None
+    shop_names: deque[str] | None
 
     class Config:
         orm_mode = True
@@ -52,5 +53,4 @@ class ParserData(BaseModel):
 
     header_id: int
     retailer_id: int
-    prod_by_url: dict[str, deque[i.IProduct]]
-
+    prod_by_url: dict[str, deque[ProductScheme]]

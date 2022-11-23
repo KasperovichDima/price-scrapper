@@ -1,4 +1,6 @@
 """Report unit tests."""
+import json
+
 from authentication.models import User
 
 from core import report_mngr
@@ -36,7 +38,8 @@ class TestReport:
         rsp = send_request(self.__add_url, fake_payload,
                            access_token)
 
-        assert rsp.status_code == 200 and rsp.json() == fake_payload.dict()
+        assert rsp.status_code == 200\
+            and json.dumps(rsp.json()) == fake_payload.json()
 
     def test_add_duplicates(self, create_superuser: User,
                             fake_payload: RequestDataScheme):
@@ -60,14 +63,11 @@ class TestReport:
 
         rsp = client.delete(self.__remove_url, data=del_data.json(),
                             headers=access_token)
-        request = report_mngr.get_request(create_superuser)
-
+        correct_response = '{"el_names": {"Product": [1, 2, 5]'\
+                           ', "Group": [5]}, "shop_names": ["Silpo"]}'
+        print(json.dumps(rsp.json()))
         assert rsp.status_code == 200\
-            and request.el_names == {
-                'Product': [1, 2, 5],
-                'Group': [5],
-            }\
-            and request.shop_names == ['Silpo']
+            and json.dumps(rsp.json()) == correct_response
 
     def test_remove_not_existing_items(self,
                                        create_superuser: User,

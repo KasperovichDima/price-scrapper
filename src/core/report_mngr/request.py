@@ -1,4 +1,5 @@
 """Request class."""
+from collections import deque
 from typing import Iterable
 
 import crud
@@ -25,11 +26,11 @@ class Request(i.IRequest):
         return bool(self.__el_names
                     and self.shop_names
                     and self.__header_data)
-    
+
     @property
     def header_data(self) -> ReportHeaderBase:
         return self.__header_data
-    
+
     @header_data.setter
     def header_data(self, data: ReportHeaderBase) -> None:
         self.__header_data = data
@@ -37,7 +38,7 @@ class Request(i.IRequest):
     @property
     def el_names(self) -> cat_elements:
         """Catalog elements of current report."""
-        return {cls_name: sorted(list(ids))
+        return {cls_name: deque(sorted(ids))
                 for cls_name, ids in self.__el_names.items()}
 
     def add_elements(self, elements: cat_elements) -> None:
@@ -62,7 +63,7 @@ class Request(i.IRequest):
     def shop_names(self) -> list[str]:
         """Retailers of current report."""
 
-        return sorted(list(self.__shop_names))
+        return deque(sorted(self.__shop_names))
 
     def add_retailers(self, retailers: Iterable[str]) -> None:
         """Add retailers elements to current report."""
