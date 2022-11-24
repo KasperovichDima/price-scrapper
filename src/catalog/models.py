@@ -41,8 +41,6 @@ class Product(Element, i.IProduct):
 
     @property
     def content(self) -> Iterable[i.IElement]:
-        """Content of current catalog instance."""
-
         return (self,)
     
     def __repr__(self) -> str:

@@ -29,20 +29,21 @@ class IReportManager(ABC):
 
     @abstractmethod
     def get_request(self, user: IUser) -> IRequest:
-        ...
+        """Return request of current user, if exists.
+        If not - empty request will be created."""
 
     @abstractmethod
     def add_request_data(self, user: IUser, data: Any) -> Any:
-        ...
+        """Add data to current user's report."""
 
     @abstractmethod
     def remove_request_data(self, user: IUser, data: Any) -> Any:
-        ...
+        """Remove data from current user's report."""
 
     @abstractmethod
     def get_report(self, header_payload: Any,
                    user: IUser, session: Session) -> Any:
-        ...
+        """Start parsing process and get completed report."""
 
 
 class IRequest(ABC):
@@ -52,7 +53,7 @@ class IRequest(ABC):
     @abstractmethod
     def header_data(self) -> BaseModel:
         ...
-    
+
     @header_data.setter
     @abstractmethod
     def header_data(self, data: BaseModel) -> None:
@@ -61,36 +62,36 @@ class IRequest(ABC):
     @property
     @abstractmethod
     def el_names(self) -> cat_elements:
-        ...
+        """Catalog elements of current report."""
 
     @abstractmethod
     def add_elements(self, elements: cat_elements) -> None:
-        ...
+        """Add catalog elements to current report."""
 
     @abstractmethod
     def remove_elements(self, elements: cat_elements) -> None:
-        ...
+        """Remove catalog elements from current report."""
 
     @property
     @abstractmethod
     def shop_names(self) -> list[str]:
-        ...
+        """Retailers of current report."""
 
     @abstractmethod
     def add_retailers(self, retailers: Iterable[str]) -> None:
-        ...
+        """Add retailers elements to current report."""
 
     @abstractmethod
     def remove_retailers(self, retailers: Iterable[str]) -> None:
-        ...
+        """Remove retailers from current report."""
 
     @abstractmethod
     def get_products(self, session: Session) -> Iterable[IProduct]:
-        ...
+        """Returns products from all elements."""
 
     @abstractmethod
     def get_retailers(self, session: Session) -> Iterable[IRetailer]:
-        ...
+        """Returns retailer objects of request."""
 
     @property
     @abstractmethod
@@ -104,7 +105,7 @@ class IElement(BaseWithID):
     @property
     @abstractmethod
     def content(self) -> Iterable[IElement]:
-        ...
+        """Content of current catalog instance."""
 
 
 class IWebPage(BaseWithID):
@@ -123,7 +124,10 @@ class IParser(ABC):
     """Parser interface."""
 
     def __call__(self, request: IRequest, session: Session) -> Any:
-        ...
+        """
+        Parser's main method. Starts parsing process.
+        Accepts request instance and returns report.
+        """
 
 
 class IRetailer(BaseWithID):

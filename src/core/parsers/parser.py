@@ -25,7 +25,6 @@ class Parser(i.IParser):
     __report_data: dict[i.IRetailer, Any] = {}
 
     def __call__(self, request: i.IRequest, session: Session) -> Any:
-
         products = request.get_products(session)
         retailers = request.get_retailers(session)
         header = ReportHeader(**request.header_data.dict())

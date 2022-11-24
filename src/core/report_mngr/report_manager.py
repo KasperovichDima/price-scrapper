@@ -4,8 +4,9 @@ from typing import Any
 
 import interfaces as i
 
+from pydantic import BaseModel
+
 from report.schemas import ReportHeaderBase
-from report.schemas import ReportHeaderIn
 
 from sqlalchemy.orm import Session
 
@@ -27,15 +28,10 @@ class ReportManager(i.IReportManager):
     __requests: defaultdict[i.IUser, Request] = defaultdict(Request)
 
     def get_request(self, user: i.IUser) -> i.IRequest:
-        """Return request of current user, if exists.
-        If not - empty request will be created."""
-
         return self.__requests[user]
 
     def add_request_data(self, user: i.IUser,
                          data: RequestDataScheme) -> RequestDataScheme:
-        """Add data to current user's report."""
-
         request = self.get_request(user)
         if data.el_names:
             request.add_elements(data.el_names)
@@ -48,8 +44,6 @@ class ReportManager(i.IReportManager):
 
     def remove_request_data(self, user: i.IUser,
                             data: RequestDataScheme) -> RequestDataScheme:
-        """Remove data from current user's report."""
-
         request = self.get_request(user)
         if data.el_names:
             request.remove_elements(data.el_names)
@@ -60,13 +54,8 @@ class ReportManager(i.IReportManager):
             shop_names=request.shop_names
         )
 
-    def get_report(self, header_data: ReportHeaderIn,
+    def get_report(self, header_data: BaseModel,
                    user: i.IUser, session: Session) -> Any:
-        """
-        Start parsing process and get completed report.
-        TODO: Refactor this method.
-        """
-
         request = self.get_request(user)
         request.header_data = ReportHeaderBase(
             **header_data.dict(),
