@@ -5,7 +5,6 @@ TODO: Move all docstrings here.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections import deque
 from typing import Any, Iterable
 
 from project_typing import cat_elements
@@ -125,8 +124,8 @@ class IRetailer(BaseWithID):
     """Retailer interface."""
 
 
-class IParserStrategy(ABC):
-    """Parser strategy interface."""
+# class IParserStrategy(ABC):
+#     """Parser strategy interface."""
 
-    def __call__(self, prod_by_url :dict[str, deque[IProduct]]) -> Any:
-        ...
+#     def __call__(self, pars_data: BaseModel) -> Any:
+#         ...

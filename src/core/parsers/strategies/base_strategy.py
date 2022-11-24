@@ -1,14 +1,19 @@
 """Base parsing strategy."""
-from collections import deque
 from typing import Any
 
 import interfaces as i
 
+from ...schemas import ParserDataScheme
 
-class BaseStrategy(i.IParserStrategy):
+from report.models import ReportLine
+
+
+class BaseStrategy:
     """Base strategy class."""
 
-    def __call__(self, prod_by_url: dict[str, deque[i.IProduct]]) -> Any:
-        """"""
-
+    def __call__(self, pars_data: ParserDataScheme) -> Any:
+        """
+        Starts the parsing process using the pars_data.
+        Returns report data for current retailer.
+        """
         

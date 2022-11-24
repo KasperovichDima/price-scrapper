@@ -48,8 +48,8 @@ class CompleteReportScheme(BaseModel):
     content: list[ReportLineScheme]
 
 
-class ParserData(BaseModel):
-    """Data model for parser strategy."""
+class ParserDataScheme(BaseModel):
+    """Data model for using in parser strategy."""
 
     header_id: int
     retailer_id: int

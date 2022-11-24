@@ -1,15 +1,17 @@
 """Main parser class."""
 from collections import deque
-from typing import Any, Set
+from typing import Any
 
 import interfaces as i
 
 from sqlalchemy.orm import Session
 
 from report.models import ReportHeader
-from report.models import ReportLine
 
 from database.models import WebPage
+
+from ..schemas import ParserDataScheme
+from .strategies import BaseStrategy
 
 
 class Parser(i.IParser):
@@ -19,7 +21,7 @@ class Parser(i.IParser):
     TODO: Refactoring __call__ and flake check needed.
     """
 
-    __strategy: i.IParserStrategy
+    __strategy: BaseStrategy
     __report_data: dict[i.IRetailer, Any] = {}
 
     def __call__(self, request: i.IRequest, session: Session) -> Any:
@@ -39,8 +41,10 @@ class Parser(i.IParser):
                 finally:
                     prod_by_url[_.url].append(_.product)
             self.__set_strategy(_)
-            data_for_parser = dict(header_id=header.id, retailer_id=_.id, prod_by_url=prod_by_url)
-            self.__report_data[_] = self.__strategy(data_for_parser)
+            pars_data = ParserDataScheme(header_id=header.id,
+                                         retailer_id=_.id,
+                                         prod_by_url=prod_by_url)
+            self.__report_data[_] = self.__strategy(pars_data)
 
         return self.__report_data
 

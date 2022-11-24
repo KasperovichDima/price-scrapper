@@ -1,10 +1,11 @@
 """Report manager class and instance."""
+from collections import defaultdict
 from typing import Any
 
 import interfaces as i
 
-from report.schemas import ReportHeaderIn
 from report.schemas import ReportHeaderBase
+from report.schemas import ReportHeaderIn
 
 from sqlalchemy.orm import Session
 
@@ -23,7 +24,7 @@ class ReportManager(i.IReportManager):
     report creation process.
     """
 
-    __requests: dict[i.IUser, Request] = {}
+    __requests: defaultdict[i.IUser, Request] = defaultdict(Request)
 
     def get_request(self, user: i.IUser) -> RequestDataScheme:
         """Get catalog elements and retailers of current user's report."""
@@ -38,12 +39,7 @@ class ReportManager(i.IReportManager):
         """Return request of current user, if exists.
         If not - empty request will be created."""
 
-        try:
-            self.__requests[user]
-        except KeyError:
-            self.__requests[user] = Request()
-        finally:
-            return self.__requests[user]
+        return self.__requests[user]
 
     def add_request_data(self, user: i.IUser,
                          data: RequestDataScheme) -> RequestDataScheme:
