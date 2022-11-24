@@ -47,8 +47,9 @@ class TestReport:
 
         report_mngr.add_request_data(create_superuser, fake_payload)
         report_mngr.add_request_data(create_superuser, fake_payload)
+        request_data = report_mngr.get_request(create_superuser).schema
 
-        assert fake_payload == report_mngr.get_request(create_superuser)
+        assert fake_payload == request_data
 
     def test_remove_items_ok(self, create_superuser: User,
                              access_token, fake_payload: RequestDataScheme):
@@ -82,7 +83,7 @@ class TestReport:
         )
         rsp = client.delete(self.__remove_url, data=del_data.json(),
                             headers=access_token)
-        request = report_mngr.get_request(create_superuser)
+        request_data = report_mngr.get_request(create_superuser).schema
 
         assert rsp.status_code == 200 and\
-            request == fake_payload
+            request_data == fake_payload

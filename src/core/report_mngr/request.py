@@ -1,5 +1,4 @@
 """Request class."""
-from collections import deque
 from typing import Iterable
 
 import crud
@@ -11,6 +10,8 @@ from project_typing import cat_elements
 from report.schemas import ReportHeaderBase
 
 from sqlalchemy.orm import Session
+
+from ..schemas import RequestDataScheme
 
 
 class Request(i.IRequest):
@@ -38,7 +39,7 @@ class Request(i.IRequest):
     @property
     def el_names(self) -> cat_elements:
         """Catalog elements of current report."""
-        return {cls_name: deque(sorted(ids))
+        return {cls_name: sorted(ids)
                 for cls_name, ids in self.__el_names.items()}
 
     def add_elements(self, elements: cat_elements) -> None:
@@ -63,7 +64,7 @@ class Request(i.IRequest):
     def shop_names(self) -> list[str]:
         """Retailers of current report."""
 
-        return deque(sorted(self.__shop_names))
+        return sorted(self.__shop_names)
 
     def add_retailers(self, retailers: Iterable[str]) -> None:
         """Add retailers elements to current report."""
@@ -82,3 +83,9 @@ class Request(i.IRequest):
         """Returns retailer objects of request."""
 
         return crud.get_retailers(self.__shop_names, session)
+
+    @property
+    def schema(self) -> RequestDataScheme:
+
+        return RequestDataScheme(el_names=self.el_names,
+                                 shop_names=self.shop_names)

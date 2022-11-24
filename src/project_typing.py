@@ -1,5 +1,4 @@
 """Custom datatypes for the project."""
-from collections import deque
 from enum import Enum, auto
 
 
@@ -11,4 +10,4 @@ class UserType(Enum):
     SUPERUSER = auto()
 
 
-cat_elements = dict[str, deque[int]]
+cat_elements = dict[str, list[int]]

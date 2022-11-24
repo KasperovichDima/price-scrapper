@@ -26,16 +26,7 @@ class ReportManager(i.IReportManager):
 
     __requests: defaultdict[i.IUser, Request] = defaultdict(Request)
 
-    def get_request(self, user: i.IUser) -> RequestDataScheme:
-        """Get catalog elements and retailers of current user's report."""
-
-        request = self.__get_request(user)
-        return RequestDataScheme(
-            el_names=request.el_names,
-            shop_names=request.shop_names
-        )
-
-    def __get_request(self, user: i.IUser) -> i.IRequest:
+    def get_request(self, user: i.IUser) -> i.IRequest:
         """Return request of current user, if exists.
         If not - empty request will be created."""
 
@@ -45,7 +36,7 @@ class ReportManager(i.IReportManager):
                          data: RequestDataScheme) -> RequestDataScheme:
         """Add data to current user's report."""
 
-        request = self.__get_request(user)
+        request = self.get_request(user)
         if data.el_names:
             request.add_elements(data.el_names)
         if data.shop_names:
@@ -59,7 +50,7 @@ class ReportManager(i.IReportManager):
                             data: RequestDataScheme) -> RequestDataScheme:
         """Remove data from current user's report."""
 
-        request = self.__get_request(user)
+        request = self.get_request(user)
         if data.el_names:
             request.remove_elements(data.el_names)
         if data.shop_names:
@@ -76,7 +67,7 @@ class ReportManager(i.IReportManager):
         TODO: Refactor this method.
         """
 
-        request = self.__get_request(user)
+        request = self.get_request(user)
         request.header_data = ReportHeaderBase(
             **header_data.dict(),
             user_id=user.id

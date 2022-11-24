@@ -1,6 +1,4 @@
 """Fixtures for authentication tests."""
-from collections import deque
-
 from authentication.models import User
 from authentication.schemas import UserCreate, UserScheme
 from authentication.utils import create_access_token
@@ -93,10 +91,10 @@ def fake_payload() -> RequestDataScheme:
 
     return RequestDataScheme(
         el_names={
-            'Product': deque((1, 2, 3, 4, 5)),
-            'Group': deque((3, 5, 10))
+            'Product': [1, 2, 3, 4, 5],
+            'Group': [3, 5, 10]
         },
-        shop_names=deque(('Silpo', 'Tavria V'))
+        shop_names=['Silpo', 'Tavria V']
     )
 
 

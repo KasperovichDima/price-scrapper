@@ -9,9 +9,9 @@ from typing import Any, Iterable
 
 from project_typing import cat_elements
 
-from sqlalchemy.orm import Session
-
 from pydantic import BaseModel
+
+from sqlalchemy.orm import Session
 
 
 class BaseWithID(ABC):
@@ -23,11 +23,12 @@ class BaseWithID(ABC):
 class IUser(BaseWithID):
     """User interface."""
 
+
 class IReportManager(ABC):
     """ReportManager interface."""
 
     @abstractmethod
-    def get_request(self, user: IUser) -> Any:
+    def get_request(self, user: IUser) -> IRequest:
         ...
 
     @abstractmethod
@@ -90,6 +91,11 @@ class IRequest(ABC):
     @abstractmethod
     def get_retailers(self, session: Session) -> Iterable[IRetailer]:
         ...
+
+    @property
+    @abstractmethod
+    def schema(self) -> BaseModel:
+        """Get validated pydantic representation of the request."""
 
 
 class IElement(BaseWithID):
