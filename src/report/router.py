@@ -8,9 +8,8 @@ from fastapi import APIRouter, Depends
 
 from interfaces import IUser
 
-from .schemas import ReportHeaderIn
-
 from .exceptions import empty_request_exception
+from .schemas import ReportHeaderIn
 
 
 router = APIRouter(prefix='/report', tags=['reports'])
@@ -35,7 +34,7 @@ async def remove_request_data(data: RequestDataScheme,
 
 
 @router.post('/get_report')
-async def get_report(header_data: ReportHeaderIn,
+async def get_report(header_in_data: ReportHeaderIn,
                      user: IUser = Depends(get_current_active_user),
                      token=Depends(oauth2_scheme),
                      session=Depends(get_session)):
@@ -46,4 +45,4 @@ async def get_report(header_data: ReportHeaderIn,
     if not report_mngr.get_request(user):
         raise empty_request_exception
 
-    return report_mngr.get_report(header_data, user, session)
+    return report_mngr.get_report(header_in_data, user, session)

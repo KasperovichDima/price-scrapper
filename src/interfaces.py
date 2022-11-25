@@ -115,20 +115,6 @@ class IWebPage(BaseWithID):
 class IProduct(BaseWithID):
     """Product intrface."""
 
-    # @abstractmethod
-    # def get_page_by_retailer(self, retailer: IRetailer) -> str:
-    #     """Get web page, containing this product in specified retailers shop."""
-
-
-# class IParser(ABC):
-#     """Parser interface."""
-
-#     def __call__(self, request: IRequest, session: Session) -> Any:
-#         """
-#         Parser's main method. Starts parsing process.
-#         Accepts request instance and returns report.
-#         """
-
 
 class IRetailer(BaseWithID):
     """Retailer interface."""
@@ -136,10 +122,3 @@ class IRetailer(BaseWithID):
 
 class IReportHeader(BaseWithID):
     """ReportHeader interface."""
-
-
-# class IParserStrategy(ABC):
-#     """Parser strategy interface."""
-
-#     def __call__(self, pars_data: BaseModel) -> Any:
-#         ...

@@ -8,10 +8,8 @@ from database.models import WebPage
 
 import interfaces as i
 
-from pydantic import BaseModel
-
 from report.models import ReportHeader
-from report.schemas import ReportHeaderBase
+from report.schemas import ReportHeaderBase, ReportHeaderIn
 
 from sqlalchemy.orm import Session
 
@@ -60,11 +58,11 @@ class ReportManager(i.IReportManager):
             shop_names=request.shop_names
         )
 
-    def get_report(self, header_data: BaseModel,
+    def get_report(self, header_in_data: ReportHeaderIn,
                    user: i.IUser, session: Session) -> Any:
         request = self.get_request(user)
         request.header_data = ReportHeaderBase(
-            **header_data.dict(),
+            **header_in_data.dict(),
             user_id=user.id
         )
         parser_data = self.__get_parser_data(request, session)
@@ -89,11 +87,11 @@ class ReportManager(i.IReportManager):
                               session: Session) -> ProductsByURL:
         """Returns products, sorted by urls."""
 
-        pr_by_url: ProductsByURL = defaultdict(deque)
+        products_by_url: ProductsByURL = defaultdict(deque)
         for page in self.__get_pages(request, session):
-            pr_by_url[page.url].append(page.product)  # type: ignore
+            products_by_url[page.url].append(page.product)  # type: ignore
 
-        return pr_by_url
+        return products_by_url
 
     def __get_pages(self, request: i.IRequest,
                     session: Session) -> list[WebPage]:
@@ -112,8 +110,39 @@ class ReportManager(i.IReportManager):
 
 report_mngr = ReportManager()
 
+######################################
+from authentication.models import User
 
 class TestReportManager(ReportManager):
     """Test class for report manager."""
 
+    def __init__(self) -> None:
+        self.__get_test_request()
+
+    def __get_test_request(self) -> None:
+        """Generate fake test request."""
+
+        request = self.get_request(self.__get_fake_user())
+        request.add_elements({'Group': [1, 2, 3, 4], 'Product': [1, 2, 3, 4]})
+        request.add_retailers('Tavria Silpo Auchan'.split())
+
+    def __get_fake_user(self) -> i.IUser:
+        """Returns fake user."""
+
+        return User(
+            first_name='Fake',
+            last_name='Fake',
+            email='fake@fake.com',
+            password='fakepasswd',
+        )
+
+    def __get_fake_header_data(self) -> ReportHeaderIn:
+        """Returns fake header data."""
+
+        return ReportHeaderIn(name='Fake report', note='Fake note')
+
+    def test_get_report(self):
+        """Main report manager method test. Test all report creating system."""
+
+        report = self.get_report()
 

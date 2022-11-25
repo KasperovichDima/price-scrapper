@@ -3,14 +3,14 @@ from __future__ import annotations
 
 from database.config import Base
 
+import interfaces as i
+
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-import interfaces as i
 
-
-class ReportHeader(Base, i.IReportHeader):
+class ReportHeader(Base, i.IReportHeader):  # type: ignore
     """
     ReportHeader class. Contain report
     meta-data. Holds a link to it's content.
@@ -24,8 +24,8 @@ class ReportHeader(Base, i.IReportHeader):
     note = Column(String(250))
     user_id = Column(Integer, ForeignKey('user.id'))
 
-    content = relationship('ReportLine', back_populates='header')
-    user = relationship('User', back_populates='headers')
+    content = relationship('ReportLine', back_populates='header')  # type: ignore  # noqa: E501
+    user = relationship('User', back_populates='headers')  # type: ignore
 
 
 class ReportLine(Base):
@@ -40,6 +40,6 @@ class ReportLine(Base):
     retail_price = Column(Float)
     promo_price = Column(Float)
 
-    header = relationship('ReportHeader', back_populates='content')
-    product = relationship('Product')
-    retailer = relationship('Retailer')
+    header = relationship('ReportHeader', back_populates='content')  # type: ignore # noqa: E501
+    product = relationship('Product')  # type: ignore
+    retailer = relationship('Retailer')  # type: ignore
