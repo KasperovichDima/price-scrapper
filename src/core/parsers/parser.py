@@ -1,56 +1,33 @@
 """Main parser class."""
-from collections import deque
 from typing import Any
 
 import interfaces as i
 
-from sqlalchemy.orm import Session
-
-from report.models import ReportHeader
-
-from database.models import WebPage
-
-from ..schemas import ParserDataScheme
 from .strategies import BaseStrategy
+from ..schemas import ParserData
 
 
-class Parser(i.IParser):
+class Parser:
     """
     Parser class. Strategy pattern used here for different behaviour with
     different retailers. Parser is just callable and need request to process.
-    TODO: Refactoring __call__ and flake check needed.
     """
 
     __strategy: BaseStrategy
     __report_data: dict[i.IRetailer, Any] = {}
 
-    def __call__(self, request: i.IRequest, session: Session) -> Any:
-        products = request.get_products(session)
-        retailers = request.get_retailers(session)
-        header = ReportHeader(**request.header_data.dict())
-        for _ in retailers:
-            product_pages: list[WebPage] = session.query(WebPage).filter_by(retailer_id=_.id).filter(WebPage.product_id.in_(_.id for _ in products)).all()
-            # prod_by_url = {page.url: page.product_id for page in product_pages}
-            prod_by_url: dict[str, deque[i.IProduct]] = {}  # adopt cat_elements here and rename it
-            for _ in product_pages:
-                try:
-                    prod_by_url[_.url]
-                except KeyError:
-                    prod_by_url[_.url] = deque()
-                finally:
-                    prod_by_url[_.url].append(_.product)
-            self.__set_strategy(_)
-            pars_data = ParserDataScheme(header_id=header.id,
-                                         retailer_id=_.id,
-                                         prod_by_url=prod_by_url)
-            self.__report_data[_] = self.__strategy(pars_data)
+    def __call__(self, parser_data: ParserData) -> str:
+        """
+        Parser's main method. Starts parsing process.
+        Accepts request instance and returns report.
+        """
+
+        for retailer in parser_data.retailers:
+
+            self.__set_strategy(retailer)
+            self.__report_data[retailer] = self.__strategy(parser_data)
 
         return self.__report_data
-
-
-
-
-
 
     def __set_strategy(self, retailer: i.IRetailer) -> None:
         """Set parsing strategy for specified retailer."""

@@ -10,6 +10,8 @@ from interfaces import IUser
 
 from .schemas import ReportHeaderIn
 
+from .exceptions import empty_request_exception
+
 
 router = APIRouter(prefix='/report', tags=['reports'])
 
@@ -41,5 +43,7 @@ async def get_report(header_data: ReportHeaderIn,
     Start parsing process and get completed report.
     TODO: Add response model.
     """
+    if not report_mngr.get_request(user):
+        raise empty_request_exception
 
     return report_mngr.get_report(header_data, user, session)

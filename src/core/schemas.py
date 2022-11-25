@@ -1,14 +1,18 @@
 """Core validation schamas."""
 from __future__ import annotations
 
-from collections import deque
 from datetime import datetime
+from typing import Iterable
 
-from catalog.schemas import ProductScheme
+import interfaces as i
 
 from project_typing import cat_elements
 
 from pydantic import BaseModel
+
+from sqlalchemy.orm import Session
+
+from .core_typing import ProductsByURL
 
 
 class RequestDataScheme(BaseModel):
@@ -48,9 +52,18 @@ class CompleteReportScheme(BaseModel):
     content: list[ReportLineScheme]
 
 
-class ParserDataScheme(BaseModel):
-    """Data model for using in parser strategy."""
+# class ParserDataScheme(BaseModel):
+#     """Data model for using in parser strategy."""
+
+#     header_id: int
+#     retailer_id: int
+#     prod_by_url: dict[str, deque[ProductScheme]]
+
+
+class ParserData(BaseModel):
+    """Contains all data, required for parsing process"""
 
     header_id: int
-    retailer_id: int
-    prod_by_url: dict[str, deque[ProductScheme]]
+    products_by_url: ProductsByURL
+    retailers: Iterable[i.IRetailer]
+    session: Session

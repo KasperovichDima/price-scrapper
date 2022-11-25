@@ -7,8 +7,10 @@ from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
+import interfaces as i
 
-class ReportHeader(Base):
+
+class ReportHeader(Base, i.IReportHeader):
     """
     ReportHeader class. Contain report
     meta-data. Holds a link to it's content.

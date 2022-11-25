@@ -26,15 +26,11 @@ class Request(i.IRequest):
 
     def __bool__(self):
         return bool(self.__el_names
-                    and self.shop_names
-                    and self.__header_data)
+                    and self.shop_names)
 
     @property
-    def header_data(self) -> ReportHeaderBase | None:
-        try:
-            return self.__header_data
-        except KeyError:
-            return
+    def header_data(self) -> ReportHeaderBase:
+        return self.__header_data
 
     @header_data.setter
     def header_data(self, data: ReportHeaderBase) -> None:

@@ -120,18 +120,22 @@ class IProduct(BaseWithID):
     #     """Get web page, containing this product in specified retailers shop."""
 
 
-class IParser(ABC):
-    """Parser interface."""
+# class IParser(ABC):
+#     """Parser interface."""
 
-    def __call__(self, request: IRequest, session: Session) -> Any:
-        """
-        Parser's main method. Starts parsing process.
-        Accepts request instance and returns report.
-        """
+#     def __call__(self, request: IRequest, session: Session) -> Any:
+#         """
+#         Parser's main method. Starts parsing process.
+#         Accepts request instance and returns report.
+#         """
 
 
 class IRetailer(BaseWithID):
     """Retailer interface."""
+
+
+class IReportHeader(BaseWithID):
+    """ReportHeader interface."""
 
 
 # class IParserStrategy(ABC):
