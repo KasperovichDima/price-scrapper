@@ -3,7 +3,7 @@ from typing import Any
 
 import interfaces as i
 
-from ...schemas import ParserData
+from ...core_typing import ParserData
 
 from report.models import ReportLine
 

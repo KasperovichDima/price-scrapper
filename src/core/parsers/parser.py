@@ -4,7 +4,7 @@ from typing import Any
 import interfaces as i
 
 from .strategies import BaseStrategy
-from ..schemas import ParserData
+from ..core_typing import ParserData
 
 
 class Parser:

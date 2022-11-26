@@ -14,9 +14,8 @@ from report.schemas import ReportHeaderBase, ReportHeaderIn
 from sqlalchemy.orm import Session
 
 from .request import Request
-from ..core_typing import ProductsByURL
+from ..core_typing import ParserData, ProductsByURL
 from ..parsers import Parser
-from ..schemas import ParserData
 from ..schemas import RequestDataScheme
 
 
@@ -141,8 +140,10 @@ class TestReportManager(ReportManager):
 
         return ReportHeaderIn(name='Fake report', note='Fake note')
 
-    def test_get_report(self):
+    def test_get_report(self, session:Session):
         """Main report manager method test. Test all report creating system."""
 
-        report = self.get_report()
+        header = self.__get_fake_header_data()
+        user = self.__get_fake_user()
+        report = self.get_report(header, user, session)
 

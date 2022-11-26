@@ -8,7 +8,7 @@ import interfaces as i
 
 from project_typing import cat_elements
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError, validator
 
 from sqlalchemy.orm import Session
 
@@ -60,10 +60,11 @@ class CompleteReportScheme(BaseModel):
 #     prod_by_url: dict[str, deque[ProductScheme]]
 
 
-class ParserData(BaseModel):
-    """Contains all data, required for parsing process"""
+# class ParserData(BaseModel):
 
-    header_id: int
-    products_by_url: ProductsByURL
-    retailers: Iterable[i.IRetailer]
-    session: Session
+#     header_id: int
+#     products_by_url: ProductsByURL
+#     retailers: Iterable[i.IRetailer]
+#     session: Session
+
+#     @validator('products_by_url')
