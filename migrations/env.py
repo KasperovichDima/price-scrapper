@@ -40,14 +40,14 @@ path.append(
 
 path.append(os.getenv('SRC_PATH'))
 from authentication.models import User
-from catalog.models import SubGroup, Product
+from catalog.models import Subgroup, Product
 from report.models import ReportHeader, ReportLine
 from database import Retailer
 from database import WebPage, URL
 from database.config import Base
 
 target_metadata = Base.metadata
-render_as_batch=True
+render_as_batch = True
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

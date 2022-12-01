@@ -22,7 +22,7 @@ class Element(Base, i.IElement):  # type: ignore
         return self.name
 
 
-class SubGroup(Element):
+class Subgroup(Element):
     """Product group class."""
 
     __tablename__ = 'subgroup'
@@ -41,7 +41,7 @@ class Product(Element, i.IProduct):
 
     prime_cost = Column(Numeric(scale=2))
 
-    parent: Element = relationship('SubGroup', back_populates='content')  # type: ignore
+    parent: Element = relationship('Subgroup', back_populates='content')  # type: ignore  # noqa: E501
     pages: Iterable[i.IWebPage] = relationship('WebPage',
                                                back_populates='product')
 

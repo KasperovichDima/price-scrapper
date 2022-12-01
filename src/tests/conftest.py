@@ -3,7 +3,7 @@ from authentication.models import User
 from authentication.schemas import UserCreate, UserScheme
 from authentication.utils import create_access_token
 
-from catalog.models import Product, SubGroup
+from catalog.models import Product, Subgroup
 
 from core.schemas import RequestDataScheme
 
@@ -94,7 +94,7 @@ def fake_payload() -> RequestDataScheme:
             'Product': [1, 2, 3, 4, 5],
             'Group': [3, 5, 10]
         },
-        ret_names=['Silpo', 'Tavria V']
+        ret_names=['Silpo', 'Tavria']
     )
 
 
@@ -108,9 +108,9 @@ def fake_session():
 def fake_db_content(fake_session):
     """Fill database catalog with fake content."""
     content = [
-        SubGroup(name='Alcohol'),
-        SubGroup(name='Grocery'),
-        SubGroup(name='Milk')
+        Subgroup(name='Alcohol'),
+        Subgroup(name='Grocery'),
+        Subgroup(name='Milk')
     ]
 
     content.extend((
@@ -127,7 +127,7 @@ def fake_db_content(fake_session):
 
     crud.add_instances(content, fake_session)
     return {
-        'model': 'Group',
+        'model': 'Subroup',
         'content': [{'name': item.name, 'id': item.id}
                     for item in content[3:6]]
     }
