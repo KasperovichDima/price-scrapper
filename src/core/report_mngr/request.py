@@ -58,8 +58,8 @@ class Request(i.IRequest):
     def remove_retailers(self, ret_ids: Iterable[str]) -> None:
         self.__ret_names.difference_update(ret_ids)
 
-    def get_parser_data(self, header_data: ReportHeaderBase,
-                        session: Session) -> ParserData:  # type: ignore
+    def get_parser_data(self, header_data: ReportHeaderBase,  # type: ignore
+                        session: Session) -> ParserData:
 
         self.__session = session
         self.__retailers = crud.get_retailers(self.__ret_names, session)
@@ -103,4 +103,4 @@ class Request(i.IRequest):
         return pages
 
     def __get_products(self, session: Session) -> Iterable[i.IProduct]:
-        ...
+        return crud.get_products(self.__el_ids, session)

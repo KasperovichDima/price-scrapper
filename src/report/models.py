@@ -18,7 +18,7 @@ class ReportHeader(Base, i.IReportHeader):  # type: ignore
 
     __tablename__ = 'report_header'
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)  # type: ignore
     time_created = Column(DateTime(timezone=True), server_default=func.now())
     name = Column(String(100), index=True)
     note = Column(String(250))
@@ -28,7 +28,7 @@ class ReportHeader(Base, i.IReportHeader):  # type: ignore
     user = relationship('User', back_populates='headers')  # type: ignore
 
 
-class ReportLine(Base):
+class ReportLine(Base):  # type: ignore
     """ReportLine class. Represents a single report data line."""
 
     __tablename__ = 'report_line'

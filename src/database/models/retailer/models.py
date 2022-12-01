@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String
 from ...config import Base
 
 
-class Retailer(Base):
+class Retailer(Base):  # type: ignore
     """Retailer class."""
     __tablename__ = "retailer"
 
@@ -13,4 +13,4 @@ class Retailer(Base):
     home_url = Column(String(100))
 
     def __repr__(self) -> str:
-        return self.name
+        return self.name  # type: ignore

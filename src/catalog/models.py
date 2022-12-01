@@ -11,24 +11,24 @@ from sqlalchemy.orm import relationship
 from .exceptions import wrong_model_exception
 
 
-class Element(Base, i.IElement):
+class Element(Base, i.IElement):  # type: ignore
     """Base class for all classes of product catalog."""
 
     __abstract__ = True
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)  # type: ignore
 
     def __repr__(self) -> str:
         return self.name
 
 
-class Group(Element):
+class SubGroup(Element):
     """Product group class."""
 
-    __tablename__ = 'group'
+    __tablename__ = 'subgroup'
 
     name = Column(String(100), index=True)
-    content = relationship('Product', back_populates='parent')
+    content = relationship('Product', back_populates='parent')  # type: ignore
 
 
 class Product(Element, i.IProduct):
@@ -37,11 +37,11 @@ class Product(Element, i.IProduct):
     __tablename__ = "product"
 
     name = Column(String(150), index=True)
-    group_id = Column(Integer, ForeignKey('group.id'))
+    subgroup_id = Column(Integer, ForeignKey('subgroup.id'))
 
     prime_cost = Column(Numeric(scale=2))
 
-    parent: Element = relationship('Group', back_populates='content')
+    parent: Element = relationship('SubGroup', back_populates='content')  # type: ignore
     pages: Iterable[i.IWebPage] = relationship('WebPage',
                                                back_populates='product')
 

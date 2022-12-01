@@ -3,7 +3,7 @@ from authentication.models import User
 from authentication.schemas import UserCreate, UserScheme
 from authentication.utils import create_access_token
 
-from catalog.models import Group, Product
+from catalog.models import Product, SubGroup
 
 from core.schemas import RequestDataScheme
 
@@ -108,9 +108,9 @@ def fake_session():
 def fake_db_content(fake_session):
     """Fill database catalog with fake content."""
     content = [
-        Group(name='Alcohol'),
-        Group(name='Grocery'),
-        Group(name='Milk')
+        SubGroup(name='Alcohol'),
+        SubGroup(name='Grocery'),
+        SubGroup(name='Milk')
     ]
 
     content.extend((
