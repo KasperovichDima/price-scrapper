@@ -5,7 +5,7 @@ TODO: Move all docstrings here.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable
+from typing import Any, Iterable, NamedTuple
 
 from project_typing import cat_elements
 
@@ -41,7 +41,7 @@ class IReportManager(ABC):
         """Remove data from current user's report."""
 
     @abstractmethod
-    def get_report(self, header_payload: Any,
+    def get_report(self, header_data: Any,
                    user: IUser, session: Session) -> Any:
         """Start parsing process and get completed report."""
 
@@ -51,17 +51,7 @@ class IRequest(ABC):
 
     @property
     @abstractmethod
-    def header_data(self) -> BaseModel:
-        ...
-
-    @header_data.setter
-    @abstractmethod
-    def header_data(self, data: BaseModel) -> None:
-        ...
-
-    @property
-    @abstractmethod
-    def el_names(self) -> cat_elements:
+    def element_ids(self) -> cat_elements:
         """Catalog elements of current report."""
 
     @abstractmethod
@@ -74,7 +64,7 @@ class IRequest(ABC):
 
     @property
     @abstractmethod
-    def shop_names(self) -> list[str]:
+    def retailer_names(self) -> list[str]:
         """Retailers of current report."""
 
     @abstractmethod
@@ -86,26 +76,13 @@ class IRequest(ABC):
         """Remove retailers from current report."""
 
     @abstractmethod
-    def get_products(self, session: Session) -> Iterable[IProduct]:
-        """Returns products from all elements."""
-
-    @abstractmethod
-    def get_retailers(self, session: Session) -> Iterable[IRetailer]:
-        """Returns retailer objects of request."""
-
-    @property
-    @abstractmethod
-    def schema(self) -> BaseModel:
-        """Get validated pydantic representation of the request."""
+    def get_parser_data(self, header_data: BaseModel,
+                        session: Session) -> NamedTuple:
+        """Prepare data, required for parsing operation."""
 
 
 class IElement(BaseWithID):
     """Catalog element interface."""
-
-    @property
-    @abstractmethod
-    def content(self) -> Iterable[IElement]:
-        """Content of current catalog instance."""
 
 
 class IWebPage(BaseWithID):

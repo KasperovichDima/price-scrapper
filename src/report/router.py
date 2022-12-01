@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends
 from interfaces import IUser
 
 from .exceptions import empty_request_exception
-from .schemas import ReportHeaderIn
+from .schemas import ReportHeaderBase, ReportHeaderIn
 
 
 router = APIRouter(prefix='/report', tags=['reports'])
@@ -42,7 +42,7 @@ async def get_report(header_in_data: ReportHeaderIn,
     Start parsing process and get completed report.
     TODO: Add response model.
     """
-    if not report_mngr.get_request(user):
+    if not bool(report_mngr.get_request(user)):
         raise empty_request_exception
-
-    return report_mngr.get_report(header_in_data, user, session)
+    header_data = ReportHeaderBase(user_id=user.id, **header_in_data)
+    return report_mngr.get_report(header_data, user, session)

@@ -41,7 +41,7 @@ def get_element(cls: Type[i.IElement], id: int,
 
 
 def get_retailers(retailers: Container[str],
-                  session: Session) -> Iterable[i.IRetailer]:
+                  session: Session) -> list[i.IRetailer]:
     """Get retailer objects by retailer names."""
 
     return session.query(Retailer).filter(Retailer.name.in_(retailers)).all()

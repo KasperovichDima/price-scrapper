@@ -1,20 +1,17 @@
-"""Report manager class and instance."""
-from collections import defaultdict, deque
+"""
+Report manager class and instance.
+TODO: Connect ParserDataCreator.
+"""
+from collections import defaultdict
 from typing import Any
-
-import crud
-
-from database.models import WebPage
 
 import interfaces as i
 
-from report.models import ReportHeader
 from report.schemas import ReportHeaderBase, ReportHeaderIn
 
 from sqlalchemy.orm import Session
 
 from .request import Request
-from ..core_typing import ParserData, ProductsByURL
 from ..parsers import Parser
 from ..schemas import RequestDataScheme
 
@@ -22,10 +19,10 @@ from ..schemas import RequestDataScheme
 class ReportManager(i.IReportManager):
     """
     Class for handling reports. Can create reports and perform all report
-    operations. Primarily - we need to create a user request. Every user has
+    operations. Primarily - User request must be created. Every user has
     he's own request with all request parameters. Any changes will affect only
-    current user request. When request is ready, we can perform parsing and
-    report creation process.
+    current user request. When request is ready, parsing and report creation
+    process can be performed.
     """
 
     __requests: defaultdict[i.IUser, Request] = defaultdict(Request)
@@ -36,81 +33,40 @@ class ReportManager(i.IReportManager):
     def add_request_data(self, user: i.IUser,
                          data: RequestDataScheme) -> RequestDataScheme:
         request = self.get_request(user)
-        if data.el_names:
-            request.add_elements(data.el_names)
-        if data.shop_names:
-            request.add_retailers(data.shop_names)
+
+        if data.el_ids:
+            request.add_elements(data.el_ids)
+        if data.ret_names:
+            request.add_retailers(data.ret_names)
         return RequestDataScheme(
-            el_names=request.el_names,
-            shop_names=request.shop_names
+            el_ids=request.element_ids,
+            ret_names=request.retailer_names
         )
 
     def remove_request_data(self, user: i.IUser,
                             data: RequestDataScheme) -> RequestDataScheme:
         request = self.get_request(user)
-        if data.el_names:
-            request.remove_elements(data.el_names)
-        if data.shop_names:
-            request.remove_retailers(data.shop_names)
+        if data.el_ids:
+            request.remove_elements(data.el_ids)
+        if data.ret_names:
+            request.remove_retailers(data.ret_names)
         return RequestDataScheme(
-            el_names=request.el_names,
-            shop_names=request.shop_names
+            el_ids=request.element_ids,
+            ret_names=request.retailer_names
         )
 
-    def get_report(self, header_in_data: ReportHeaderIn,
+    def get_report(self, header_data: ReportHeaderBase,
                    user: i.IUser, session: Session) -> Any:
         request = self.get_request(user)
-        request.header_data = ReportHeaderBase(
-            **header_in_data.dict(),
-            user_id=user.id
-        )
-        parser_data = self.__get_parser_data(request, session)
-
-        return Parser()(parser_data)
-
-    def __get_parser_data(self, request: i.IRequest,
-                          session: Session) -> ParserData:
-        """Prepare required parser data by request information."""
-
-        header = ReportHeader(**request.header_data.dict())
-        crud.add_instance(header, session)
-
-        return ParserData(
-            header_id=header.id,  # type: ignore
-            products_by_url=self.__get_products_by_url(request, session),
-            retailers=crud.get_retailers(request.shop_names, session),
-            session=session
-        )
-
-    def __get_products_by_url(self, request: i.IRequest,
-                              session: Session) -> ProductsByURL:
-        """Returns products, sorted by urls."""
-
-        products_by_url: ProductsByURL = defaultdict(deque)
-        for page in self.__get_pages(request, session):
-            products_by_url[page.url].append(page.product)  # type: ignore
-
-        return products_by_url
-
-    def __get_pages(self, request: i.IRequest,
-                    session: Session) -> list[WebPage]:
-        """Get web pages(links), containing request products."""
-
-        pages = []
-        product_ids = {_.id for _ in request.get_products(session)}
-        for rtl in request.get_retailers(session):
-            query = session.query(WebPage)
-            query = query.filter_by(retailer_id=rtl.id)
-            query = query.filter(WebPage.product_id.in_(product_ids))
-            pages.extend(query.all())
-
-        return pages
+        return Parser()(request.get_parser_data(header_data, session))
 
 
 report_mngr = ReportManager()
 
+
 ######################################
-from authentication.models import User
+from authentication.models import User  # noqa
+
 
 class TestReportManager(ReportManager):
     """Test class for report manager."""
@@ -140,10 +96,9 @@ class TestReportManager(ReportManager):
 
         return ReportHeaderIn(name='Fake report', note='Fake note')
 
-    def test_get_report(self, session:Session):
+    def test_get_report(self, session: Session):
         """Main report manager method test. Test all report creating system."""
 
         header = self.__get_fake_header_data()
         user = self.__get_fake_user()
         report = self.get_report(header, user, session)
-

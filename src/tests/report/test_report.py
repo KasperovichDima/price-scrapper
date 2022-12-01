@@ -47,9 +47,10 @@ class TestReport:
 
         report_mngr.add_request_data(create_superuser, fake_payload)
         report_mngr.add_request_data(create_superuser, fake_payload)
-        request_data = report_mngr.get_request(create_superuser).schema
+        request = report_mngr.get_request(create_superuser)
 
-        assert fake_payload == request_data
+        assert fake_payload.el_ids == request.element_ids\
+            and fake_payload.ret_names == request.retailer_names
 
     def test_remove_items_ok(self, create_superuser: User,
                              access_token, fake_payload: RequestDataScheme):
@@ -57,15 +58,15 @@ class TestReport:
 
         report_mngr.add_request_data(create_superuser, fake_payload)
         del_data = RequestDataScheme(
-            el_names={'Product': [3, 4, 37],
-                      'Group': [3, 10]},
-            shop_names=['Tavria V']
+            el_ids={'Product': [3, 4, 37],
+                    'Group': [3, 10]},
+            ret_names=['Tavria V']
         )
 
         rsp = client.delete(self.__remove_url, data=del_data.json(),
                             headers=access_token)
-        correct_response = '{"el_names": {"Product": [1, 2, 5]'\
-                           ', "Group": [5]}, "shop_names": ["Silpo"]}'
+        correct_response = '{"el_ids": {"Product": [1, 2, 5]'\
+                           ', "Group": [5]}, "ret_names": ["Silpo"]}'
         print(json.dumps(rsp.json()))
         assert rsp.status_code == 200\
             and json.dumps(rsp.json()) == correct_response
@@ -78,12 +79,13 @@ class TestReport:
 
         report_mngr.add_request_data(create_superuser, fake_payload)
         del_data = RequestDataScheme(
-            el_names={'Product': [13, 24], "Category": [22, 36, 65]},
-            shop_names=['Epicentr', 'Santim']
+            el_ids={'Product': [13, 24], "Category": [22, 36, 65]},
+            ret_names=['Epicentr', 'Santim']
         )
         rsp = client.delete(self.__remove_url, data=del_data.json(),
                             headers=access_token)
-        request_data = report_mngr.get_request(create_superuser).schema
+        request = report_mngr.get_request(create_superuser)
 
         assert rsp.status_code == 200 and\
-            request_data == fake_payload
+            fake_payload.el_ids == request.element_ids\
+            and fake_payload.ret_names == request.retailer_names

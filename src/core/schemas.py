@@ -2,24 +2,17 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Iterable
-
-import interfaces as i
 
 from project_typing import cat_elements
 
-from pydantic import BaseModel, ValidationError, validator
-
-from sqlalchemy.orm import Session
-
-from .core_typing import ProductsByURL
+from pydantic import BaseModel
 
 
 class RequestDataScheme(BaseModel):
     """RequestData  validation scheme."""
 
-    el_names: cat_elements | None
-    shop_names: list[str] | None
+    el_ids: cat_elements | None
+    ret_names: list[str] | None
 
     class Config:
         orm_mode = True
@@ -50,21 +43,3 @@ class CompleteReportScheme(BaseModel):
 
     header: ReportHeaderScheme
     content: list[ReportLineScheme]
-
-
-# class ParserDataScheme(BaseModel):
-#     """Data model for using in parser strategy."""
-
-#     header_id: int
-#     retailer_id: int
-#     prod_by_url: dict[str, deque[ProductScheme]]
-
-
-# class ParserData(BaseModel):
-
-#     header_id: int
-#     products_by_url: ProductsByURL
-#     retailers: Iterable[i.IRetailer]
-#     session: Session
-
-#     @validator('products_by_url')
