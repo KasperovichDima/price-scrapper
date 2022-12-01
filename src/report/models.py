@@ -5,7 +5,7 @@ from database.config import Base
 
 import interfaces as i
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -37,8 +37,9 @@ class ReportLine(Base):
     header_id = Column(ForeignKey('report_header.id'))
     product_id = Column(ForeignKey('product.id'))
     retailer_id = Column(ForeignKey('retailer.id'))
-    retail_price = Column(Float)
-    promo_price = Column(Float)
+
+    retail_price = Column(Numeric(scale=2))
+    promo_price = Column(Numeric(scale=2))
 
     header = relationship('ReportHeader', back_populates='content')  # type: ignore # noqa: E501
     product = relationship('Product')  # type: ignore

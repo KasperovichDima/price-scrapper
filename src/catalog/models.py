@@ -5,7 +5,7 @@ from database.config import Base
 
 import interfaces as i
 
-from sqlalchemy import Column, DECIMAL, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import relationship
 
 from .exceptions import wrong_model_exception
@@ -39,7 +39,7 @@ class Product(Element, i.IProduct):
     name = Column(String(150), index=True)
     group_id = Column(Integer, ForeignKey('group.id'))
 
-    # prime_cost = Column()
+    prime_cost = Column(Numeric(scale=2))
 
     parent: Element = relationship('Group', back_populates='content')
     pages: Iterable[i.IWebPage] = relationship('WebPage',

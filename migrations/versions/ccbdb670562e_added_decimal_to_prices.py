@@ -1,8 +1,8 @@
-"""init
+"""Added Decimal to prices
 
-Revision ID: bf3829083fc2
+Revision ID: ccbdb670562e
 Revises: 
-Create Date: 2022-11-17 20:45:44.007763
+Create Date: 2022-12-01 16:41:32.926018
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'bf3829083fc2'
+revision = 'ccbdb670562e'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -57,6 +57,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=150), nullable=True),
     sa.Column('group_id', sa.Integer(), nullable=True),
+    sa.Column('prime_cost', sa.Numeric(scale=2), nullable=True),
     sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -78,8 +79,8 @@ def upgrade() -> None:
     sa.Column('header_id', sa.Integer(), nullable=True),
     sa.Column('product_id', sa.Integer(), nullable=True),
     sa.Column('retailer_id', sa.Integer(), nullable=True),
-    sa.Column('retail_price', sa.Float(), nullable=True),
-    sa.Column('promo_price', sa.Float(), nullable=True),
+    sa.Column('retail_price', sa.Numeric(scale=2), nullable=True),
+    sa.Column('promo_price', sa.Numeric(scale=2), nullable=True),
     sa.ForeignKeyConstraint(['header_id'], ['report_header.id'], ),
     sa.ForeignKeyConstraint(['product_id'], ['product.id'], ),
     sa.ForeignKeyConstraint(['retailer_id'], ['retailer.id'], ),
