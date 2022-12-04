@@ -1,19 +1,35 @@
 """Product catalog validation schemas."""
+from decimal import Decimal
+
+from project_typing import CatType
+
 from pydantic import BaseModel
 
 
-class ElementScheme(BaseModel):
-    """Validation scheme for content of catalog element."""
+class BaseCatScheme(BaseModel):
+    """Base catalog instance scheme."""
 
     id: int
     name: str
+    parent_id: int | None
+    type: CatType
 
     class Config:
         orm_mode = True
 
 
-class ElementsScheme(BaseModel):
-    """GetElement validation scheme to be used in get_content function."""
+class FolderScheme(BaseCatScheme):
+    """Folder validation scheme."""
 
-    model: str | None = None
-    content: list[ElementScheme] | None = None
+
+class ProductScheme(BaseCatScheme):
+    """Product validation scheme."""
+
+    prime_cost: Decimal
+
+
+class FolderContent(BaseModel):
+    """Model and validation scheme for content of specified folder."""
+
+    folders: list[FolderScheme]
+    products: list[ProductScheme]

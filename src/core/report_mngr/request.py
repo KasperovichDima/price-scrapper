@@ -4,7 +4,7 @@ from typing import Iterable
 
 import interfaces as i
 
-from project_typing import cat_elements
+from project_typing import CatType, cat_elements
 
 
 class Request(i.IRequest):
@@ -12,7 +12,7 @@ class Request(i.IRequest):
     retailers, parameters. Also provides request operations, like get, add,
     remove request data. TODO: datatype for elements."""
 
-    __el_ids: defaultdict[str, set[int]] = defaultdict(set)
+    __el_ids: defaultdict[CatType, set[int]] = defaultdict(set)
     __ret_names: set[str] = set()
 
     def __bool__(self):

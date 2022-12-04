@@ -1,17 +1,14 @@
 """Product catalog models and get model function."""
-from typing import Type
-
 from database.config import Base
 
 import interfaces as i
 
-from sqlalchemy import Column, ForeignKey, Integer, Numeric, String
-from sqlalchemy.orm import relationship
+from project_typing import CatType
 
-from .exceptions import wrong_model_exception
+from sqlalchemy import Column, Enum, ForeignKey, Integer, Numeric, String
 
 
-class Element(Base, i.IElement):  # type: ignore
+class CatalogBase(Base, i.IElement):  # type: ignore
     """Base class for all classes of product catalog."""
 
     __abstract__ = True
@@ -22,31 +19,23 @@ class Element(Base, i.IElement):  # type: ignore
         return self.name
 
 
-class Subgroup(Element):
+class Folder(CatalogBase):
     """Product group class."""
 
-    __tablename__ = 'subgroup'
+    __tablename__ = 'folder'
 
-    name = Column(String(100), index=True)
-    content = relationship('Product', back_populates='parent')  # type: ignore
+    name = Column(String(100), index=True, nullable=False)
+    parent_id = Column(Integer, index=True)
+    type = Column(Enum(CatType), nullable=False)
 
 
-class Product(Element, i.IProduct):
+class Product(CatalogBase, i.IProduct):
     """Product class."""
 
     __tablename__ = "product"
 
-    name = Column(String(150), index=True)
-    subgroup_id = Column(Integer, ForeignKey('subgroup.id'))
-
+    name = Column(String(150), index=True, nullable=False, unique=True)
+    parent_id = Column(Integer, ForeignKey('folder.id'), nullable=False)
     prime_cost = Column(Numeric(scale=2))
 
-    parent: Element = relationship('Subgroup', back_populates='content')  # type: ignore  # noqa: E501
-
-
-def get_model(name: str) -> Type[Element]:
-    """Get catalog element class by class name."""
-    try:
-        return eval(name)
-    except NameError:
-        raise wrong_model_exception
+    type = CatType.PRODUCT

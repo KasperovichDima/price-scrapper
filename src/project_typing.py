@@ -10,4 +10,12 @@ class UserType(Enum):
     SUPERUSER = auto()
 
 
-cat_elements = dict[str, list[int]]
+class CatType(Enum):
+    """Levels of catalog folders."""
+
+    PRODUCT = auto()
+    SUBGROUP = auto()
+    GROUP = auto()
+
+
+cat_elements = dict[CatType, list[int]]

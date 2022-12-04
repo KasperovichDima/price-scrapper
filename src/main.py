@@ -2,7 +2,7 @@
 from authentication.models import User  # noqa: F401
 from authentication.router import router as auth_router
 
-from catalog.models import Product, Subgroup  # noqa: F401
+from catalog.models import Folder, Product  # noqa: F401
 from catalog.router import router as catalog_router
 
 from dependencies import oauth2_scheme

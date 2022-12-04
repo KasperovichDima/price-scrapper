@@ -40,7 +40,7 @@ path.append(
 
 path.append(os.getenv('SRC_PATH'))
 from authentication.models import User
-from catalog.models import Subgroup, Product
+from catalog.models import Folder, Product
 from core.models import PriceLine
 from database import Retailer
 from database.config import Base

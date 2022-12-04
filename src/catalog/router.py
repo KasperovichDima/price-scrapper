@@ -5,23 +5,15 @@ from dependencies import get_session, oauth2_scheme
 
 from fastapi import APIRouter, Depends
 
-from .models import get_model
-from .schemas import ElementsScheme
+from .schemas import FolderContent
 
 
 router = APIRouter(prefix='/catalog', tags=['catalog'])
 
 
-@router.get('/{cls_name}/{id}', response_model=ElementsScheme)
-async def get_content(cls: str, id: int,
-                      token=Depends(oauth2_scheme),
-                      session=Depends(get_session)):
-    """Get content of specified product catalog element."""
+@router.get('/folder_content/{id}', response_model=FolderContent)
+async def folder_content(id: int, token=Depends(oauth2_scheme),
+                         session=Depends(get_session)):
+    """Get content of folder with specified id."""
 
-    model = get_model(cls)
-    obj = crud.get_element(model, id, session)
-    content = obj.content if obj else None
-    return ElementsScheme(
-        model=cls,
-        content=content
-    )
+    return crud.get_folder_content(id, session)

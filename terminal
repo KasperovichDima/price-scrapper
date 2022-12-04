@@ -3,12 +3,11 @@ path.append('/home/kasper/Documents/projects/monitoring/src')
 
 from database.config import SessionLocal
 from authentication.models import User
-from catalog.models import Group, Product
-from report.models import ReportHeader, ReportLine
+from catalog.models import Folder, Product
+from core.models import PriceLine
 from database import Retailer
-from database import WebPage, URL
+from project_typing import CatType
 
 db=SessionLocal()
 
 pivko = db.get(Product, 1)
-

@@ -3,7 +3,7 @@ from authentication.models import User
 from authentication.schemas import UserCreate, UserScheme
 from authentication.utils import create_access_token
 
-from catalog.models import Product, Subgroup
+from catalog.models import Product, Folder
 
 from core.schemas import RequestDataScheme
 
@@ -108,21 +108,21 @@ def fake_session():
 def fake_db_content(fake_session):
     """Fill database catalog with fake content."""
     content = [
-        Subgroup(name='Alcohol'),
-        Subgroup(name='Grocery'),
-        Subgroup(name='Milk')
+        Folder(name='Alcohol'),
+        Folder(name='Grocery'),
+        Folder(name='Milk')
     ]
 
     content.extend((
-        Product(name='Beer Chernigovskoe 0,5', subgroup_id=1),
-        Product(name='Vine Cartuli Vazi 0,7', subgroup_id=1),
-        Product(name='Vodka Finlandia 0,7', subgroup_id=1),
-        Product(name='Sunflower Oil 1l', subgroup_id=2),
-        Product(name='Chips 500 gr', subgroup_id=2),
-        Product(name='Sugar 1kg', subgroup_id=2),
-        Product(name='Milk 1l', subgroup_id=3),
-        Product(name='Jogurt Fructegut 400ml', subgroup_id=3),
-        Product(name='Spred 200gr', subgroup_id=3),
+        Product(name='Beer Chernigovskoe 0,5', folder_id=1),
+        Product(name='Vine Cartuli Vazi 0,7', folder_id=1),
+        Product(name='Vodka Finlandia 0,7', folder_id=1),
+        Product(name='Sunflower Oil 1l', folder_id=2),
+        Product(name='Chips 500 gr', folder_id=2),
+        Product(name='Sugar 1kg', folder_id=2),
+        Product(name='Milk 1l', folder_id=3),
+        Product(name='Jogurt Fructegut 400ml', folder_id=3),
+        Product(name='Spred 200gr', folder_id=3),
     ))
 
     crud.add_instances(content, fake_session)

@@ -4,7 +4,8 @@ from typing import Container, Iterable, Type
 
 from authentication.models import User
 
-from catalog.models import Product
+from catalog.models import Folder, Product
+from catalog.schemas import FolderContent
 
 from database import Base
 from database import Retailer
@@ -49,6 +50,15 @@ def get_retailers(retailers: Container[str],
     """Get retailer objects by retailer names."""
 
     return session.query(Retailer).filter(Retailer.name.in_(retailers)).all()
+
+
+def get_folder_content(id: int, session: Session) -> FolderContent:
+    """Get content of folder with specified id."""
+
+    return FolderContent(
+        products=session.query(Product).filter(Product.parent_id == id).all(),
+        folders=session.query(Folder).filter(Folder.parent_id == id).all()
+    )
 
 
 def get_products(element_ids: defaultdict[str, set[int]],
