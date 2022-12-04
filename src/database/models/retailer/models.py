@@ -1,10 +1,12 @@
 """Retailer models."""
+from interfaces import IRetailer
+
 from sqlalchemy import Column, Integer, String
 
 from ...config import Base
 
 
-class Retailer(Base):  # type: ignore
+class Retailer(Base, IRetailer):  # type: ignore
     """Retailer class."""
     __tablename__ = "retailer"
 

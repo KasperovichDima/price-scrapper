@@ -6,7 +6,6 @@ from interfaces import IUser
 from project_typing import UserType
 
 from sqlalchemy import Boolean, Column, Enum, Integer, String
-from sqlalchemy.orm import relationship
 
 
 class User(Base, IUser):  # type: ignore
@@ -21,8 +20,6 @@ class User(Base, IUser):  # type: ignore
     password = Column(String(250))
     is_active = Column(Boolean, default=False)
     type = Column(Enum(UserType), default=UserType.USER)
-
-    headers = relationship('ReportHeader', back_populates='user')  # type: ignore  # noqa: E501
 
     def __repr__(self) -> str:
         return f'{self.first_name} {self.last_name}'

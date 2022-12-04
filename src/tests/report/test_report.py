@@ -59,14 +59,14 @@ class TestReport:
         report_mngr.add_request_data(create_superuser, fake_payload)
         del_data = RequestDataScheme(
             el_ids={'Product': [3, 4, 37],
-                    'Group': [3, 10]},
-            ret_names=['Tavria V']
+                    'Subgroup': [3, 10]},
+            ret_names=['Tavria']
         )
 
         rsp = client.delete(self.__remove_url, data=del_data.json(),
                             headers=access_token)
         correct_response = '{"el_ids": {"Product": [1, 2, 5]'\
-                           ', "Group": [5]}, "ret_names": ["Silpo"]}'
+                           ', "Subgroup": [5]}, "ret_names": ["Silpo"]}'
         print(json.dumps(rsp.json()))
         assert rsp.status_code == 200\
             and json.dumps(rsp.json()) == correct_response
@@ -77,10 +77,11 @@ class TestReport:
                                        fake_payload: RequestDataScheme):
         """Attempt to remove not existing products."""
 
+        print(fake_payload)
         report_mngr.add_request_data(create_superuser, fake_payload)
         del_data = RequestDataScheme(
-            el_ids={'Product': [13, 24], "Category": [22, 36, 65]},
-            ret_names=['Epicentr', 'Santim']
+            el_ids={'Product': [13, 24], "Subgroup": [22, 36, 65]},
+            ret_names=['Epicentr']
         )
         rsp = client.delete(self.__remove_url, data=del_data.json(),
                             headers=access_token)

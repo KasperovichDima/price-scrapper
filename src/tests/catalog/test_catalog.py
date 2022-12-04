@@ -10,7 +10,7 @@ class TestGetContent:
     def test_get_content_ok(self, access_token, fake_db_content):
         """Correct attempt to get existing content."""
 
-        rsp = client.get(self.__url+'/{cls_name}/1?cls=Group',
+        rsp = client.get(self.__url+'/{cls_name}/1?cls=Subgroup',
                          headers=access_token)
 
         assert rsp.status_code == 200 and rsp.json() == fake_db_content
@@ -26,10 +26,10 @@ class TestGetContent:
     def test_get_content_not_exists(self, access_token, fake_db_content):
         """Attempt to get not existing content."""
 
-        rsp = client.get(self.__url+'/{cls_name}/6?cls=Group',
+        rsp = client.get(self.__url+'/{cls_name}/6?cls=Subgroup',
                          headers=access_token)
 
         assert rsp.status_code == 200 and rsp.json() == {
-            'model': 'Group',
+            'model': 'Subgroup',
             'content': None
         }

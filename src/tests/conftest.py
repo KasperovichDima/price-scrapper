@@ -92,7 +92,7 @@ def fake_payload() -> RequestDataScheme:
     return RequestDataScheme(
         el_ids={
             'Product': [1, 2, 3, 4, 5],
-            'Group': [3, 5, 10]
+            'Subgroup': [3, 5, 10]
         },
         ret_names=['Silpo', 'Tavria']
     )
@@ -114,20 +114,20 @@ def fake_db_content(fake_session):
     ]
 
     content.extend((
-        Product(name='Beer Chernigovskoe 0,5', group_id=1),
-        Product(name='Vine Cartuli Vazi 0,7', group_id=1),
-        Product(name='Vodka Finlandia 0,7', group_id=1),
-        Product(name='Sunflower Oil 1l', group_id=2),
-        Product(name='Chips 500 gr', group_id=2),
-        Product(name='Sugar 1kg', group_id=2),
-        Product(name='Milk 1l', group_id=3),
-        Product(name='Jogurt Fructegut 400ml', group_id=3),
-        Product(name='Spred 200gr', group_id=3),
+        Product(name='Beer Chernigovskoe 0,5', subgroup_id=1),
+        Product(name='Vine Cartuli Vazi 0,7', subgroup_id=1),
+        Product(name='Vodka Finlandia 0,7', subgroup_id=1),
+        Product(name='Sunflower Oil 1l', subgroup_id=2),
+        Product(name='Chips 500 gr', subgroup_id=2),
+        Product(name='Sugar 1kg', subgroup_id=2),
+        Product(name='Milk 1l', subgroup_id=3),
+        Product(name='Jogurt Fructegut 400ml', subgroup_id=3),
+        Product(name='Spred 200gr', subgroup_id=3),
     ))
 
     crud.add_instances(content, fake_session)
     return {
-        'model': 'Subroup',
+        'model': 'Subgroup',
         'content': [{'name': item.name, 'id': item.id}
                     for item in content[3:6]]
     }

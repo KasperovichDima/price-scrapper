@@ -1,2 +1,1 @@
-from .models import Retailer
-from .shemas import RetailerScheme
+from .models import Retailer  # noqa: F401

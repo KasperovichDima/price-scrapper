@@ -1,5 +1,5 @@
 """Product catalog models and get model function."""
-from typing import Iterable, Type
+from typing import Type
 
 from database.config import Base
 
@@ -42,8 +42,6 @@ class Product(Element, i.IProduct):
     prime_cost = Column(Numeric(scale=2))
 
     parent: Element = relationship('Subgroup', back_populates='content')  # type: ignore  # noqa: E501
-    pages: Iterable[i.IWebPage] = relationship('WebPage',
-                                               back_populates='product')
 
 
 def get_model(name: str) -> Type[Element]:

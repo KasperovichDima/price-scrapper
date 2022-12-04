@@ -85,8 +85,8 @@ class IElement(BaseWithID):
     """Catalog element interface."""
 
 
-class IWebPage(BaseWithID):
-    """WebPage interface."""
+# class IWebPage(BaseWithID):
+#     """WebPage interface."""
 
 
 class IProduct(BaseWithID):
@@ -96,6 +96,8 @@ class IProduct(BaseWithID):
 class IRetailer(BaseWithID):
     """Retailer interface."""
 
+    name: str
 
-class IReportHeader(BaseWithID):
-    """ReportHeader interface."""
+
+# class IReportHeader(BaseWithID):
+#     """ReportHeader interface."""

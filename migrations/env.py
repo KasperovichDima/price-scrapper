@@ -41,9 +41,8 @@ path.append(
 path.append(os.getenv('SRC_PATH'))
 from authentication.models import User
 from catalog.models import Subgroup, Product
-from report.models import ReportHeader, ReportLine
+from core.models import PriceLine
 from database import Retailer
-from database import WebPage, URL
 from database.config import Base
 
 target_metadata = Base.metadata
