@@ -1,44 +1,52 @@
 """Request class."""
-from collections import defaultdict
-from typing import Iterable
-
 import interfaces as i
 
-from project_typing import CatType, cat_elements
+from ..core_typing import RequestObjects
+from ..schemas import RequestOutScheme
 
 
-class Request(i.IRequest):
+class Request:
     """Request for new report. Contain all required information: products,
-    retailers, parameters. Also provides request operations, like get, add,
-    remove request data. TODO: datatype for elements."""
+    folders, retailers. Also provides request operations, like get, add,
+    remove request data."""
 
-    __el_ids: defaultdict[CatType, set[int]] = defaultdict(set)
-    __ret_names: set[str] = set()
+    __folders: set[i.IFolder] = set()
+    __products: set[i.IProduct] = set()
+    __retailers: set[i.IRetailer] = set()
 
     def __bool__(self):
-        return bool(self.__el_ids
-                    and self.retailer_names)
+        return bool(self.__products and self.__folders and self.__retailers)
 
     @property
-    def element_ids(self) -> cat_elements:
-        return {cls_name: sorted(ids)
-                for cls_name, ids in self.__el_ids.items()}
+    def objects(self) -> RequestObjects:
+        """Objects of current request."""
 
-    def add_elements(self, el_ids: cat_elements) -> None:
-        for cls_name, ids in el_ids.items():
-            self.__el_ids[cls_name].update(ids)
-
-    def remove_elements(self, el_ids: cat_elements) -> None:
-        for cls_name, ids in el_ids.items():
-            if cls_name in self.__el_ids:
-                self.__el_ids[cls_name].difference_update(ids)
+        return RequestObjects(**self.__sorted_objects)
 
     @property
-    def retailer_names(self) -> list[str]:
-        return sorted(self.__ret_names)
+    def out_data(self) -> RequestOutScheme:
+        """Pydantic mdoel of current request."""
+        print(self.__folders, self.__products, self.__retailers)
+        return RequestOutScheme(**self.__sorted_objects)
 
-    def add_retailers(self, ret_ids: Iterable[str]) -> None:
-        self.__ret_names.update(ret_ids)
+    @property
+    def __sorted_objects(self) -> dict:
+        return dict(
+            folders=sorted(list(self.__folders), key=lambda _: _.name),
+            products=sorted(list(self.__products), key=lambda _: _.name),
+            retailers=sorted(list(self.__retailers), key=lambda _: _.name),
+        )
 
-    def remove_retailers(self, ret_ids: Iterable[str]) -> None:
-        self.__ret_names.difference_update(ret_ids)
+    def add_objects(self, data: RequestObjects) -> None:
+        """Add objects to current request."""
+
+        self.__products.update(data.producs)
+        self.__folders.update(data.folders)
+        self.__retailers.update(data.retailers)
+
+    def remove_objects(self, data: RequestObjects) -> None:
+        """Remove objects from current request."""
+
+        self.__products.difference_update(data.producs)
+        self.__folders.difference_update(data.folders)
+        self.__retailers.difference_update(data.retailers)

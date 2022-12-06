@@ -25,11 +25,11 @@ class FolderScheme(BaseCatScheme):
 class ProductScheme(BaseCatScheme):
     """Product validation scheme."""
 
-    prime_cost: Decimal
+    prime_cost: Decimal | None = None
 
 
 class FolderContent(BaseModel):
     """Model and validation scheme for content of specified folder."""
 
-    folders: list[FolderScheme]
-    products: list[ProductScheme]
+    folders: list[FolderScheme] | None = None
+    products: list[ProductScheme] | None = None

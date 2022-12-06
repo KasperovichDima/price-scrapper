@@ -5,18 +5,18 @@ from authentication.router import router as auth_router
 from catalog.models import Folder, Product  # noqa: F401
 from catalog.router import router as catalog_router
 
+from core.router import router as core_router
+
 from dependencies import oauth2_scheme
 
 from fastapi import Depends, FastAPI
-
-from report.router import router as report_router
 
 import uvicorn
 
 app = FastAPI()
 app.include_router(auth_router)
 app.include_router(catalog_router)
-app.include_router(report_router)
+app.include_router(core_router)
 
 
 @app.get("/items/")

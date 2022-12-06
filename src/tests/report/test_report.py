@@ -34,6 +34,7 @@ class TestReport:
         access_token
     ):
         """Correct attempt to add products and retailers."""
+        print(fake_payload)
 
         rsp = send_request(self.__add_url, fake_payload,
                            access_token)

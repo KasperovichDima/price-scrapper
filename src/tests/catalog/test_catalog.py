@@ -1,35 +1,30 @@
 """Catalog unit tests."""
+from catalog.schemas import FolderContent
+
 from ..conftest import client
 
 
 class TestGetContent:
-    """Test of /catalog (get_content) endpoint."""
+    """Test of /catalog/folder_content endpoint."""
 
-    __url = '/catalog'
+    __url = '/catalog/folder_content'
 
-    def test_get_content_ok(self, access_token, fake_db_content):
+    def test_get_content_ok(self, access_token,
+                            fake_db_content: FolderContent):
         """Correct attempt to get existing content."""
 
-        rsp = client.get(self.__url+'/{cls_name}/1?cls=Subgroup',
-                         headers=access_token)
+        rsp = client.get(self.__url+'/1', headers=access_token)
+        ref = FolderContent(**dict(rsp.json()))
 
-        assert rsp.status_code == 200 and rsp.json() == fake_db_content
-
-    def test_get_content_wrong_model(self, access_token, fake_db_content):
-        """Attempt to get existing content with incorrect model."""
-
-        rsp = client.get(self.__url+'/{cls_name}/1?cls=Gruppa',
-                         headers=access_token)
-
-        assert rsp.status_code == 404
+        assert rsp.status_code == 200\
+            and ref.products == fake_db_content.products
 
     def test_get_content_not_exists(self, access_token, fake_db_content):
         """Attempt to get not existing content."""
 
-        rsp = client.get(self.__url+'/{cls_name}/6?cls=Subgroup',
-                         headers=access_token)
+        rsp = client.get(self.__url+'/45', headers=access_token)
+        ref = FolderContent(**dict(rsp.json()))
 
-        assert rsp.status_code == 200 and rsp.json() == {
-            'model': 'Subgroup',
-            'content': None
-        }
+        assert (rsp.status_code == 200
+                and not ref.products
+                and not ref.folders)

@@ -1,19 +1,18 @@
 """Authentication models."""
-from database.config import Base
-
 from interfaces import IUser
+
+from models import BaseWithID
 
 from project_typing import UserType
 
-from sqlalchemy import Boolean, Column, Enum, Integer, String
+from sqlalchemy import Boolean, Column, Enum, String
 
 
-class User(Base, IUser):  # type: ignore
+class User(BaseWithID, IUser):  # type: ignore
     """System user representation."""
 
     __tablename__ = 'user'
 
-    id = Column(Integer, primary_key=True, index=True)  # type: ignore
     first_name = Column(String(20), index=True)
     last_name = Column(String(40), index=True)
     email = Column(String(100), index=True)

@@ -1,15 +1,14 @@
 """Core models."""
-from database.config import Base
+from models import BaseWithID
 
-from sqlalchemy import Column, ForeignKey, Integer, Numeric
+from sqlalchemy import Column, ForeignKey, Numeric
 
 
-class PriceLine(Base):
+class PriceLine(BaseWithID):
     """Represents prices of concrete product in concrete retailer's shop."""
 
     __tablename__ = 'price_line'
 
-    id = Column(Integer, primary_key=True, index=True)
     product_id = Column(ForeignKey('product.id'))
     retailer_id = Column(ForeignKey('retailer.id'))
 

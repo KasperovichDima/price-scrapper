@@ -42,7 +42,7 @@ path.append(os.getenv('SRC_PATH'))
 from authentication.models import User
 from catalog.models import Folder, Product
 from core.models import PriceLine
-from database import Retailer
+from retailer.models import Retailer
 from database.config import Base
 
 target_metadata = Base.metadata

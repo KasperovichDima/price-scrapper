@@ -5,7 +5,7 @@ from database.config import SessionLocal
 from authentication.models import User
 from catalog.models import Folder, Product
 from core.models import PriceLine
-from database import Retailer
+from retailer.models import Retailer
 from project_typing import CatType
 
 db=SessionLocal()

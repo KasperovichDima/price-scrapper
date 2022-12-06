@@ -18,4 +18,7 @@ class CatType(Enum):
     GROUP = auto()
 
 
-cat_elements = dict[CatType, list[int]]
+
+
+
+# cat_elements = dict[CatType, list[int]]

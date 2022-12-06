@@ -1,26 +1,29 @@
 """Product catalog models and get model function."""
-from database.config import Base
-
 import interfaces as i
+
+from models import BaseWithRepr
 
 from project_typing import CatType
 
 from sqlalchemy import Column, Enum, ForeignKey, Integer, Numeric, String
 
 
-class CatalogBase(Base, i.IElement):  # type: ignore
-    """Base class for all classes of product catalog."""
+# class CatalogBase(Base, i.IElement):  # type: ignore
+#     """Base class for all classes of product catalog."""
 
-    __abstract__ = True
+#     __abstract__ = True
 
-    id = Column(Integer, primary_key=True, index=True)  # type: ignore
+#     id = Column(Integer, primary_key=True, index=True)  # type: ignore
 
-    def __repr__(self) -> str:
-        return self.name
+#     def __repr__(self) -> str:
+#         return self.name
+
+#     def __eq__(self, __o: object) -> bool:
+#         return self.id == __o.id
 
 
-class Folder(CatalogBase):
-    """Product group class."""
+class Folder(BaseWithRepr, i.IFolder):
+    """Product folder class."""
 
     __tablename__ = 'folder'
 
@@ -29,7 +32,7 @@ class Folder(CatalogBase):
     type = Column(Enum(CatType), nullable=False)
 
 
-class Product(CatalogBase, i.IProduct):
+class Product(BaseWithRepr, i.IProduct):
     """Product class."""
 
     __tablename__ = "product"

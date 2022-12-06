@@ -3,7 +3,8 @@ from authentication.models import User
 from authentication.schemas import UserCreate, UserScheme
 from authentication.utils import create_access_token
 
-from catalog.models import Product, Folder
+from catalog.models import Folder, Product
+from catalog.schemas import FolderContent
 
 from core.schemas import RequestDataScheme
 
@@ -17,7 +18,7 @@ from fastapi.testclient import TestClient
 
 from main import app
 
-from project_typing import UserType
+from project_typing import CatType, UserType
 
 import pytest
 
@@ -91,8 +92,8 @@ def fake_payload() -> RequestDataScheme:
 
     return RequestDataScheme(
         el_ids={
-            'Product': [1, 2, 3, 4, 5],
-            'Subgroup': [3, 5, 10]
+            CatType.PRODUCT: [1, 2, 3, 4, 5],
+            CatType.SUBGROUP: [3, 5, 10]
         },
         ret_names=['Silpo', 'Tavria']
     )
@@ -105,29 +106,25 @@ def fake_session():
 
 
 @pytest.fixture(scope='session')
-def fake_db_content(fake_session):
+def fake_db_content(fake_session) -> FolderContent:
     """Fill database catalog with fake content."""
     content = [
-        Folder(name='Alcohol'),
-        Folder(name='Grocery'),
-        Folder(name='Milk')
+        Folder(name='Alcohol', type=CatType.SUBGROUP),
+        # Folder(name='Grocery', type=CatType.SUBGROUP),
+        # Folder(name='Milk', type=CatType.SUBGROUP)
     ]
 
     content.extend((
-        Product(name='Beer Chernigovskoe 0,5', folder_id=1),
-        Product(name='Vine Cartuli Vazi 0,7', folder_id=1),
-        Product(name='Vodka Finlandia 0,7', folder_id=1),
-        Product(name='Sunflower Oil 1l', folder_id=2),
-        Product(name='Chips 500 gr', folder_id=2),
-        Product(name='Sugar 1kg', folder_id=2),
-        Product(name='Milk 1l', folder_id=3),
-        Product(name='Jogurt Fructegut 400ml', folder_id=3),
-        Product(name='Spred 200gr', folder_id=3),
+        Product(name='Beer Chernigovskoe 0,5', parent_id=1),
+        Product(name='Vine Cartuli Vazi 0,7', parent_id=1),
+        Product(name='Vodka Finlandia 0,7', parent_id=1),
+        # Product(name='Sunflower Oil 1l', parent_id=2),
+        # Product(name='Chips 500 gr', parent_id=2),
+        # Product(name='Sugar 1kg', parent_id=2),
+        # Product(name='Milk 1l', parent_id=3),
+        # Product(name='Jogurt Fructegut 400ml', parent_id=3),
+        # Product(name='Spred 200gr', parent_id=3),
     ))
 
     crud.add_instances(content, fake_session)
-    return {
-        'model': 'Subgroup',
-        'content': [{'name': item.name, 'id': item.id}
-                    for item in content[3:6]]
-    }
+    return FolderContent(products=content[1::])

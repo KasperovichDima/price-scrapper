@@ -1,39 +1,32 @@
 """Core validation schamas."""
-from typing import Iterable
+from project_typing import CatType
 
-from constants import CATALOG_NAMES, RETAILER_NAMES
+from pydantic import BaseModel
 
-from project_typing import cat_elements
-
-from pydantic import BaseModel, validator
+from retailer.schemas import RetailerScheme
 
 
-class RequestDataScheme(BaseModel):
-    """RequestData  validation scheme."""
+class RequestInScheme(BaseModel):
+    """Edit request data scheme."""
+    folders: list[int] = []
+    products: list[int] = []
+    retailers: list[int] = []
 
-    el_ids: cat_elements | None
-    ret_names: list[str] | None
 
-    @validator('el_ids')
-    def catalog_names_alloved(cls, names: cat_elements):
-        RequestDataScheme.__check_names(names, CATALOG_NAMES, 'catalog')
-        return names
+class ElementScheme(BaseModel):
+    """Base scheme for catalog element."""
 
-    @validator('ret_names')
-    def retailer_names_alloved(cls, names: list[str]):
-        RequestDataScheme.__check_names(names, RETAILER_NAMES, 'retailer')
-        return names
+    id: int
+    name: str
+    type: CatType
 
     class Config:
         orm_mode = True
 
-    @staticmethod
-    def __check_names(names: Iterable[str], source: frozenset[str], type: str):
-        """
-        Checks, that 'type' names are in'source'. If not - raises exception.
-        """
-        if not names:
-            return
-        for name in names:
-            if name not in source:
-                raise ValueError(f'Incorrect {type} name: "{name}".')
+
+class RequestOutScheme(BaseModel):
+    """Request content scheme."""
+
+    folders: list[ElementScheme] = []
+    products: list[ElementScheme] = []
+    retailers: list[RetailerScheme] = []

@@ -3,23 +3,23 @@ Report manager class and instance.
 TODO: Connect ParserDataCreator.
 """
 from collections import defaultdict
-from typing import Any
 
 import interfaces as i
 
 from sqlalchemy.orm import Session
 
 from .request import Request
-from ..schemas import RequestDataScheme
+from ..core_typing import RequestObjects
+from ..schemas import RequestInScheme
+from ..utils import get_request_objects
 
 
-class ReportManager(i.IReportManager):
+class ReportManager:
     """
     Class for handling reports. Can create reports and perform all report
     operations. Primarily - User request must be created. Every user has
     he's own request with all request parameters. Any changes will affect only
-    current user request. When request is ready, parsing and report creation
-    process can be performed.
+    current user request.
     """
 
     __requests: defaultdict[i.IUser, Request] = defaultdict(Request)
@@ -28,34 +28,25 @@ class ReportManager(i.IReportManager):
         return self.__requests[user]
 
     def add_request_data(self, user: i.IUser,
-                         data: RequestDataScheme) -> RequestDataScheme:
-        request = self.get_request(user)
+                         in_data: RequestInScheme,
+                         session: Session) -> RequestObjects:
 
-        if data.el_ids:
-            request.add_elements(data.el_ids)
-        if data.ret_names:
-            request.add_retailers(data.ret_names)
-        return RequestDataScheme(
-            el_ids=request.element_ids,
-            ret_names=request.retailer_names
-        )
+        request = self.get_request(user)
+        request.add_objects(get_request_objects(in_data, session))
+        return request.out_data
 
     def remove_request_data(self, user: i.IUser,
-                            data: RequestDataScheme) -> RequestDataScheme:
-        request = self.get_request(user)
-        if data.el_ids:
-            request.remove_elements(data.el_ids)
-        if data.ret_names:
-            request.remove_retailers(data.ret_names)
-        return RequestDataScheme(
-            el_ids=request.element_ids,
-            ret_names=request.retailer_names
-        )
-
-    def get_report(self, user: i.IUser, session: Session) -> Any:
-        """TODO: Refactoring."""
+                            in_data: RequestInScheme,
+                            session: Session) -> RequestObjects:
 
         request = self.get_request(user)
+        request.remove_objects(get_request_objects(in_data, session))
+        return request.out_data
+
+    # def get_report(self, user: i.IUser, session: Session) -> Any:
+    #     """TODO: Refactoring."""
+
+    #     request = self.get_request(user)
 
 
 report_mngr = ReportManager()
