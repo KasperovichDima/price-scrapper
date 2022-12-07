@@ -22,7 +22,8 @@ class ReportManager:
     current user request.
     """
 
-    __requests: defaultdict[i.IUser, Request] = defaultdict(Request)
+    def __init__(self) -> None:
+        self.__requests: defaultdict[i.IUser, Request] = defaultdict(Request)
 
     def get_request(self, user: i.IUser) -> Request:
         return self.__requests[user]

@@ -8,20 +8,6 @@ from project_typing import CatType
 from sqlalchemy import Column, Enum, ForeignKey, Integer, Numeric, String
 
 
-# class CatalogBase(Base, i.IElement):  # type: ignore
-#     """Base class for all classes of product catalog."""
-
-#     __abstract__ = True
-
-#     id = Column(Integer, primary_key=True, index=True)  # type: ignore
-
-#     def __repr__(self) -> str:
-#         return self.name
-
-#     def __eq__(self, __o: object) -> bool:
-#         return self.id == __o.id
-
-
 class Folder(BaseWithRepr, i.IFolder):
     """Product folder class."""
 

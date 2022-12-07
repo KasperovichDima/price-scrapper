@@ -7,12 +7,12 @@ from pydantic import BaseModel, EmailStr, Field
 class UserBase(BaseModel):
     """UserBase validation schema."""
 
-    class Config:
-        orm_mode = True
-
     first_name: str = Field(max_length=20)
     last_name: str = Field(max_length=40)
     email: EmailStr
+
+    class Config:
+        orm_mode = True
 
 
 class UserCreate(UserBase):

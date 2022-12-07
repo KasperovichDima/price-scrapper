@@ -10,9 +10,10 @@ class Request:
     folders, retailers. Also provides request operations, like get, add,
     remove request data."""
 
-    __folders: set[i.IFolder] = set()
-    __products: set[i.IProduct] = set()
-    __retailers: set[i.IRetailer] = set()
+    def __init__(self) -> None:
+        self.__folders: set[i.IFolder] = set()
+        self.__products: set[i.IProduct] = set()
+        self.__retailers: set[i.IRetailer] = set()
 
     def __bool__(self):
         return bool(self.__products and self.__folders and self.__retailers)
