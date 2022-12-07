@@ -26,7 +26,6 @@ class Request:
     @property
     def out_data(self) -> RequestOutScheme:
         """Pydantic mdoel of current request."""
-        print(self.__folders, self.__products, self.__retailers)
         return RequestOutScheme(**self.__sorted_objects)
 
     @property
@@ -40,13 +39,13 @@ class Request:
     def add_objects(self, data: RequestObjects) -> None:
         """Add objects to current request."""
 
-        self.__products.update(data.producs)
+        self.__products.update(data.products)
         self.__folders.update(data.folders)
         self.__retailers.update(data.retailers)
 
     def remove_objects(self, data: RequestObjects) -> None:
         """Remove objects from current request."""
 
-        self.__products.difference_update(data.producs)
+        self.__products.difference_update(data.products)
         self.__folders.difference_update(data.folders)
         self.__retailers.difference_update(data.retailers)

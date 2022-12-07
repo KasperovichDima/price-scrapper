@@ -16,9 +16,3 @@ class CatType(Enum):
     PRODUCT = auto()
     SUBGROUP = auto()
     GROUP = auto()
-
-
-
-
-
-# cat_elements = dict[CatType, list[int]]

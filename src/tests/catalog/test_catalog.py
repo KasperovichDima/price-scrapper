@@ -1,7 +1,8 @@
 """Catalog unit tests."""
-from catalog.schemas import FolderContent
+from core.core_typing import RequestObjects
 
 from ..conftest import client
+from ..references import get_content_ok_ref
 
 
 class TestGetContent:
@@ -10,21 +11,19 @@ class TestGetContent:
     __url = '/catalog/folder_content'
 
     def test_get_content_ok(self, access_token,
-                            fake_db_content: FolderContent):
+                            fake_db_content: RequestObjects):
         """Correct attempt to get existing content."""
 
         rsp = client.get(self.__url+'/1', headers=access_token)
-        ref = FolderContent(**dict(rsp.json()))
 
         assert rsp.status_code == 200\
-            and ref.products == fake_db_content.products
+            and rsp.json()['products'] == get_content_ok_ref['products']
 
     def test_get_content_not_exists(self, access_token, fake_db_content):
         """Attempt to get not existing content."""
 
         rsp = client.get(self.__url+'/45', headers=access_token)
-        ref = FolderContent(**dict(rsp.json()))
 
         assert (rsp.status_code == 200
-                and not ref.products
-                and not ref.folders)
+                and not rsp.json()['products']
+                and not rsp.json()['folders'])

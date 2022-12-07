@@ -8,5 +8,5 @@ class RequestObjects(NamedTuple):
     """Objects to be added to request."""
 
     folders: list[i.IFolder]
-    producs: list[i.IProduct]
+    products: list[i.IProduct]
     retailers: list[i.IRetailer]

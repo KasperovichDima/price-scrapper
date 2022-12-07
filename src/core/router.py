@@ -15,7 +15,7 @@ from .schemas import RequestOutScheme
 router = APIRouter(prefix='/report', tags=['reports'])
 
 
-@router.post('/add_request_data')
+@router.post('/add_request_data', response_model=RequestOutScheme)
 async def add_request_data(data: RequestInScheme,
                            user: IUser = Depends(get_current_active_user),
                            token=Depends(oauth2_scheme),

@@ -4,9 +4,9 @@ from authentication.schemas import UserCreate, UserScheme
 from authentication.utils import create_access_token
 
 from catalog.models import Folder, Product
-from catalog.schemas import FolderContent
 
-from core.schemas import RequestDataScheme
+from core.core_typing import RequestObjects
+from core.schemas import RequestInScheme
 
 import crud
 
@@ -21,6 +21,8 @@ from main import app
 from project_typing import CatType, UserType
 
 import pytest
+
+from retailer.models import Retailer
 
 
 target_metadata = Base.metadata
@@ -87,15 +89,13 @@ def access_token(superuser_data: UserCreate) -> dict:
 
 
 @pytest.fixture(scope='module')
-def fake_payload() -> RequestDataScheme:
+def fake_payload() -> RequestInScheme:
     """Fake request payload."""
 
-    return RequestDataScheme(
-        el_ids={
-            CatType.PRODUCT: [1, 2, 3, 4, 5],
-            CatType.SUBGROUP: [3, 5, 10]
-        },
-        ret_names=['Silpo', 'Tavria']
+    return RequestInScheme(
+        folders=[2, 3],
+        products=[1, 2, 3, 4, 5, 6],
+        retailers=[1, 2]
     )
 
 
@@ -106,25 +106,35 @@ def fake_session():
 
 
 @pytest.fixture(scope='session')
-def fake_db_content(fake_session) -> FolderContent:
+def fake_db_content(fake_session) -> RequestObjects:
     """Fill database catalog with fake content."""
-    content = [
-        Folder(name='Alcohol', type=CatType.SUBGROUP),
-        # Folder(name='Grocery', type=CatType.SUBGROUP),
-        # Folder(name='Milk', type=CatType.SUBGROUP)
-    ]
+    content = RequestObjects(
+        (
+            Folder(name='Alcohol', type=CatType.SUBGROUP),
+            Folder(name='Grocery', type=CatType.SUBGROUP),
+            Folder(name='Milk', type=CatType.SUBGROUP)
+        ),
+        (
+            Product(name='Beer Chernigovskoe 0,5', parent_id=1),
+            Product(name='Vine Cartuli Vazi 0,7', parent_id=1),
+            Product(name='Vodka Finlandia 0,7', parent_id=1),
+            Product(name='Sunflower Oil 1l', parent_id=2),
+            Product(name='Chips 500 gr', parent_id=2),
+            Product(name='Sugar 1kg', parent_id=2),
+            Product(name='Milk 1l', parent_id=3),
+            Product(name='Jogurt Fructegut 400ml', parent_id=3),
+            Product(name='Spred 200gr', parent_id=3),
+        ),
+        (
+            Retailer(name='Tavria', home_url='https://www.tavriav.ua/'),
+            Retailer(name='Silpo', home_url='https://shop.silpo.ua/'),
+            Retailer(name='Epicentr', home_url='https://epicentrk.ua/shop/'),
+        )
+    )
 
-    content.extend((
-        Product(name='Beer Chernigovskoe 0,5', parent_id=1),
-        Product(name='Vine Cartuli Vazi 0,7', parent_id=1),
-        Product(name='Vodka Finlandia 0,7', parent_id=1),
-        # Product(name='Sunflower Oil 1l', parent_id=2),
-        # Product(name='Chips 500 gr', parent_id=2),
-        # Product(name='Sugar 1kg', parent_id=2),
-        # Product(name='Milk 1l', parent_id=3),
-        # Product(name='Jogurt Fructegut 400ml', parent_id=3),
-        # Product(name='Spred 200gr', parent_id=3),
-    ))
+    crud.add_instances((*content.folders,
+                        *content.products,
+                        *content.retailers),
+                       fake_session)
 
-    crud.add_instances(content, fake_session)
-    return FolderContent(products=content[1::])
+    return content
