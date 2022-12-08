@@ -1,4 +1,6 @@
 """Fixtures for authentication tests."""
+from random import choice
+
 from authentication.models import User
 from authentication.schemas import UserCreate, UserScheme
 from authentication.utils import create_access_token
@@ -6,7 +8,10 @@ from authentication.utils import create_access_token
 from catalog.models import Folder, Product
 
 from core.core_typing import RequestObjects
+from core.models import PriceLine
+from core.schemas import ReportHeaderScheme
 from core.schemas import RequestInScheme
+
 
 import crud
 
@@ -25,7 +30,7 @@ import pytest
 from retailer.models import Retailer
 
 
-target_metadata = Base.metadata
+target_metadata = Base.metadata  # type: ignore
 target_metadata.create_all(test_engine)
 
 app.dependency_overrides[get_session] = get_test_session
@@ -109,32 +114,55 @@ def fake_session():
 def fake_db_content(fake_session) -> RequestObjects:
     """Fill database catalog with fake content."""
     content = RequestObjects(
-        (
+        [
             Folder(name='Alcohol', type=CatType.SUBGROUP),
             Folder(name='Grocery', type=CatType.SUBGROUP),
             Folder(name='Milk', type=CatType.SUBGROUP)
-        ),
-        (
-            Product(name='Beer Chernigovskoe 0,5', parent_id=1),
-            Product(name='Vine Cartuli Vazi 0,7', parent_id=1),
-            Product(name='Vodka Finlandia 0,7', parent_id=1),
-            Product(name='Sunflower Oil 1l', parent_id=2),
-            Product(name='Chips 500 gr', parent_id=2),
-            Product(name='Sugar 1kg', parent_id=2),
-            Product(name='Milk 1l', parent_id=3),
-            Product(name='Jogurt Fructegut 400ml', parent_id=3),
-            Product(name='Spred 200gr', parent_id=3),
-        ),
-        (
+        ],
+        [
+            Product(name='Beer Chernigovskoe 0,5', parent_id=1, prime_cost=23.5),
+            Product(name='Vine Cartuli Vazi 0,7', parent_id=1, prime_cost=58.15),
+            Product(name='Vodka Finlandia 0,7', parent_id=1, prime_cost=115.96),
+            Product(name='Sunflower Oil 1l', parent_id=2, prime_cost=20.99),
+            Product(name='Chips 500 gr', parent_id=2, prime_cost=15.20),
+            Product(name='Sugar 1kg', parent_id=2, prime_cost=9.99),
+            Product(name='Milk 1l', parent_id=3, prime_cost=12.35),
+            Product(name='Jogurt Fructegut 400ml', parent_id=3, prime_cost=19.84),
+            Product(name='Spred 200gr', parent_id=3, prime_cost=27.80),
+        ],
+        [
             Retailer(name='Tavria', home_url='https://www.tavriav.ua/'),
             Retailer(name='Silpo', home_url='https://shop.silpo.ua/'),
             Retailer(name='Epicentr', home_url='https://epicentrk.ua/shop/'),
-        )
+        ]
     )
 
     crud.add_instances((*content.folders,
                         *content.products,
                         *content.retailers),
                        fake_session)
-
     return content
+
+
+@pytest.fixture(scope='session')
+def fake_prices(fake_db_content: RequestObjects, fake_session):
+    """Create random prices for products for retailers."""
+    price_lines = (
+        PriceLine(
+            product_id=pr.id,
+            retailer_id=rt.id,
+            retail_price=choice(range(100)),
+            promo_price=choice(range(100)),
+        )
+        for pr in fake_db_content.products
+        for rt in fake_db_content.retailers
+    )
+    crud.add_instances(price_lines, fake_session)
+
+
+@pytest.fixture(scope='session')
+def fake_header():
+    return ReportHeaderScheme(
+        name='just a fake report',
+        note='just a fake note'
+    )

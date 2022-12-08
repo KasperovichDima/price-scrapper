@@ -5,11 +5,10 @@ from fastapi import APIRouter, Depends
 
 from interfaces import IUser
 
+from .exceptions import empty_request_exception
 from .report_mngr import report_mngr
-from .schemas import RequestInScheme
-from .schemas import RequestOutScheme
-# from .exceptions import empty_request_exception
-# from .schemas import ReportHeader
+from .schemas import ReportHeaderScheme, ReportScheme
+from .schemas import RequestInScheme, RequestOutScheme
 
 
 router = APIRouter(prefix='/report', tags=['reports'])
@@ -35,6 +34,15 @@ async def remove_request_data(data: RequestInScheme,
     return report_mngr.remove_request_data(user, data, session)
 
 
+@router.post('/get_report', response_model=ReportScheme)
+async def get_report(header: ReportHeaderScheme,
+                     user: IUser = Depends(get_current_active_user),
+                     token=Depends(oauth2_scheme),
+                     session=Depends(get_session)):
+    """Returns report, created by request parameters."""
+    if not bool(report_mngr.get_request(user)):
+        raise empty_request_exception
+    return report_mngr.get_report(user, header, session)
 
 
 

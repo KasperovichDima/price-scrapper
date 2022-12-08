@@ -16,26 +16,26 @@ class Request:
         self.__retailers: set[i.IRetailer] = set()
 
     def __bool__(self):
-        return bool(self.__products and self.__folders and self.__retailers)
+        return bool((self.__products or self.__folders) and self.__retailers)
 
     @property
-    def objects(self) -> RequestObjects:
-        """Objects of current request."""
+    def folders(self) -> list[i.IFolder]:
+        return sorted(list(self.__folders), key=lambda _: _.name)
 
-        return RequestObjects(**self.__sorted_objects)
+    @property
+    def products(self) -> list[i.IProduct]:
+        return sorted(list(self.__products), key=lambda _: _.name)
+
+    @property
+    def retailers(self) -> list[i.IRetailer]:
+        return sorted(list(self.__retailers), key=lambda _: _.name)
 
     @property
     def out_data(self) -> RequestOutScheme:
-        """Pydantic mdoel of current request."""
-        return RequestOutScheme(**self.__sorted_objects)
-
-    @property
-    def __sorted_objects(self) -> dict:
-        return dict(
-            folders=sorted(list(self.__folders), key=lambda _: _.name),
-            products=sorted(list(self.__products), key=lambda _: _.name),
-            retailers=sorted(list(self.__retailers), key=lambda _: _.name),
-        )
+        """Pydantic model of current request."""
+        return RequestOutScheme(folders=self.folders,
+                                products=self.products,
+                                retailers=self.retailers)
 
     def add_objects(self, data: RequestObjects) -> None:
         """Add objects to current request."""

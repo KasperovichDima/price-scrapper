@@ -7,10 +7,13 @@ from collections import defaultdict
 import interfaces as i
 
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 
 from .request import Request
-from ..core_typing import RequestObjects
+from ..models import PriceLine
 from ..schemas import RequestInScheme
+from ..schemas import RequestOutScheme
+from ..schemas import ReportHeaderScheme
 from ..utils import get_request_objects
 
 
@@ -30,7 +33,7 @@ class ReportManager:
 
     def add_request_data(self, user: i.IUser,
                          in_data: RequestInScheme,
-                         session: Session) -> RequestObjects:
+                         session: Session) -> RequestOutScheme:
 
         request = self.get_request(user)
         request.add_objects(get_request_objects(in_data, session))
@@ -38,16 +41,31 @@ class ReportManager:
 
     def remove_request_data(self, user: i.IUser,
                             in_data: RequestInScheme,
-                            session: Session) -> RequestObjects:
+                            session: Session) -> RequestOutScheme:
 
         request = self.get_request(user)
         request.remove_objects(get_request_objects(in_data, session))
         return request.out_data
 
-    # def get_report(self, user: i.IUser, session: Session) -> Any:
-    #     """TODO: Refactoring."""
+    def get_report(self, user: i.IUser, header: ReportHeaderScheme, session: Session) -> dict:
+        """Returns report, created by request parameters."""
 
-    #     request = self.get_request(user)
+        request = self.get_request(user)
+        header.user_name = str(user)
+        price_lines: list[PriceLine] = session.query(PriceLine).where(
+            and_(
+                PriceLine.product_id.in_((_.id for _ in request.products)),
+                PriceLine.retailer_id.in_((_.id for _ in request.retailers))
+            )
+        ).all()
+
+        return dict(
+            header=header,
+            folders=request.folders,
+            products=request.products,
+            retailers=request.retailers,
+            content=price_lines
+        )
 
 
 report_mngr = ReportManager()

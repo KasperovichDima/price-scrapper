@@ -1,7 +1,10 @@
 """Core validation schamas."""
-from project_typing import CatType
+from datetime import datetime
+from decimal import Decimal
 
-from pydantic import BaseModel
+from catalog.schemas import BaseCatScheme, FolderScheme, ProductScheme
+
+from pydantic import BaseModel, Field
 
 from retailer.schemas import RetailerScheme
 
@@ -13,20 +16,40 @@ class RequestInScheme(BaseModel):
     retailers: list[int] = []
 
 
-class ElementScheme(BaseModel):
-    """Base scheme for catalog element."""
+class RequestOutScheme(BaseModel):
+    """Request content scheme."""
 
-    id: int
-    name: str
-    type: CatType
+    folders: list[BaseCatScheme] = []
+    products: list[BaseCatScheme] = []
+    retailers: list[RetailerScheme] = []
+
+
+class ReportHeaderScheme(BaseModel):
+    """Validation of required user data for report header."""
+
+    name: str = Field(max_length=100)
+    note: str = Field(max_length=250)
+    time_created: datetime = datetime.now()
+    user_name: str | None
+
+
+class PriceLineSchema(BaseModel):
+    """Price line scheme."""
+
+    product_id: int
+    retailer_id: int
+    retail_price: Decimal
+    promo_price: Decimal
 
     class Config:
         orm_mode = True
 
 
-class RequestOutScheme(BaseModel):
-    """Request content scheme."""
+class ReportScheme(BaseModel):
+    """Complete report scheme."""
 
-    folders: list[ElementScheme] = []
-    products: list[ElementScheme] = []
-    retailers: list[RetailerScheme] = []
+    header: ReportHeaderScheme
+    folders: list[FolderScheme]
+    products: list[ProductScheme]
+    retailers: list[RetailerScheme]
+    content: list[PriceLineSchema]
