@@ -6,23 +6,24 @@ from collections import defaultdict
 
 import interfaces as i
 
-from sqlalchemy.orm import Session
 from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 from .request import Request
 from ..models import PriceLine
+from ..schemas import ReportHeaderScheme
 from ..schemas import RequestInScheme
 from ..schemas import RequestOutScheme
-from ..schemas import ReportHeaderScheme
 from ..utils import get_request_objects
 
 
 class ReportManager:
     """
-    Class for handling reports. Can create reports and perform all report
-    operations. Primarily - User request must be created. Every user has
-    he's own request with all request parameters. Any changes will affect only
-    current user request.
+    Class for handling reports. Can create request/report and perform all
+    request/report operations. Primarily - User request must be created. Every
+    user has he's own request with all request parameters. Any changes will
+    affect only current user request. Whem request is ready (products or/and
+    folders and retailers are filled) - report can be created.
     """
 
     def __init__(self) -> None:
@@ -47,7 +48,9 @@ class ReportManager:
         request.remove_objects(get_request_objects(in_data, session))
         return request.out_data
 
-    def get_report(self, user: i.IUser, header: ReportHeaderScheme, session: Session) -> dict:
+    def get_report(self, user: i.IUser,
+                   header: ReportHeaderScheme,
+                   session: Session) -> dict:
         """Returns report, created by request parameters."""
 
         request = self.get_request(user)

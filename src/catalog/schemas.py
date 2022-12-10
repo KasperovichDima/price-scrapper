@@ -15,7 +15,7 @@ class BaseCatScheme(BaseModel):
     type: CatType
 
     class Config:
-            orm_mode = True
+        orm_mode = True
 
 
 class FolderScheme(BaseCatScheme):
