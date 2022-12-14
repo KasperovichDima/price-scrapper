@@ -1,5 +1,5 @@
 """Fixtures for authentication tests."""
-from random import choice
+from datetime import datetime
 
 from authentication.models import User
 from authentication.schemas import UserCreate, UserScheme
@@ -120,14 +120,14 @@ def fake_db_content(fake_session) -> RequestObjects:
             Folder(name='Milk', type=CatType.SUBGROUP)
         ],
         [
-            Product(name='Beer Chernigovskoe 0,5', parent_id=1, prime_cost=23.5),
-            Product(name='Vine Cartuli Vazi 0,7', parent_id=1, prime_cost=58.15),
-            Product(name='Vodka Finlandia 0,7', parent_id=1, prime_cost=115.96),
+            Product(name='Beer Chernigovskoe 0,5', parent_id=1, prime_cost=23.5),  # noqa: E501
+            Product(name='Vine Cartuli Vazi 0,7', parent_id=1, prime_cost=58.15),  # noqa: E501
+            Product(name='Vodka Finlandia 0,7', parent_id=1, prime_cost=115.96),  # noqa: E501
             Product(name='Sunflower Oil 1l', parent_id=2, prime_cost=20.99),
             Product(name='Chips 500 gr', parent_id=2, prime_cost=15.20),
             Product(name='Sugar 1kg', parent_id=2, prime_cost=9.99),
             Product(name='Milk 1l', parent_id=3, prime_cost=12.35),
-            Product(name='Jogurt Fructegut 400ml', parent_id=3, prime_cost=19.84),
+            Product(name='Jogurt Fructegut 400ml', parent_id=3, prime_cost=19.84),  # noqa: E501
             Product(name='Spred 200gr', parent_id=3, prime_cost=27.80),
         ],
         [
@@ -147,16 +147,23 @@ def fake_db_content(fake_session) -> RequestObjects:
 @pytest.fixture(scope='session')
 def fake_prices(fake_db_content: RequestObjects, fake_session):
     """Create random prices for products for retailers."""
-    price_lines = (
-        PriceLine(
-            product_id=pr.id,
-            retailer_id=rt.id,
-            retail_price=choice(range(100)),
-            promo_price=choice(range(100)),
-        )
-        for pr in fake_db_content.products
-        for rt in fake_db_content.retailers
-    )
+
+    retail_price = 50
+    promo_price = 40
+    price_lines = []
+    for pr in fake_db_content.products:
+        for rt in fake_db_content.retailers:
+            price_lines.append(
+                PriceLine(
+                    product_id=pr.id,
+                    retailer_id=rt.id,
+                    retail_price=retail_price,
+                    promo_price=promo_price,
+                )
+            )
+            retail_price += 1
+            promo_price += 1
+
     crud.add_instances(price_lines, fake_session)
 
 
@@ -164,5 +171,6 @@ def fake_prices(fake_db_content: RequestObjects, fake_session):
 def fake_header():
     return ReportHeaderScheme(
         name='just a fake report',
-        note='just a fake note'
+        note='just a fake note',
+        time_created=datetime.fromisoformat('2022-12-10T15:42:32.373798')
     )

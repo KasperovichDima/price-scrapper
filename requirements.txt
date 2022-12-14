@@ -61,3 +61,7 @@ uvloop==0.17.0
 watchfiles==0.18.0
 wcwidth
 websockets
+aiohttp==3.8.3
+fake-useragent==1.1.1   # Do we need it?
+beautifulsoup4==4.11.1
+lxml==4.9.1

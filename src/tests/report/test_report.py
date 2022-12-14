@@ -4,14 +4,13 @@ from core.schemas import RequestInScheme
 
 from .. import constants as c
 from ..conftest import client
-# from ..references import get_report_ok_ref
+from ..references import get_report_ok_ref
 
 
 class TestReport:
     """Tests of /report/get_report endpoint."""
 
-    def test_get_report_ok(self, fake_db_content, 
-    fake_prices,
+    def test_get_report_ok(self, fake_db_content, fake_prices,
                            create_superuser, access_token,
                            fake_payload: RequestInScheme,
                            fake_header: ReportHeaderScheme):
@@ -25,5 +24,9 @@ class TestReport:
         print('\n')
         print(rsp.json())
 
-        assert rsp.status_code == 200
-            # and rsp.json() == get_report_ok_ref
+        assert rsp.status_code == 200\
+            and rsp.json()['header'] == get_report_ok_ref['header']\
+            and rsp.json()['folders'] == get_report_ok_ref['folders']\
+            and rsp.json()['products'] == get_report_ok_ref['products']\
+            and rsp.json()['retailers'] == get_report_ok_ref['retailers']\
+            and rsp.json()['content'] == get_report_ok_ref['content']

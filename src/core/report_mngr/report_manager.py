@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from .request import Request
 from ..models import PriceLine
 from ..schemas import ReportHeaderScheme
+from ..schemas import ReportScheme
 from ..schemas import RequestInScheme
 from ..schemas import RequestOutScheme
 from ..utils import get_request_objects
@@ -50,11 +51,14 @@ class ReportManager:
 
     def get_report(self, user: i.IUser,
                    header: ReportHeaderScheme,
-                   session: Session) -> dict:
-        """Returns report, created by request parameters."""
+                   session: Session):
+        """
+        Returns report, created by request parameters.
+        TODO: Refactoring.
+        """
 
-        request = self.get_request(user)
         header.user_name = str(user)
+        request = self.__requests.pop(user)
         price_lines: list[PriceLine] = session.query(PriceLine).where(
             and_(
                 PriceLine.product_id.in_((_.id for _ in request.products)),
@@ -62,7 +66,7 @@ class ReportManager:
             )
         ).all()
 
-        return dict(
+        return ReportScheme(
             header=header,
             folders=request.folders,
             products=request.products,

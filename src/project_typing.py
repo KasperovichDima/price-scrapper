@@ -16,3 +16,5 @@ class CatType(Enum):
     PRODUCT = auto()
     SUBGROUP = auto()
     GROUP = auto()
+    SUBCATEGORY = auto()
+    CATEGORY = auto()
