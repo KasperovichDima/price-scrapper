@@ -1,13 +1,19 @@
 """Tavria V parser."""
-from bs4 import BeautifulSoup as bs
-from bs4.element import Tag
+from collections import defaultdict, namedtuple
 from typing import Iterable
 from urllib import request
-from collections import defaultdict, namedtuple
-from project_typing import CatType
-from database import SessionLocal
-import crud
+
+from bs4 import BeautifulSoup as bs
+from bs4.element import Tag
+
 from catalog.models import Folder
+
+import crud
+
+from database import SessionLocal
+
+from project_typing import CatType
+
 from ..constants import MAIN_PARSER
 
 
