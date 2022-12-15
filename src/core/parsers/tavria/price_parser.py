@@ -15,6 +15,8 @@ from project_typing import ElType
 
 from .tree_builder import TreeBuilder
 from .utils import get_catalog_tags
+from .utils import tag_contains_products
+from .utils import tag_is_a_group
 from ...constants import MAIN_PARSER
 
 # 1. Get last level links
@@ -26,27 +28,51 @@ from ...constants import MAIN_PARSER
 class TavriaParser:
     """Tavria V parser."""
 
-    __cat_tags: Iterable[Tag]
-
     def __init__(self, home_url: str) -> None:
         self.__cat_tags = get_catalog_tags(home_url)
 
-
-        # self.__get_last_level_links()
+        self.__get_last_level_tags()
         # self.__collect_prices()
         # self.__save_new_products()
         # self.__save_results()
         return self.__completed_report
 
+    def __get_last_level_tags(self) -> None:
+        """Collects all tags, which links contain products."""
+        products_in_groups = {}
+        products_in_subcategories = {}
+        for _ in self.__cat_tags:
+            if tag_is_a_group(_):
+                products_in_groups[_.text] = _.get('href')
 
-    def __get_last_level_links(self) -> None:
 
-        links = (_ for _ in self.__cat_tags.find_all('a'))
+
+        tags_with_products = (_ for _ in self.__cat_tags if tag_contains_products(_))
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        tags_with_products = (_ for _ in self.__cat_tags)
 
         grand_parent: str = ''  # TODO: rename
         middle_parent: str = ''  # TODO: rename
         links_by_categories: defaultdict[str, list[tuple[str, str]]] = defaultdict(list)
-        for _ in links:
+        for _ in tags_with_products:
             if text := _.string:
                 links_by_categories[grand_parent].append((text.strip(), _.get('href')))
             elif _.get('href') == '#':

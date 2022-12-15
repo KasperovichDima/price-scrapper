@@ -1,4 +1,5 @@
 """TreeBuilder class for creating catalog tree."""
+from collections import deque
 from functools import cached_property
 
 from bs4.element import Tag
@@ -24,14 +25,14 @@ class TreeBuilder:
     """
     Check if catalog tree exists in database
     and update it with site information.
-    TODO: deque, slots.
+    TODO: slots.
     """
 
     __current_cat_name: str = ''
     __current_subcat_name: str = ''
-    __new_groups: list[FolderData] = []
-    __new_subcategories: list[FolderData] = []
-    __new_categories: list[FolderData] = []
+    __new_groups: deque[FolderData] = deque()
+    __new_subcategories: deque[FolderData] = deque()
+    __new_categories: deque[FolderData] = deque()
 
     def __init__(self, home_url: str, session: Session) -> None:
         if MAIN_PARSER != 'Tavria':

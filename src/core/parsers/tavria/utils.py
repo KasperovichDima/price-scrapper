@@ -36,3 +36,7 @@ def tag_is_a_subcategory(tag: Tag) -> bool:
 
 def tag_is_a_category(tag: Tag) -> bool:
     return tag.name == 'a' and tag.get('href') == '#'
+
+
+def tag_contains_products(tag: Tag) -> bool:
+    return tag.name == 'a' and 'catalog' in tag.get('href')
