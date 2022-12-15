@@ -23,7 +23,7 @@ from fastapi.testclient import TestClient
 
 from main import app
 
-from project_typing import CatType, UserType
+from project_typing import ElType, UserType
 
 import pytest
 
@@ -72,7 +72,7 @@ def fake_user_data() -> UserCreate:
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def create_fake_user(fake_user_data: UserCreate) -> UserScheme:
     """Create fake user in database."""
     rsp = client.post('/auth/create_user', data=fake_user_data.json())
@@ -104,20 +104,20 @@ def fake_payload() -> RequestInScheme:
     )
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def fake_session():
     from database import TestSession
     return TestSession()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def fake_db_content(fake_session) -> RequestObjects:
     """Fill database catalog with fake content."""
     content = RequestObjects(
         [
-            Folder(name='Alcohol', type=CatType.SUBGROUP),
-            Folder(name='Grocery', type=CatType.SUBGROUP),
-            Folder(name='Milk', type=CatType.SUBGROUP)
+            Folder(name='Alcohol', type=ElType.SUBGROUP),
+            Folder(name='Grocery', type=ElType.SUBGROUP),
+            Folder(name='Milk', type=ElType.SUBGROUP)
         ],
         [
             Product(name='Beer Chernigovskoe 0,5', parent_id=1, prime_cost=23.5),  # noqa: E501
@@ -141,10 +141,15 @@ def fake_db_content(fake_session) -> RequestObjects:
                         *content.products,
                         *content.retailers),
                        fake_session)
-    return content
+    yield content
+    for _ in (*content.folders,
+              *content.products,
+              *content.retailers):
+        fake_session.delete(_)
+    fake_session.commit()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def fake_prices(fake_db_content: RequestObjects, fake_session):
     """Create random prices for products for retailers."""
 
@@ -167,7 +172,7 @@ def fake_prices(fake_db_content: RequestObjects, fake_session):
     crud.add_instances(price_lines, fake_session)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def fake_header():
     return ReportHeaderScheme(
         name='just a fake report',

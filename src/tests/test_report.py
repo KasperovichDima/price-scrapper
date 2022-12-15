@@ -2,9 +2,9 @@
 from core.schemas import ReportHeaderScheme
 from core.schemas import RequestInScheme
 
-from .. import constants as c
-from ..conftest import client
-from ..references import get_report_ok_ref
+from . import constants as c
+from .conftest import client
+from .references.references import get_report_ok_ref
 
 
 class TestReport:

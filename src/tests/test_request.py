@@ -3,9 +3,9 @@ from core.schemas import RequestInScheme
 
 from requests import Response
 
-from .. import constants as c
-from ..conftest import client
-from ..references import add_ok_ref, remove_items_ok_ref
+from . import constants as c
+from .conftest import client
+from .references.references import add_ok_ref, remove_items_ok_ref
 
 
 def send_add_request(url: str, payload: RequestInScheme,

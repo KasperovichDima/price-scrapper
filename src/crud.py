@@ -34,10 +34,14 @@ def add_instance(instance: Base, session: Session) -> None:  # type: ignore
 
 
 def add_instances(instances: Iterable[Base], session: Session) -> None:  # type: ignore  # noqa: E501
-    """Add new created instance to database."""
+    """Add new instances to database."""
     session.add_all(instances)
     session.commit()
 
+
+# def del_instances(instances: Iterable[Base], session: Session) -> None:
+#     """Delete instances from database."""
+#         session.
 
 def get_element(cls: Type[i.IElement], id: int,
                 session: Session) -> i.IElement | None:
@@ -65,9 +69,23 @@ def get_products(session: Session, prod_ids: list[int],
         ).all()
 
 
-def get_folders(ids: list[int], session: Session) -> list[Folder]:
-    """Get folder bjects by folder ids."""
-    return session.query(Folder).where(Folder.id.in_(ids)).all()
+# def get_folders(ids: list[int], session: Session) -> list[Folder]:
+#     """Get folder bjects by folder ids."""
+#     return session.query(Folder).where(Folder.id.in_(ids)).all()
+
+def get_folders(session: Session, ids: Iterable[int] | None = None,
+                names: Iterable[int] | None = None) -> list[Folder]:
+    """
+    Get folder bjects by folder ids or(and) folder names
+    (optional). ids OR(AND) names MUST be specified.
+    """
+    if not (ids or names):
+        raise ValueError('ids OR(AND) names are required, NOT None of them.')
+    return session.query(Folder).where(
+        or_(
+            Folder.id.in_(ids if ids else []),
+            Folder.name.in_(names if names else []))  # type: ignore
+        ).all()
 
 
 def get_retailers(ids: list[int],

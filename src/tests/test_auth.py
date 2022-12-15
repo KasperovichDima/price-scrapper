@@ -5,7 +5,7 @@ TODO: Inmemory db for tests.
 """
 from authentication.schemas import UserCreate, UserScheme
 
-from ..conftest import client
+from .conftest import client
 
 
 class TestGetCurrentUser:

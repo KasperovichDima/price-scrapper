@@ -3,7 +3,7 @@ import interfaces as i
 
 from models import BaseWithRepr
 
-from project_typing import CatType
+from project_typing import ElType
 
 from sqlalchemy import Column, Enum, ForeignKey, Integer, Numeric, String
 
@@ -15,7 +15,7 @@ class Folder(BaseWithRepr, i.IFolder):
 
     name = Column(String(100), index=True, nullable=False)
     parent_id = Column(Integer, index=True)
-    type = Column(Enum(CatType), nullable=False)
+    type = Column(Enum(ElType), nullable=False)
 
 
 class Product(BaseWithRepr, i.IProduct):
@@ -27,4 +27,4 @@ class Product(BaseWithRepr, i.IProduct):
     parent_id = Column(Integer, ForeignKey('folder.id'), nullable=False)
     prime_cost = Column(Numeric(scale=2))
 
-    type = CatType.PRODUCT
+    type = ElType.PRODUCT

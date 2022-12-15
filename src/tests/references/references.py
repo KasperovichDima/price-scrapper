@@ -1,4 +1,5 @@
 """Reference json responses for unit tests."""
+from .tavria_tree_builder_result import tavria_tree_builder_result  # noqa: F401 E501
 
 
 get_content_ok_ref = {
@@ -77,3 +78,5 @@ get_report_ok_ref = {
         {'product_id': 6, 'retailer_id': 2, 'retail_price': 66.0, 'promo_price': 56.0}  # noqa: E501
         ]
     }
+
+

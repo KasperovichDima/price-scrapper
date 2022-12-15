@@ -1,7 +1,7 @@
 """Product catalog validation schemas."""
 from decimal import Decimal
 
-from project_typing import CatType
+from project_typing import ElType
 
 from pydantic import BaseModel
 
@@ -12,7 +12,7 @@ class BaseCatScheme(BaseModel):
     id: int
     name: str
     parent_id: int | None
-    type: CatType
+    type: ElType
 
     class Config:
         orm_mode = True

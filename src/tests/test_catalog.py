@@ -1,8 +1,8 @@
 """Catalog unit tests."""
 from core.core_typing import RequestObjects
 
-from ..conftest import client
-from ..references import get_content_ok_ref
+from .conftest import client
+from .references.references import get_content_ok_ref
 
 
 class TestGetContent:

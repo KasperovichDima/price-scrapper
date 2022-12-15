@@ -10,7 +10,7 @@ class UserType(Enum):
     SUPERUSER = auto()
 
 
-class CatType(Enum):
+class ElType(Enum):
     """Levels of catalog folders."""
 
     PRODUCT = auto()
