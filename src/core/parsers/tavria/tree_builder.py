@@ -32,9 +32,7 @@ class TreeBuilder:
 
     __current_cat_name: str = ''
     __current_subcat_name: str = ''
-    __new_groups: deque[FolderData] = deque()
-    __new_subcategories: deque[FolderData] = deque()
-    __new_categories: deque[FolderData] = deque()
+    __new_folders: defaultdict[ElType, deque[FolderData]] = defaultdict(deque)
     __product_factories: deque[ProductFactory] = deque()
 
     def __init__(self, home_url: str, session: Session) -> None:
@@ -88,31 +86,33 @@ class TreeBuilder:
             if not self.__current_subcat_name or tag_is_a_subcategory(tag)\
             else (self.__current_subcat_name, ElType.SUBCATEGORY)
         if parent_name:
-            self.__new_groups.append(FolderData(tag.text.strip(),
-                                                parent_name, parent_type))
+            self.__new_folders[ElType.GROUP].append(FolderData(tag.text.strip(),
+                                                    parent_name, parent_type))
 
     def __add_subcategory_data(self, tag: Tag) -> None:
         self.__current_subcat_name = tag.text.strip()
-        self.__new_subcategories.append(FolderData(self.__current_subcat_name,
-                                                   self.__current_cat_name,
-                                                   ElType.CATEGORY))
+        self.__new_folders[ElType.SUBCATEGORY]\
+            .append(FolderData(self.__current_subcat_name,
+                               self.__current_cat_name, ElType.CATEGORY))
 
     def __add_category_data(self, tag: Tag) -> None:
         self.__current_cat_name = tag.text.strip()
         self.__current_subcat_name = ''
-        self.__new_categories.append(FolderData(self.__current_cat_name))
+        self.__new_folders[ElType.CATEGORY]\
+            .append(FolderData(self.__current_cat_name))
 
     def __create_categories(self) -> None:
         """Creates Category objects in database."""
-        crud.add_instances((Folder(name=_.name, type=ElType.CATEGORY)
-                           for _ in self.__new_categories), self.__session)
+        categories = (Folder(name=_.name, type=ElType.CATEGORY)
+                      for _ in self.__new_folders[ElType.CATEGORY])
+        crud.add_instances(categories, self.__session)
 
     def __create_subcategories(self) -> None:
         """Creates Subcategories objects in database.
         Must be called after the categories are created."""
         subcategories = (Folder(name=_.name, type=ElType.SUBCATEGORY,
                                 parent_id=self.__cat_name_id[_.parent_name])
-                         for _ in self.__new_subcategories)
+                         for _ in self.__new_folders[ElType.SUBCATEGORY])
         crud.add_instances(subcategories, self.__session)
 
     def __create_groups(self) -> None:
@@ -122,7 +122,7 @@ class TreeBuilder:
                          parent_id=self.__cat_name_id[_.parent_name]
                          if _.parent_type == ElType.CATEGORY
                          else self.__subcat_name_id[_.parent_name])
-                  for _ in self.__new_groups)
+                  for _ in self.__new_folders[ElType.GROUP])
         crud.add_instances(groups, self.__session)
 
     def __create_products(self) -> None:
@@ -136,9 +136,8 @@ class TreeBuilder:
 
     @cached_property
     def __saved_categories(self) -> list[Folder]:
-        return crud.get_folders(
-            self.__session, names=(_.name for _ in self.__new_categories)
-        )
+        names = (_.name for _ in self.__new_folders[ElType.CATEGORY])
+        return crud.get_folders(self.__session, names=names)
 
     @cached_property
     def __subcat_name_id(self) -> dict[str, int]:
@@ -146,6 +145,5 @@ class TreeBuilder:
 
     @cached_property
     def __saved_subcategories(self) -> list[Folder]:
-        return crud.get_folders(
-            self.__session, names=(_.name for _ in self.__new_subcategories)
-        )
+        names = (_.name for _ in self.__new_folders[ElType.SUBCATEGORY])
+        return crud.get_folders(self.__session, names=names)
