@@ -15,7 +15,6 @@ from project_typing import ElType
 
 from .tree_builder import TreeBuilder
 from .utils import get_catalog_tags
-from .utils import tag_contains_products
 from .utils import tag_is_a_group
 from ...constants import MAIN_PARSER
 
@@ -47,7 +46,6 @@ class TavriaParser:
 
 
 
-        tags_with_products = (_ for _ in self.__cat_tags if tag_contains_products(_))
         
 
 

@@ -14,12 +14,12 @@ def get_catalog_tags(url: str) -> Iterable[Tag]:
     ).find_all()
 
 
-def tag_is_not_interesting(tag: Tag) -> bool:
-    try:
-        return ('discount' in tag.get('href')
-                or tag.is_empty_element)
-    except TypeError:
-        return False
+# def tag_is_not_interesting(tag: Tag) -> bool:
+#     try:
+#         return ('discount' in tag.get('href')
+#                 or tag.is_empty_element)
+#     except TypeError:
+#         return False
 
 
 def tag_is_a_group(tag: Tag) -> bool:
@@ -36,7 +36,3 @@ def tag_is_a_subcategory(tag: Tag) -> bool:
 
 def tag_is_a_category(tag: Tag) -> bool:
     return tag.name == 'a' and tag.get('href') == '#'
-
-
-def tag_contains_products(tag: Tag) -> bool:
-    return tag.name == 'a' and 'catalog' in tag.get('href')

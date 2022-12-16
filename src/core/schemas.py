@@ -1,7 +1,10 @@
 """Core validation schamas."""
+from collections import deque
 from datetime import datetime
 from decimal import Decimal
+from typing import Iterable
 
+from catalog.models import Product
 from catalog.schemas import BaseCatScheme, FolderScheme, ProductScheme
 
 from pydantic import BaseModel, Field
@@ -53,3 +56,20 @@ class ReportScheme(BaseModel):
     products: list[ProductScheme]
     retailers: list[RetailerScheme]
     content: list[PriceLineSchema]
+
+
+class ProductFactory(BaseModel):
+    """Contains all required information for product.
+    cretion. Creates products using 'products' property."""
+
+    url: str
+    category_name: str
+    subcategory_name: str
+    group_name: str
+    parent_id: int | None
+    product_names: deque[str] = deque()
+
+    @property
+    def products(self) -> Iterable[Product]:
+        return (Product(name=_, parent_id=self.parent_id)
+                for _ in self.product_names)
