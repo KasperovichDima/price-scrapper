@@ -30,8 +30,8 @@ class TreeBuilder:
     TODO: slots.
     """
 
-    __current_cat_name: str = ''
-    __current_subcat_name: str = ''
+    __current_cat_name: str = None
+    __current_subcat_name: str = None
     __current_tag: Tag
     __new_folders: defaultdict[ElType, deque[FolderData]] = defaultdict(deque)
     __product_factories: deque[ProductFactory] = deque()
@@ -98,7 +98,7 @@ class TreeBuilder:
 
     def __add_product_factory(self) -> None:
         assert self.__current_cat_name or self.__current_subcat_name
-        factory = ProductFactory(url=self.__current_tag.get('href'),
+        factory = ProductFactory(parent_url=self.__current_tag.get('href'),
                                  category_name=self.__current_cat_name,
                                  subcategory_name=self.__current_subcat_name,
                                  group_name=self.__current_tag.text.strip())

@@ -8,7 +8,7 @@ from project_typing import ElType
 from sqlalchemy import Column, Enum, ForeignKey, Integer, Numeric, String
 
 
-class Folder(BaseWithRepr, i.IFolder):
+class Folder(BaseWithRepr, i.ICatalogElement):
     """Product folder class."""
 
     __tablename__ = 'folder'
@@ -18,7 +18,7 @@ class Folder(BaseWithRepr, i.IFolder):
     type = Column(Enum(ElType), nullable=False)
 
 
-class Product(BaseWithRepr, i.IProduct):
+class Product(BaseWithRepr, i.ICatalogElement):
     """Product class."""
 
     __tablename__ = "product"

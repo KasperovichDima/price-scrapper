@@ -43,8 +43,8 @@ def add_instances(instances: Iterable[Base], session: Session) -> None:  # type:
 #     """Delete instances from database."""
 #         session.
 
-def get_element(cls: Type[i.IElement], id: int,
-                session: Session) -> i.IElement | None:
+def get_element(cls: Type[i.ICatalogElement], id: int,
+                session: Session) -> i.ICatalogElement | None:
     """Returns catalog instance with specified params, if exists."""
     return session.get(cls, id)
 

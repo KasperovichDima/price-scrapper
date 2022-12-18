@@ -17,18 +17,18 @@ class IUser(IBaseWithID):
     """User interface."""
 
 
-class IElement(IBaseWithID):
+class ICatalogElement(IBaseWithID):
     """Catalog element interface."""
 
     name: str
 
 
-class IFolder(IElement):
-    """Folder interface."""
+# class IFolder(ICatalogElement):
+#     """Folder interface."""
 
 
-class IProduct(IElement):
-    """Product intrface."""
+# class IProduct(ICatalogElement):
+#     """Product intrface."""
 
 
 class IRetailer(IBaseWithID):

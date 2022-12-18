@@ -7,7 +7,11 @@ from typing import Iterable
 from catalog.models import Product
 from catalog.schemas import BaseCatScheme, FolderScheme, ProductScheme
 
+from interfaces import ICatalogElement
+
 from pydantic import BaseModel, Field
+
+from project_typing import ElType
 
 from retailer.schemas import RetailerScheme
 
@@ -58,18 +62,34 @@ class ReportScheme(BaseModel):
     content: list[PriceLineSchema]
 
 
-class ProductFactory(BaseModel):
-    """Contains all required information for product.
-    cretion. Creates products using 'products' property."""
+class CatalogFactory(BaseModel):
+    """Contains all required information for catalog objects
+    cretion. Creates folders using create_objects method."""
 
-    url: str
+    def create_objects(self) -> Iterable[ICatalogElement]:
+        ...
+
+
+class FolderFactory(CatalogFactory):
+
+    name: str
+    parent_name: str | None = None
+    parent_type: ElType | None = None
+
+
+class ProductFactory(CatalogFactory):
+    """Contains all required information for catalog objects
+    cretion. Creates folders using create_objects method."""
+
+    parent_url: str
     category_name: str
     subcategory_name: str
     group_name: str
     parent_id: int | None
     product_names: deque[str] = deque()
 
-    @property
-    def products(self) -> Iterable[Product]:
+    def create_objects(self) -> Iterable[Product]:
+        if not self.parent_id:
+            raise KeyError('Can not create products without parent id.')
         return (Product(name=_, parent_id=self.parent_id)
                 for _ in self.product_names)
