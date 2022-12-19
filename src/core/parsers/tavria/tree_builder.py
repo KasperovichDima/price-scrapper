@@ -6,7 +6,7 @@ from project_typing import ElType
 from sqlalchemy.orm import Session
 
 from .tag_data_preparator import FactoryCreator
-from ...schemas import CatalogFactory
+# from ...schemas import CatalogFactory
 from ...constants import MAIN_PARSER
 
 
@@ -21,7 +21,7 @@ class TreeBuilder:
         if MAIN_PARSER != 'Tavria':
             return
         self.__session = session
-        self.__factories = FactoryCreator()(home_url)
+        self.__factories = FactoryCreator(home_url)()
         pass
         # self.__get_objects()
 

@@ -5,12 +5,14 @@ from typing import Iterable
 from bs4.element import Tag
 
 from project_typing import ElType
+from pydantic import ValidationError
 
+from .factories import CatalogFactory
+from .factories import get_factory_class
 from .utils import get_catalog_tags
 from .utils import get_type
 from .utils import tag_is_interesting
 from .utils import get_url
-from ...schemas import CatalogFactory
 
 
 class FactoryCreator:
@@ -26,15 +28,14 @@ class FactoryCreator:
     __factories: defaultdict[ElType, deque[CatalogFactory]]\
         = defaultdict(deque)
 
-    def __init__(self) -> None:
+    def __init__(self, home_url: str) -> None:
+        self.__tags = get_catalog_tags(home_url)
         type_ = ElType.CATEGORY
         cat_factory = CatalogFactory(obj_type=type_)
         self.__factories[type_].append(cat_factory)
         self.__current_factories[type_] = cat_factory
 
-    def __call__(self,
-                 home_url: str) -> defaultdict[ElType, deque[CatalogFactory]]:
-        self.__tags = get_catalog_tags(home_url)
+    def __call__(self) -> defaultdict[ElType, deque[CatalogFactory]]:
         self.__create_factories()
         return self.__factories
 
@@ -73,7 +74,7 @@ class FactoryCreator:
 
     def __recreate_factory(self, type_: ElType) -> None:
         self.__try_to_close_factory(type_)
-        self.__create_factory(type_)
+        self.__try_to_create_factory(type_)
 
     def __try_to_close_factory(self, type_: ElType) -> None:
         try:
@@ -90,11 +91,17 @@ class FactoryCreator:
     def __close_factory(self, type_: ElType) -> None:
         self.__factories[type_].append(self.__current_factories.pop(type_))
 
+    def __try_to_create_factory(self, type_: ElType):
+        try:
+            self.__create_factory(type_)
+        except ValidationError:
+            pass
+
     def __create_factory(self, type_: ElType):
-        self.__current_factories[type_] = CatalogFactory(
-            obj_type=type_,
-            url=get_url(self.__current_tag) if type_ is ElType.PRODUCT else None,
+        factory_class = get_factory_class(type_)
+        self.__current_factories[type_] = factory_class(
+            url=get_url(self.__current_tag),
             category_name=self.__current_names[ElType.CATEGORY],
-            subcategory_name=self.__current_names[ElType.SUBCATEGORY] if type_ not in {ElType.CATEGORY, ElType.SUBCATEGORY} else None,
-            group_name=self.__current_names[ElType.GROUP] if type_ is ElType.PRODUCT else None,
+            subcategory_name=self.__current_names[ElType.SUBCATEGORY],
+            group_name=self.__current_names[ElType.GROUP]
         )

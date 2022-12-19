@@ -1,0 +1,88 @@
+""""""
+from collections import deque
+
+from typing import Any, Iterable
+
+from catalog.models import Folder, Product
+
+from interfaces import ICatalogElement
+
+from project_typing import ElType
+
+from pydantic import BaseModel
+
+
+class CatalogFactory(BaseModel):
+    """Contains all required information for catalog objects
+    cretion. Creates objects using create_objects method."""
+
+    object_names: deque[str] = deque()
+
+    def __bool__(self) -> bool:
+        return bool(self.object_names)
+
+    def add_name(self, name: str) -> None:
+        self.object_names.append(name)
+
+    def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
+        ...
+
+
+class CategoryFactory(CatalogFactory):
+
+    def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
+        return (Folder(name=_.name, type=ElType.CATEGORY) for _ in self.object_names)
+
+    
+class SubcategoryFactory(CatalogFactory):
+
+    category_name: str
+
+    def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
+        parent_id: int = next(_.id for _ in folders if _.name == self.category_name)
+        return (Folder(name=_.name,
+                       parent_id=parent_id,
+                       type=ElType.SUBCATEGORY)
+                for _ in self.object_names)
+
+
+class GroupFactory(CatalogFactory):
+
+    category_name: str
+    subcategory_name: str
+
+    def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
+        cat_id = next(_.id for _ in folders if _.name == self.category_name)
+        parent_id = next(_.id for _ in folders if _.name == self.subcategory_name and _.parent_id == cat_id)
+        return (Folder(name=_.name,
+                       parent_id=parent_id,
+                       type=ElType.SUBCATEGORY)
+                for _ in self.object_names)
+
+
+class ProductFactory(CatalogFactory):
+
+    url: str
+    category_name: str
+    subcategory_name: str
+    group_name: str
+
+    def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
+        cat_id = next(_.id for _ in folders if _.name == self.category_name)
+        subcat_id = next(_.id for _ in folders if _.name == self.subcategory_name and _.parent_id == cat_id)
+        parent_id = next(_.id for _ in folders if _.name == self.group_name and _.parent_id == subcat_id)
+        return (Product(name=_.name, parent_id=parent_id)
+                for _ in self.object_names)
+
+
+__FACTORIES: dict[ElType, type[CatalogFactory]] = {
+    ElType.CATEGORY: CategoryFactory,
+    ElType.SUBCATEGORY: SubcategoryFactory,
+    ElType.GROUP: GroupFactory,
+    ElType.PRODUCT: ProductFactory
+}
+
+
+def get_factory_class(type_: ElType):
+    """Get factory by element type."""
+    return __FACTORIES[type_]
