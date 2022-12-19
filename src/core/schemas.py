@@ -4,14 +4,13 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Iterable
 
-from catalog.models import Product
 from catalog.schemas import BaseCatScheme, FolderScheme, ProductScheme
 
 from interfaces import ICatalogElement
 
-from pydantic import BaseModel, Field
-
 from project_typing import ElType
+
+from pydantic import BaseModel, Field
 
 from retailer.schemas import RetailerScheme
 
@@ -66,6 +65,7 @@ class CatalogFactory(BaseModel):
     """Contains all required information for catalog objects
     cretion. Creates objects using create_objects method."""
 
+    obj_type: ElType
     url: str | None = None
     category_name: str | None = None
     subcategory_name: str | None = None

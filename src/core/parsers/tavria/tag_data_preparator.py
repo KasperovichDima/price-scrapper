@@ -99,8 +99,12 @@ class TagDataPreparator:
 
     def __create_factory(self, type_: ElType):
         self.__current_factories[type_] = CatalogFactory(
+            obj_type=type_,
             url=self.__current_url if type_ is ElType.PRODUCT else None,
             category_name=self.__current_names[ElType.CATEGORY],
             subcategory_name=self.__current_names[ElType.SUBCATEGORY] if type_ not in {ElType.CATEGORY, ElType.SUBCATEGORY} else None,
             group_name=self.__current_names[ElType.GROUP] if type_ is ElType.PRODUCT else None,
         )
+
+    def __get_factory(self, type_: ElType) -> CatalogFactory:
+        return next(_ for _ in self.__current_factories if _.obj_type is type_)
