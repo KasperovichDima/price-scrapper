@@ -11,7 +11,6 @@ from .factories import CatalogFactory
 from .factories import get_factory_class
 from .utils import get_catalog_tags
 from .utils import get_type
-from .utils import tag_is_interesting
 from .utils import get_url
 
 
@@ -43,28 +42,28 @@ class FactoryCreator:
         """Prepare catalog factories from site information."""
 
         for tag in self.__tags:
-            try:
-                assert tag_is_interesting(tag)
-                self.__current_tag = tag
-                self.__process_tag()
-            except (AssertionError, KeyError, TypeError):
-                pass
+            self.__current_tag = tag
+            self.__process_tag()
 
     def __process_tag(self) -> None:
         type_ = get_type(self.__current_tag)
+        if not type_ or type_ not in self.__current_factories:
+            return
+
         self.__change_current_name(type_)
 
         if type_ is ElType.CATEGORY:
-            self.__recreate_factory(ElType.SUBCATEGORY)
+            self.__try_to_create_factory(ElType.SUBCATEGORY)
+            self.__try_to_create_factory(ElType.GROUP)
 
         elif type_ is ElType.SUBCATEGORY:
-            self.__recreate_factory(ElType.GROUP)
+            self.__try_to_create_factory(ElType.GROUP)
 
         elif type_ is ElType.GROUP:
             if self.__current_tag.parent.name == 'h4':
                 self.__current_names[ElType.SUBCATEGORY] = None
-                self.__recreate_factory(ElType.GROUP)
-            self.__recreate_factory(ElType.PRODUCT)
+                self.__try_to_create_factory(ElType.GROUP)
+            self.__try_to_create_factory(ElType.PRODUCT)
 
         self.__current_factories[type_]\
             .add_name(self.__current_tag.text.strip())
@@ -72,30 +71,23 @@ class FactoryCreator:
     def __change_current_name(self, type_: ElType) -> None:
         self.__current_names[type_] = self.__current_tag.text.strip()
 
-    def __recreate_factory(self, type_: ElType) -> None:
-        self.__try_to_close_factory(type_)
-        self.__try_to_create_factory(type_)
-
-    def __try_to_close_factory(self, type_: ElType) -> None:
-        try:
-            assert self.__factory_is_ready_to_close(type_)
-            self.__close_factory(type_)
-        except (AssertionError, KeyError):
-            pass
-
-    def __factory_is_ready_to_close(self, type_: ElType) -> bool:
-        return type_ in self.__current_factories\
-            or (type_ is not ElType.PRODUCT
-                and bool(self.__current_factories[type_]))
-
-    def __close_factory(self, type_: ElType) -> None:
-        self.__factories[type_].append(self.__current_factories.pop(type_))
-
     def __try_to_create_factory(self, type_: ElType):
+        self.__close_factory(type_)
         try:
             self.__create_factory(type_)
         except ValidationError:
             pass
+
+    def __close_factory(self, type_: ElType) -> None:
+        if self.__factory_is_ready_to_close(type_):
+            self.__factories[type_].append(self.__current_factories.pop(type_))
+
+    def __factory_is_ready_to_close(self, type_: ElType) -> bool:
+        try:
+            assert self.__current_factories[type_]
+            return True
+        except (KeyError, AssertionError):
+            return False
 
     def __create_factory(self, type_: ElType):
         factory_class = get_factory_class(type_)

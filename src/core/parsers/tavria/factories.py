@@ -49,13 +49,14 @@ class SubcategoryFactory(CatalogFactory):
 class GroupFactory(CatalogFactory):
 
     category_name: str
-    subcategory_name: str
+    subcategory_name: str | None = None
 
     def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
         cat_id = next(_.id for _ in folders if _.name == self.category_name)
-        parent_id = next(_.id for _ in folders if _.name == self.subcategory_name and _.parent_id == cat_id)
+        if self.subcategory_name:
+            parent_id = next(_.id for _ in folders if _.name == self.subcategory_name and _.parent_id == cat_id)
         return (Folder(name=_.name,
-                       parent_id=parent_id,
+                       parent_id=parent_id if self.subcategory_name else cat_id,
                        type=ElType.SUBCATEGORY)
                 for _ in self.object_names)
 
@@ -64,13 +65,18 @@ class ProductFactory(CatalogFactory):
 
     url: str
     category_name: str
-    subcategory_name: str
+    subcategory_name: str | None = None
     group_name: str
+
+    def __bool__(self) -> bool:
+        return all((self.url, self.category_name, self.group_name))
 
     def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
         cat_id = next(_.id for _ in folders if _.name == self.category_name)
-        subcat_id = next(_.id for _ in folders if _.name == self.subcategory_name and _.parent_id == cat_id)
-        parent_id = next(_.id for _ in folders if _.name == self.group_name and _.parent_id == subcat_id)
+        if self.subcategory_name:
+            subcat_id = next(_.id for _ in folders if _.name == self.subcategory_name and _.parent_id == cat_id)
+        group_parent_id = subcat_id if self.subcategory_name else cat_id
+        parent_id = next(_.id for _ in folders if _.name == self.group_name and _.parent_id == group_parent_id)
         return (Product(name=_.name, parent_id=parent_id)
                 for _ in self.object_names)
 

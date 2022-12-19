@@ -8,19 +8,20 @@ from bs4.element import Tag
 from project_typing import ElType
 
 
-def get_catalog_tags(url: str) -> Iterable[Tag]:
-    """Parses home page and returns parsed tags of catalog menu."""
-    response = request.urlopen(url)
-    return bs(response, 'lxml').find(
-        'aside', {'class': 'col-md-3 sidebar__container'}
-    ).find_all()
-
-
 def tag_is_interesting(tag: Tag) -> bool:
     try:
         return tag.name in ('a', 'span')
     except KeyError:
         return False
+
+
+def get_catalog_tags(url: str) -> Iterable[Tag]:
+    """Parses home page and returns parsed tags of catalog menu."""
+    response = request.urlopen(url)
+    soup = bs(response, 'lxml').find(
+        'aside', {'class': 'col-md-3 sidebar__container'}
+    ).find_all()
+    return [_ for _ in soup if tag_is_interesting(_)]
 
 
 def get_url(tag: Tag) -> str | None:
@@ -33,7 +34,7 @@ def get_url(tag: Tag) -> str | None:
 
 
 
-def get_type(tag: Tag) -> ElType:
+def get_type(tag: Tag) -> ElType | None:
     if tag.name == 'a' and 'catalog' in tag.get('href'):
         return ElType.GROUP
     elif (tag.name == 'span' and 'class' in tag.attrs
@@ -43,4 +44,4 @@ def get_type(tag: Tag) -> ElType:
     elif tag.name == 'a' and tag.get('href') == '#':
         return ElType.CATEGORY
     else:
-        raise TypeError(f"{tag} does't match any catalog type.")
+        return None
