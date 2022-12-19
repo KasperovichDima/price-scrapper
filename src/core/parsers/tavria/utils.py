@@ -23,6 +23,16 @@ def tag_is_interesting(tag: Tag) -> bool:
         return False
 
 
+def get_url(tag: Tag) -> str | None:
+    try:
+        url = tag.get('href').strip()
+        assert 'catalog' in url
+        return url
+    except (KeyError, AssertionError, AttributeError):
+        return None
+
+
+
 def get_type(tag: Tag) -> ElType:
     if tag.name == 'a' and 'catalog' in tag.get('href'):
         return ElType.GROUP

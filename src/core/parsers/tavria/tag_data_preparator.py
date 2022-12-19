@@ -9,10 +9,11 @@ from project_typing import ElType
 from .utils import get_catalog_tags
 from .utils import get_type
 from .utils import tag_is_interesting
+from .utils import get_url
 from ...schemas import CatalogFactory
 
 
-class TagDataPreparator:
+class FactoryCreator:
     """
     Makes request to source url.
     Parses tags, extracts data.
@@ -26,18 +27,19 @@ class TagDataPreparator:
         = defaultdict(deque)
 
     def __init__(self) -> None:
-        self.__factories[ElType.CATEGORY].append(CatalogFactory())
-        self.__current_factories[ElType.CATEGORY]\
-            = self.__factories[ElType.CATEGORY][0]
+        type_ = ElType.CATEGORY
+        cat_factory = CatalogFactory(obj_type=type_)
+        self.__factories[type_].append(cat_factory)
+        self.__current_factories[type_] = cat_factory
 
     def __call__(self,
                  home_url: str) -> defaultdict[ElType, deque[CatalogFactory]]:
         self.__tags = get_catalog_tags(home_url)
-        self.__try_to_process_tags()
+        self.__create_factories()
         return self.__factories
 
-    def __try_to_process_tags(self) -> None:
-        """Prepare folder data from site information."""
+    def __create_factories(self) -> None:
+        """Prepare catalog factories from site information."""
 
         for tag in self.__tags:
             try:
@@ -73,15 +75,6 @@ class TagDataPreparator:
         self.__try_to_close_factory(type_)
         self.__create_factory(type_)
 
-    @property
-    def __current_url(self):
-        try:
-            url = self.__current_tag.get('href').strip()
-            assert 'catalog' in url
-            return url
-        except (KeyError, AssertionError, AttributeError):
-            return None
-
     def __try_to_close_factory(self, type_: ElType) -> None:
         try:
             assert self.__factory_is_ready_to_close(type_)
@@ -100,11 +93,8 @@ class TagDataPreparator:
     def __create_factory(self, type_: ElType):
         self.__current_factories[type_] = CatalogFactory(
             obj_type=type_,
-            url=self.__current_url if type_ is ElType.PRODUCT else None,
+            url=get_url(self.__current_tag) if type_ is ElType.PRODUCT else None,
             category_name=self.__current_names[ElType.CATEGORY],
             subcategory_name=self.__current_names[ElType.SUBCATEGORY] if type_ not in {ElType.CATEGORY, ElType.SUBCATEGORY} else None,
             group_name=self.__current_names[ElType.GROUP] if type_ is ElType.PRODUCT else None,
         )
-
-    def __get_factory(self, type_: ElType) -> CatalogFactory:
-        return next(_ for _ in self.__current_factories if _.obj_type is type_)

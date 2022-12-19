@@ -6,7 +6,7 @@ from authentication.models import User
 from catalog.models import Folder, Product
 from core.models import PriceLine
 from retailer.models import Retailer
-from project_typing import CatType
+from project_typing import ElType
 
 db=SessionLocal()
 

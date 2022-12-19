@@ -9,6 +9,6 @@ from database import SessionLocal
 
 with SessionLocal() as session:
     # TavriaTreeBuilder(TAVRIA_URL, session)
-    TavriaTreeBuilder(TAVRIA_TEST_URL, session)
+    TavriaTreeBuilder()(TAVRIA_TEST_URL, session)
 
 # TavriaParser(TAVRIA_URL)

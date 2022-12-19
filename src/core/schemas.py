@@ -4,6 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Iterable
 
+from catalog.models import Folder, Product
 from catalog.schemas import BaseCatScheme, FolderScheme, ProductScheme
 
 from interfaces import ICatalogElement
@@ -70,43 +71,57 @@ class CatalogFactory(BaseModel):
     category_name: str | None = None
     subcategory_name: str | None = None
     group_name: str | None = None
-    parent_id: int | None
+    # parent_id: int | None
+    # folders: Iterable[Folder]
 
     object_names: deque[str] = deque()  # TODO: Add special annotation to convert to simple attribute or make __
 
     def __bool__(self) -> bool:
         return bool(self.object_names)
 
-    @property
-    def last_name(self) -> str | None:
-        return self.object_names[-1] if self.object_names else None
-
     def add_name(self, name: str) -> None:
         self.object_names.append(name)
 
-    def create_objects(self) -> Iterable[ICatalogElement]:
-        ...
+    def get_objects(self, parent_id: int) -> Iterable[ICatalogElement]:
+        class_ = self.__get_class()
+        return (class_(name=_, type=self.obj_type, parent_id=parent_id)
+                for _ in self.object_names)
+
+    def __get_class(self) -> type[ICatalogElement]:
+        return Product if self.obj_type is ElType.PRODUCT else Folder
 
 
-# class FolderFactory(CatalogFactory):
+    # def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
+    #     self.folders = folders
+    #     class_ = self.__get_class()
+    #     self._get_parent_id()
+    #     return (class_(name=_, type=self.obj_type, parent_id=self.parent_id)
+    #             for _ in self.object_names)
 
-#     category_name: str | None = None
-#     subcategory_name: str | None = None
-#     parent_id: int | None
+#     def __get_class(self) -> type[ICatalogElement]:
+#         return Product if self.obj_type is ElType.PRODUCT else Folder
+
+#     def _get_parent_id(self) -> None:
+#         ...
+
+    
+# class SubgroupFactory(CatalogFactory):
+
+#     def _get_parent_id(self) -> None:
+#         self.parent_id = next(_ for _ in self.folders if _.name == self.category_name)
+
+
+# class GroupFactory(CatalogFactory):
+
+#     def _get_parent_id(self) -> None:
+#         cat_id = {_.name: _.id for _ in self.folders if _.type is ElType.CATEGORY}[self.category_name]
+#         self.parent_id = {_.name: _.id for _ in self.folders if _.type is ElType.SUBCATEGORY and _.parent_id == cat_id}[self.subcategory_name]
 
 
 # class ProductFactory(CatalogFactory):
-#     """Contains all required information for catalog objects
-#     cretion. Creates folders using create_objects method."""
 
-#     parent_url: str | None = None
-#     category_name: str | None = None
-#     subcategory_name: str | None = None
-#     group_name: str | None = None
-#     parent_id: int | None
+#     def _get_parent_id(self) -> None:
+#         cat_id = {_.name: _.id for _ in self.folders if _.type is ElType.CATEGORY}[self.category_name]
+#         subcat_id = {_.name: _.id for _ in self.folders if _.type is ElType.SUBCATEGORY and _.parent_id == cat_id}[self.subcategory_name]
+#         self.parent_id = {_.name: _.id for _ in self.folders if _.type is ElType.GROUP and _.parent_id == subcat_id}[self.group_name]
 
-#     def create_objects(self) -> Iterable[Product]:
-#         if not self.parent_id:
-#             raise KeyError('Can not create products without parent id.')
-#         return (Product(name=_, parent_id=self.parent_id)
-#                 for _ in self.object_names)

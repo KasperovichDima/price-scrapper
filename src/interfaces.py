@@ -20,6 +20,9 @@ class IUser(IBaseWithID):
 class ICatalogElement(IBaseWithID):
     """Catalog element interface."""
 
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+
     name: str
 
 
