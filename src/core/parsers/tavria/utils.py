@@ -16,35 +16,21 @@ def get_catalog_tags(url: str) -> Iterable[Tag]:
     ).find_all()
 
 
-def tag_is_not_interesting(tag: Tag) -> bool:
+def tag_is_interesting(tag: Tag) -> bool:
     try:
-        return tag.name not in ('a', 'span')
+        return tag.name in ('a', 'span')
     except KeyError:
-        return True
+        return False
 
 
-# def tag_is_a_group(tag: Tag) -> bool:
-#     return tag.name == 'a' and 'catalog' in tag.get('href')
-
-
-# def tag_is_a_subcategory(tag: Tag) -> bool:
-#     return (tag.name == 'span' and 'class' in tag.attrs
-#             and tag.attrs['class'][0] == 'top-sub-catalog-name')\
-#         or (tag.name == 'a' and tag.parent.name == 'h4')
-
-
-# def tag_is_a_category(tag: Tag) -> bool:
-#     return tag.name == 'a' and tag.get('href') == '#'
-
-
-def get_type(tag: Tag) -> ElType | None:
+def get_type(tag: Tag) -> ElType:
     if tag.name == 'a' and 'catalog' in tag.get('href'):
         return ElType.GROUP
     elif (tag.name == 'span' and 'class' in tag.attrs
-            and tag.attrs['class'][0] == 'top-sub-catalog-name')\
-        or (tag.name == 'a' and tag.parent.name == 'h4'):
+          and tag.attrs['class'][0] == 'top-sub-catalog-name')\
+            or (tag.name == 'a' and tag.parent.name == 'h4'):
         return ElType.SUBCATEGORY
     elif tag.name == 'a' and tag.get('href') == '#':
         return ElType.CATEGORY
     else:
-        return None
+        raise TypeError(f"{tag} does't match any catalog type.")

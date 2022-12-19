@@ -74,13 +74,12 @@ class CatalogFactory(BaseModel):
 
     object_names: deque[str] = deque()  # TODO: Add special annotation to convert to simple attribute or make __
 
+    def __bool__(self) -> bool:
+        return bool(self.object_names)
+
     @property
     def last_name(self) -> str | None:
         return self.object_names[-1] if self.object_names else None
-
-    @property
-    def is_empty(self) -> bool:
-        return not bool(self.object_names)
 
     def add_name(self, name: str) -> None:
         self.object_names.append(name)
