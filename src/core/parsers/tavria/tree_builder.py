@@ -14,13 +14,14 @@ from pydantic import ValidationError
 
 from sqlalchemy.orm import Session
 
-from .utils import get_catalog_tags
-from .utils import tag_is_a_category
-from .utils import tag_is_a_group
-from .utils import tag_is_a_subcategory
+from .tag_data_preparator import TagDataPreparator
+# from .utils import get_catalog_tags
+# from .utils import tag_is_a_category
+# from .utils import tag_is_a_group
+# from .utils import tag_is_a_subcategory
 from ...constants import MAIN_PARSER
 from ...core_typing import FolderData
-from ...schemas import ProductFactory
+# from ...schemas import ProductFactory
 
 
 class TreeBuilder:
@@ -34,21 +35,26 @@ class TreeBuilder:
     __current_subcat_name: str = None
     __current_tag: Tag
     __new_folders: defaultdict[ElType, deque[FolderData]] = defaultdict(deque)
-    __product_factories: deque[ProductFactory] = deque()
+    # __product_factories: deque[ProductFactory] = deque()
 
     def __init__(self, home_url: str, session: Session) -> None:
         if MAIN_PARSER != 'Tavria':
             return
 
-        self.__tags = get_catalog_tags(home_url)
+        # self.__tags = get_catalog_tags(home_url)
         self.__session = session
 
-        self.__prepare_objects_data()
+        self.__get_factories(home_url)
+        pass
+        # self.__prepare_objects_data()
 
-        self.__create_categories()
-        self.__create_subcategories()
-        self.__create_groups()
-        self.__create_products()
+        # self.__create_categories()
+        # self.__create_subcategories()
+        # self.__create_groups()
+        # self.__create_products()
+
+    def __get_factories(self, home_url: str) -> None:
+        self.__factories = TagDataPreparator()(home_url)
 
     def __prepare_objects_data(self) -> None:
         """Prepare folder data from site information."""

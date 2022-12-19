@@ -23,12 +23,12 @@ class ICatalogElement(IBaseWithID):
     name: str
 
 
-# class IFolder(ICatalogElement):
-#     """Folder interface."""
+class IFolder(ICatalogElement):
+    """Folder interface."""
 
 
-# class IProduct(ICatalogElement):
-#     """Product intrface."""
+class IProduct(ICatalogElement):
+    """Product intrface."""
 
 
 class IRetailer(IBaseWithID):
