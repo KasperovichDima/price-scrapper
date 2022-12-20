@@ -5,13 +5,16 @@ from typing import Iterable
 from bs4.element import Tag
 
 from project_typing import ElType
+
 from pydantic import ValidationError
 
 from .factories import CatalogFactory
+from .factories import CategoryFactory
 from .factories import get_factory_class
 from .utils import get_catalog_tags
 from .utils import get_type
 from .utils import get_url
+from .utils import group_is_outstanding
 
 
 class FactoryCreator:
@@ -29,10 +32,9 @@ class FactoryCreator:
 
     def __init__(self, home_url: str) -> None:
         self.__tags = get_catalog_tags(home_url)
-        type_ = ElType.CATEGORY
-        cat_factory = CatalogFactory(obj_type=type_)
-        self.__factories[type_].append(cat_factory)
-        self.__current_factories[type_] = cat_factory
+        self.__current_factories[ElType.CATEGORY] = CategoryFactory()
+        self.__factories[ElType.CATEGORY]\
+            .append(self.__current_factories[ElType.CATEGORY])
 
     def __call__(self) -> defaultdict[ElType, deque[CatalogFactory]]:
         self.__create_factories()
@@ -60,8 +62,7 @@ class FactoryCreator:
             self.__try_to_create_factory(ElType.GROUP)
 
         elif type_ is ElType.GROUP:
-            if self.__current_tag.parent.name == 'h4':
-                self.__current_names[ElType.SUBCATEGORY] = None
+            if group_is_outstanding(self.__current_tag):
                 self.__try_to_create_factory(ElType.GROUP)
             self.__try_to_create_factory(ElType.PRODUCT)
 
@@ -70,6 +71,8 @@ class FactoryCreator:
 
     def __change_current_name(self, type_: ElType) -> None:
         self.__current_names[type_] = self.__current_tag.text.strip()
+        if group_is_outstanding(self.__current_tag):
+            self.__current_names[ElType.SUBCATEGORY] = None
 
     def __try_to_create_factory(self, type_: ElType):
         self.__close_factory(type_)

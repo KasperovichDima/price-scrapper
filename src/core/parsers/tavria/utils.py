@@ -15,6 +15,11 @@ def tag_is_interesting(tag: Tag) -> bool:
         return False
 
 
+def group_is_outstanding(tag: Tag) -> bool:
+    """Check if group has no subgroup parent."""
+    return tag.parent.name == 'h4'
+
+
 def get_catalog_tags(url: str) -> Iterable[Tag]:
     """Parses home page and returns parsed tags of catalog menu."""
     response = request.urlopen(url)
@@ -31,7 +36,6 @@ def get_url(tag: Tag) -> str | None:
         return url
     except (KeyError, AssertionError, AttributeError):
         return None
-
 
 
 def get_type(tag: Tag) -> ElType | None:
