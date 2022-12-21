@@ -1,12 +1,15 @@
 """TreeBuilder class for creating catalog tree."""
+from collections import defaultdict, deque
+from typing import Iterable
 import crud
 
 from project_typing import ElType
 
 from sqlalchemy.orm import Session
+from catalog.models import Folder, Product
 
 from .tag_data_preparator import FactoryCreator
-# from ...schemas import CatalogFactory
+from .factories import CatalogFactory
 from ...constants import MAIN_PARSER
 
 
@@ -16,6 +19,7 @@ class TreeBuilder:
     and update it with site information.
     TODO: slots.
     """
+    __factories: defaultdict[ElType, deque[CatalogFactory]]
 
     def __call__(self, home_url: str, session: Session) -> None:
         if MAIN_PARSER != 'Tavria':
@@ -23,7 +27,18 @@ class TreeBuilder:
         self.__session = session
         self.__factories = FactoryCreator(home_url)()
         pass
-        # self.__get_objects()
+        self.__create_folders()
+        # self.__create_products()
+
+    def __create_folders(self) -> None:
+        for type_ in ElType:
+            new_objects: list = []
+            existing_folders = crud.get_folders(self.__session, ids=())
+            for factory in self.__factories[type_]:
+                new_objects.extend(factory.get_objects(existing_folders))
+            crud.add_instances(new_objects, self.__session)
+        pass
+
 
     # def __get_objects(self):
     #     for type_ in ElType:

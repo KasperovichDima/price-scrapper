@@ -1,7 +1,7 @@
 """"""
 from collections import deque
 
-from typing import Any, Iterable
+from typing import Iterable
 
 from catalog.models import Folder, Product
 
@@ -30,20 +30,20 @@ class CatalogFactory(BaseModel):
 
 class CategoryFactory(CatalogFactory):
 
-    def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
-        return (Folder(name=_.name, type=ElType.CATEGORY) for _ in self.object_names)
+    def get_objects(self, folders: Iterable[Folder]) -> Iterable[Folder]:
+        return (Folder(name=_, type=ElType.CATEGORY) for _ in self.object_names)
 
     
 class SubcategoryFactory(CatalogFactory):
 
     category_name: str
 
-    def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
+    def get_objects(self, folders: Iterable[Folder]) -> Iterable[Folder]:
         parent_id: int = next(_.id for _ in folders if _.name == self.category_name)
-        return (Folder(name=_.name,
+        return (Folder(name=name,
                        parent_id=parent_id,
                        type=ElType.SUBCATEGORY)
-                for _ in self.object_names)
+                for name in self.object_names)
 
 
 class GroupFactory(CatalogFactory):
@@ -51,14 +51,14 @@ class GroupFactory(CatalogFactory):
     category_name: str
     subcategory_name: str | None = None
 
-    def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
+    def get_objects(self, folders: Iterable[Folder]) -> Iterable[Folder]:
         cat_id = next(_.id for _ in folders if _.name == self.category_name)
         if self.subcategory_name:
             parent_id = next(_.id for _ in folders if _.name == self.subcategory_name and _.parent_id == cat_id)
-        return (Folder(name=_.name,
+        return (Folder(name=name,
                        parent_id=parent_id if self.subcategory_name else cat_id,
-                       type=ElType.SUBCATEGORY)
-                for _ in self.object_names)
+                       type=ElType.GROUP)
+                for name in self.object_names)
 
 
 class ProductFactory(CatalogFactory):
@@ -72,6 +72,9 @@ class ProductFactory(CatalogFactory):
         return all((self.url, self.category_name, self.group_name))
 
     def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
+
+        return
+
         cat_id = next(_.id for _ in folders if _.name == self.category_name)
         if self.subcategory_name:
             subcat_id = next(_.id for _ in folders if _.name == self.subcategory_name and _.parent_id == cat_id)

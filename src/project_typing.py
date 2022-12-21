@@ -13,8 +13,7 @@ class UserType(Enum):
 class ElType(Enum):
     """Levels of catalog folders."""
 
-    PRODUCT = auto()
-    SUBGROUP = auto()
-    GROUP = auto()
-    SUBCATEGORY = auto()
     CATEGORY = auto()
+    SUBCATEGORY = auto()
+    GROUP = auto()
+    PRODUCT = auto()
