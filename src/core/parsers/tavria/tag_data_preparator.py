@@ -12,7 +12,7 @@ from .factories import CatalogFactory
 from .factories import CategoryFactory
 from .factories import get_factory_class
 from .utils import get_catalog_tags
-from .utils import get_type
+from .utils import get_tag_type
 from .utils import get_url
 from .utils import group_is_outstanding
 
@@ -44,37 +44,35 @@ class FactoryCreator:
         """Prepare catalog factories from site information."""
 
         for tag in self.__tags:
+            if not self.__tag_can_be_processed(tag_type := get_tag_type(tag)):
+                continue
             self.__current_tag = tag
-            self.__process_tag()
+            self.__process_tag(tag_type)  # type: ignore
 
-    def __process_tag(self) -> None:
-        type_ = get_type(self.__current_tag)
-        if not type_ or type_ not in self.__current_factories:
-            return  # TODO: REFACTORING!!!
+    def __tag_can_be_processed(self, tag_type: ElType | None = None) -> bool:
+        return tag_type in self.__current_factories
 
-        self.__change_current_name(type_)
+    def __process_tag(self, tag_type: ElType) -> None:
+        self.__change_current_name(tag_type)
 
-        if type_ is ElType.CATEGORY:
+        if tag_type is ElType.CATEGORY:
             self.__try_to_create_factory(ElType.SUBCATEGORY)
             self.__try_to_create_factory(ElType.GROUP)
 
-        elif type_ is ElType.SUBCATEGORY:
+        elif tag_type is ElType.SUBCATEGORY:
             self.__try_to_create_factory(ElType.GROUP)
 
-        elif type_ is ElType.GROUP:  # TODO: REFACTORING!!!
-            if group_is_outstanding(self.__current_tag):  # TODO: REFACTORING!!!
-                self.__try_to_create_factory(ElType.GROUP)  # TODO: REFACTORING!!!
-                
+        elif tag_type is ElType.GROUP:
+            if group_is_outstanding(self.__current_tag):
+                self.__current_names[ElType.SUBCATEGORY] = None
+                self.__try_to_create_factory(ElType.GROUP)
             self.__try_to_create_factory(ElType.PRODUCT)
 
-        self.__current_factories[type_]\
+        self.__current_factories[tag_type]\
             .add_name(self.__current_tag.text.strip())
 
     def __change_current_name(self, type_: ElType) -> None:
         self.__current_names[type_] = self.__current_tag.text.strip()
-        if type_ is ElType.GROUP and group_is_outstanding(self.__current_tag):  # TODO: REFACTORING!!!
-            self.__current_names[ElType.SUBCATEGORY] = None  # TODO: REFACTORING!!!
-            
 
     def __try_to_create_factory(self, type_: ElType):
         self.__close_factory(type_)

@@ -8,13 +8,6 @@ from bs4.element import Tag
 from project_typing import ElType
 
 
-def tag_is_interesting(tag: Tag) -> bool:
-    try:
-        return tag.name in ('a', 'span')
-    except KeyError:
-        return False
-
-
 def group_is_outstanding(tag: Tag) -> bool:
     """Check if group has no subgroup parent."""
     return tag.parent.name == 'h4'
@@ -23,10 +16,9 @@ def group_is_outstanding(tag: Tag) -> bool:
 def get_catalog_tags(url: str) -> Iterable[Tag]:
     """Parses home page and returns parsed tags of catalog menu."""
     response = request.urlopen(url)
-    soup = bs(response, 'lxml').find(
+    return bs(response, 'lxml').find(
         'aside', {'class': 'col-md-3 sidebar__container'}
     ).find_all()
-    return [_ for _ in soup if tag_is_interesting(_)]
 
 
 def get_url(tag: Tag) -> str | None:
@@ -38,7 +30,7 @@ def get_url(tag: Tag) -> str | None:
         return None
 
 
-def get_type(tag: Tag) -> ElType | None:
+def get_tag_type(tag: Tag) -> ElType | None:
     if tag.name == 'a' and 'catalog' in tag.get('href'):
         return ElType.GROUP
     elif (tag.name == 'span' and 'class' in tag.attrs
