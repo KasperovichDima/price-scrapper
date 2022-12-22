@@ -10,7 +10,7 @@ from project_typing import ElType
 from pydantic import BaseModel
 
 from ...core_typing import BaseFactoryReturnType
-from ...core_typing import FolderData
+from ...core_typing import FolderParents
 from ...core_typing import FolderReturnType
 
 
@@ -28,7 +28,7 @@ class BaseFactory(BaseModel):
 
     def get_objects(
         self,
-        folders: Mapping[FolderData, int]
+        folders: Mapping[FolderParents, int]
     ) -> BaseFactoryReturnType:
         ...
 
@@ -37,7 +37,7 @@ class CategoryFactory(BaseFactory):
 
     def get_objects(
         self,
-        folders: Mapping[FolderData, int]
+        folders: Mapping[FolderParents, int]
     ) -> FolderReturnType:
         return (Folder(name=_, el_type=ElType.CATEGORY)
                 for _ in self.object_names)
@@ -49,9 +49,9 @@ class SubcategoryFactory(BaseFactory):
 
     def get_objects(
         self,
-        folders: Mapping[FolderData, int]
+        folders: Mapping[FolderParents, int]
     ) -> FolderReturnType:
-        parent_id = folders[FolderData(None, self.category_name)]
+        parent_id = folders[FolderParents(None, self.category_name)]
         return (Folder(name=name,
                        parent_id=parent_id,
                        el_type=ElType.SUBCATEGORY)
@@ -65,10 +65,10 @@ class GroupFactory(BaseFactory):
 
     def get_objects(
         self,
-        folders: Mapping[FolderData, int]
+        folders: Mapping[FolderParents, int]
     ) -> FolderReturnType:
-        key = FolderData(self.category_name, self.subcategory_name)\
-            if self.subcategory_name else FolderData(None, self.category_name)
+        key = FolderParents(self.category_name, self.subcategory_name)\
+            if self.subcategory_name else FolderParents(None, self.category_name)
         parent_id = folders[key]
         return (Folder(name=name,
                        parent_id=parent_id,
@@ -86,8 +86,8 @@ class ProductFactory(BaseFactory):
     def __bool__(self) -> bool:
         return all((self.url, self.category_name, self.group_name))
 
-    def get_objects(self, folders: Mapping[FolderData, int]) -> Iterable[BaseCatalogElement]:
-        parent_id = folders[FolderData(self.subcategory_name, self.group_name)]
+    def get_objects(self, folders: Mapping[FolderParents, int]) -> Iterable[BaseCatalogElement]:
+        parent_id = folders[FolderParents(self.subcategory_name, self.group_name)]
         return
 
         cat_id = next(_.id for _ in folders if _.name == self.category_name)

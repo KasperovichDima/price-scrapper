@@ -17,7 +17,7 @@ class RequestObjects(NamedTuple):
     retailers: list[Retailer]
 
 
-FolderData = namedtuple('FolderData', 'grand_parent_name parent_name')
+FolderParents = namedtuple('FolderData', 'grand_parent_name parent_name')
 
 BaseFactoryReturnType = Generator[BaseCatalogElement, None, None]
 FolderReturnType = Generator[Folder, None, None]
@@ -27,5 +27,5 @@ class Factory(Protocol):
     def add_name(self, name: str) -> None: ...
 
     def get_objects(self,
-                    folders: Mapping[FolderData, int]
+                    folders: Mapping[FolderParents, int]
                     ) -> BaseFactoryReturnType: ...
