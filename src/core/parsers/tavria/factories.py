@@ -1,7 +1,8 @@
 """"""
 from collections import deque
+from collections.abc import Mapping
 
-from typing import Iterable
+from typing import Generator, Iterable
 
 from catalog.models import Folder, Product
 
@@ -10,6 +11,12 @@ from interfaces import ICatalogElement
 from project_typing import ElType
 
 from pydantic import BaseModel
+
+from ...core_typing import FolderData
+
+
+BaseFactoryReturnType = Generator[ICatalogElement, None, None]
+FolderReturnType = Generator[Folder, None, None]
 
 
 class CatalogFactory(BaseModel):
@@ -24,13 +31,13 @@ class CatalogFactory(BaseModel):
     def add_name(self, name: str) -> None:
         self.object_names.append(name)
 
-    def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
+    def get_objects(self, folders: Mapping[FolderData, int]) -> BaseFactoryReturnType:
         ...
 
 
 class CategoryFactory(CatalogFactory):
 
-    def get_objects(self, folders: Iterable[Folder]) -> Iterable[Folder]:
+    def get_objects(self, folders: Mapping[FolderData, int]) -> FolderReturnType:
         return (Folder(name=_, type=ElType.CATEGORY) for _ in self.object_names)
 
     
@@ -38,8 +45,8 @@ class SubcategoryFactory(CatalogFactory):
 
     category_name: str
 
-    def get_objects(self, folders: Iterable[Folder]) -> Iterable[Folder]:
-        parent_id: int = next(_.id for _ in folders if _.name == self.category_name)
+    def get_objects(self, folders: Mapping[FolderData, int]) -> FolderReturnType:
+        parent_id = folders[FolderData(None, self.category_name)]
         return (Folder(name=name,
                        parent_id=parent_id,
                        type=ElType.SUBCATEGORY)
@@ -51,12 +58,12 @@ class GroupFactory(CatalogFactory):
     category_name: str
     subcategory_name: str | None = None
 
-    def get_objects(self, folders: Iterable[Folder]) -> Iterable[Folder]:
-        cat_id = next(_.id for _ in folders if _.name == self.category_name)
-        if self.subcategory_name:
-            parent_id = next(_.id for _ in folders if _.name == self.subcategory_name and _.parent_id == cat_id)
+    def get_objects(self, folders: Mapping[FolderData, int]) -> FolderReturnType:
+        key = FolderData(self.category_name, self.subcategory_name)\
+            if self.subcategory_name else FolderData(None, self.category_name)
+        parent_id = folders[key]
         return (Folder(name=name,
-                       parent_id=parent_id if self.subcategory_name else cat_id,
+                       parent_id=parent_id,
                        type=ElType.GROUP)
                 for name in self.object_names)
 
@@ -71,8 +78,8 @@ class ProductFactory(CatalogFactory):
     def __bool__(self) -> bool:
         return all((self.url, self.category_name, self.group_name))
 
-    def get_objects(self, folders: Iterable[Folder]) -> Iterable[ICatalogElement]:
-
+    def get_objects(self, folders: Mapping[FolderData, int]) -> Iterable[ICatalogElement]:
+        parent_id = folders[FolderData(self.subcategory_name, self.group_name)]
         return
 
         cat_id = next(_.id for _ in folders if _.name == self.category_name)

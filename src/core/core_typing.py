@@ -13,5 +13,4 @@ class RequestObjects(NamedTuple):
     retailers: list[i.IRetailer]
 
 
-# FolderData = namedtuple('FolderData', 'name parent_name parent_type',
-#                         defaults=(None, None))
+FolderData = namedtuple('FolderData', 'grand_parent_name parent_name')

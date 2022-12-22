@@ -9,10 +9,11 @@ from catalog.schemas import FolderContent
 from database import Base
 
 import interfaces as i
+from project_typing import ElType
 
 from retailer.models import Retailer
 
-from sqlalchemy import or_
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 
 
@@ -65,8 +66,10 @@ def get_products(session: Session, prod_ids: list[int],
         ).all()
 
 
-def get_folders(session: Session, ids: Iterable[int] = (),
-                names: Iterable[int] = ()) -> list[Folder]:
+def get_folders(session: Session,
+                ids: Iterable[int] = (),
+                names: Iterable[str] = (),
+                type_: ElType | None = None) -> list[Folder]:
     """
     Get folder objects by folder ids or(and) folder names. If no
     ids or names are specified - all folders wil be returned.
@@ -74,9 +77,10 @@ def get_folders(session: Session, ids: Iterable[int] = (),
     folders = session.query(Folder)
     if ids or names:
         folders = folders.where(
-        or_(
-            Folder.id.in_(ids if ids else []),
-            Folder.name.in_(names if names else []))  # type: ignore
+        and_(
+            Folder.id.in_(ids),
+            Folder.name.in_(names)),  # type: ignore
+            Folder.type == type_
         )
     return folders.all()
 

@@ -1,16 +1,15 @@
 """TreeBuilder class for creating catalog tree."""
 from collections import defaultdict, deque
-from typing import Iterable
 import crud
 
 from project_typing import ElType
 
 from sqlalchemy.orm import Session
-from catalog.models import Folder, Product
 
 from .tag_data_preparator import FactoryCreator
 from .factories import CatalogFactory
-from ...constants import MAIN_PARSER
+from ...constants import MAIN_PARSER, folder_types
+from ...core_typing import FolderData
 
 
 class TreeBuilder:
@@ -31,14 +30,15 @@ class TreeBuilder:
         # self.__create_products()
 
     def __create_folders(self) -> None:
-        for type_ in ElType:
+        for type_ in folder_types:
             new_objects: list = []
             existing_folders = crud.get_folders(self.__session, ids=())
-            for factory in self.__factories[type_]:
-                new_objects.extend(factory.get_objects(existing_folders))
-            crud.add_instances(new_objects, self.__session)
-        pass
+            existing_id_to_name = {_.id: _.name for _ in existing_folders}
+            f_data = {FolderData(existing_id_to_name[_.parent_id] if _.parent_id else None, _.name): _.id for _ in existing_folders}
 
+            for factory in self.__factories[type_]:
+                new_objects.extend(factory.get_objects(f_data))
+            crud.add_instances(new_objects, self.__session)
 
     # def __get_objects(self):
     #     for type_ in ElType:
