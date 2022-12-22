@@ -1,7 +1,7 @@
 """"""
 from collections import deque
 from collections.abc import Mapping
-from typing import Generator, Iterable
+from typing import Iterable
 
 from catalog.models import BaseCatalogElement, Folder, Product
 
@@ -9,14 +9,12 @@ from project_typing import ElType
 
 from pydantic import BaseModel
 
+from ...core_typing import BaseFactoryReturnType
 from ...core_typing import FolderData
+from ...core_typing import FolderReturnType
 
 
-BaseFactoryReturnType = Generator[BaseCatalogElement, None, None]
-FolderReturnType = Generator[Folder, None, None]
-
-
-class CatalogFactory(BaseModel):
+class BaseFactory(BaseModel):
     """Contains all required information for catalog objects
     cretion. Creates objects using create_objects method."""
 
@@ -28,21 +26,31 @@ class CatalogFactory(BaseModel):
     def add_name(self, name: str) -> None:
         self.object_names.append(name)
 
-    def get_objects(self, folders: Mapping[FolderData, int]) -> BaseFactoryReturnType:
+    def get_objects(
+        self,
+        folders: Mapping[FolderData, int]
+    ) -> BaseFactoryReturnType:
         ...
 
 
-class CategoryFactory(CatalogFactory):
+class CategoryFactory(BaseFactory):
 
-    def get_objects(self, folders: Mapping[FolderData, int]) -> FolderReturnType:
-        return (Folder(name=_, el_type=ElType.CATEGORY) for _ in self.object_names)
+    def get_objects(
+        self,
+        folders: Mapping[FolderData, int]
+    ) -> FolderReturnType:
+        return (Folder(name=_, el_type=ElType.CATEGORY)
+                for _ in self.object_names)
 
-    
-class SubcategoryFactory(CatalogFactory):
+
+class SubcategoryFactory(BaseFactory):
 
     category_name: str
 
-    def get_objects(self, folders: Mapping[FolderData, int]) -> FolderReturnType:
+    def get_objects(
+        self,
+        folders: Mapping[FolderData, int]
+    ) -> FolderReturnType:
         parent_id = folders[FolderData(None, self.category_name)]
         return (Folder(name=name,
                        parent_id=parent_id,
@@ -50,12 +58,15 @@ class SubcategoryFactory(CatalogFactory):
                 for name in self.object_names)
 
 
-class GroupFactory(CatalogFactory):
+class GroupFactory(BaseFactory):
 
     category_name: str
     subcategory_name: str | None = None
 
-    def get_objects(self, folders: Mapping[FolderData, int]) -> FolderReturnType:
+    def get_objects(
+        self,
+        folders: Mapping[FolderData, int]
+    ) -> FolderReturnType:
         key = FolderData(self.category_name, self.subcategory_name)\
             if self.subcategory_name else FolderData(None, self.category_name)
         parent_id = folders[key]
@@ -65,7 +76,7 @@ class GroupFactory(CatalogFactory):
                 for name in self.object_names)
 
 
-class ProductFactory(CatalogFactory):
+class ProductFactory(BaseFactory):
 
     url: str
     category_name: str
@@ -88,7 +99,7 @@ class ProductFactory(CatalogFactory):
                 for _ in self.object_names)
 
 
-__FACTORIES_TYPES: dict[ElType, type[CatalogFactory]] = {
+__FACTORIES_TYPES: dict[ElType, type[BaseFactory]] = {
     ElType.CATEGORY: CategoryFactory,
     ElType.SUBCATEGORY: SubcategoryFactory,
     ElType.GROUP: GroupFactory,

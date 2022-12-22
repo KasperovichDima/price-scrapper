@@ -8,7 +8,7 @@ from project_typing import ElType
 
 from pydantic import ValidationError
 
-from .factories import CatalogFactory
+from .factories import BaseFactory
 from .factories import CategoryFactory
 from .factories import get_factory_class
 from .utils import get_catalog_tags
@@ -26,15 +26,15 @@ class FactoryCreator:
     __tags: Iterable[Tag]
     __current_tag: Tag
     __current_names = dict.fromkeys(ElType)
-    __current_factories: dict[ElType, CatalogFactory] = {}
-    __factories: defaultdict[ElType, deque[CatalogFactory]]\
+    __current_factories: dict[ElType, BaseFactory] = {}
+    __factories: defaultdict[ElType, deque[BaseFactory]]\
         = defaultdict(deque)
 
     def __init__(self, home_url: str) -> None:
         self.__tags = get_catalog_tags(home_url)
         self.__current_factories[ElType.CATEGORY] = CategoryFactory()
 
-    def __call__(self) -> defaultdict[ElType, deque[CatalogFactory]]:
+    def __call__(self) -> defaultdict[ElType, deque[BaseFactory]]:
         self.__create_factories()
         self.__close_last_factories()
 
