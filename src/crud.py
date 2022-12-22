@@ -3,12 +3,11 @@ from typing import Iterable, Type
 
 from authentication.models import User
 
-from catalog.models import Folder, Product
+from catalog.models import BaseCatalogElement, Folder, Product
 from catalog.schemas import FolderContent
 
 from database import Base
 
-import interfaces as i
 from project_typing import ElType
 
 from retailer.models import Retailer
@@ -40,8 +39,8 @@ def add_instances(instances: Iterable[Base], session: Session) -> None:  # type:
     session.commit()
 
 
-def get_element(cls: Type[i.ICatalogElement], id: int,
-                session: Session) -> i.ICatalogElement | None:
+def get_element(cls: Type[BaseCatalogElement], id: int,
+                session: Session) -> BaseCatalogElement | None:
     """Returns catalog instance with specified params, if exists."""
     return session.get(cls, id)
 
@@ -60,7 +59,7 @@ def get_products(session: Session, prod_ids: list[int],
     """Get product objects from product and folder ids."""
     return session.query(Product).where(
         or_(
-            Product.id.in_(prod_ids),  # type: ignore
+            Product.id.in_(prod_ids),
             Product.parent_id.in_(folder_ids if folder_ids else [])
             )
         ).all()
@@ -69,18 +68,17 @@ def get_products(session: Session, prod_ids: list[int],
 def get_folders(session: Session,
                 ids: Iterable[int] = (),
                 names: Iterable[str] = (),
-                type_: ElType | None = None) -> list[Folder]:
+                types_: Iterable[ElType] | None = None) -> list[Folder]:
     """
     Get folder objects by folder ids or(and) folder names. If no
     ids or names are specified - all folders wil be returned.
     """
     folders = session.query(Folder)
     if ids or names:
-        folders = folders.where(
-        and_(
+        folders = folders.where(and_(
             Folder.id.in_(ids),
-            Folder.name.in_(names)),  # type: ignore
-            Folder.type == type_
+            Folder.name.in_(names)),
+            Folder.el_type.in_(types_)
         )
     return folders.all()
 

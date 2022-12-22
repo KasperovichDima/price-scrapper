@@ -24,8 +24,8 @@ if config.config_file_name is not None:
 load_dotenv()
 
 #########REMOVE LATER#############
-path.remove('/home/kasper/Documents/projects/ros2ws/install/database/lib/python3.8/site-packages')
-path.remove('/home/kasper/Documents/projects/ros2ws/install/database_exchange/lib/python3.8/site-packages')
+# path.remove('/home/kasper/Documents/projects/ros2ws/install/database/lib/python3.8/site-packages')
+# path.remove('/home/kasper/Documents/projects/ros2ws/install/database_exchange/lib/python3.8/site-packages')
 path.append(
     [
         '/home/kasper/Documents/projects/monitoring',

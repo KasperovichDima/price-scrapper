@@ -2,15 +2,17 @@
 from collections import namedtuple
 from typing import NamedTuple
 
-import interfaces as i
+from catalog.models import BaseCatalogElement
+
+from retailer.models import Retailer
 
 
 class RequestObjects(NamedTuple):
     """Objects to be added to request."""
 
-    folders: list[i.IFolder]
-    products: list[i.IProduct]
-    retailers: list[i.IRetailer]
+    folders: list[BaseCatalogElement]
+    products: list[BaseCatalogElement]
+    retailers: list[Retailer]
 
 
 FolderData = namedtuple('FolderData', 'grand_parent_name parent_name')

@@ -1,5 +1,7 @@
 """Request class."""
-import interfaces as i
+from catalog.models import Folder, Product
+
+from retailer.models import Retailer
 
 from ..core_typing import RequestObjects
 from ..schemas import RequestOutScheme
@@ -11,23 +13,23 @@ class Request:
     remove request data."""
 
     def __init__(self) -> None:
-        self.__folders: set[i.IFolder] = set()
-        self.__products: set[i.IProduct] = set()
-        self.__retailers: set[i.IRetailer] = set()
+        self.__folders: set[Folder] = set()
+        self.__products: set[Product] = set()
+        self.__retailers: set[Retailer] = set()
 
     def __bool__(self):
         return bool((self.__products or self.__folders) and self.__retailers)
 
     @property
-    def folders(self) -> list[i.IFolder]:
+    def folders(self) -> list[Folder]:
         return sorted(list(self.__folders), key=lambda _: _.name)
 
     @property
-    def products(self) -> list[i.IProduct]:
+    def products(self) -> list[Product]:
         return sorted(list(self.__products), key=lambda _: _.name)
 
     @property
-    def retailers(self) -> list[i.IRetailer]:
+    def retailers(self) -> list[Retailer]:
         return sorted(list(self.__retailers), key=lambda _: _.name)
 
     @property

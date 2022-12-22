@@ -1,12 +1,9 @@
 """"""
 from collections import deque
 from collections.abc import Mapping
-
 from typing import Generator, Iterable
 
-from catalog.models import Folder, Product
-
-from interfaces import ICatalogElement
+from catalog.models import BaseCatalogElement, Folder, Product
 
 from project_typing import ElType
 
@@ -15,7 +12,7 @@ from pydantic import BaseModel
 from ...core_typing import FolderData
 
 
-BaseFactoryReturnType = Generator[ICatalogElement, None, None]
+BaseFactoryReturnType = Generator[BaseCatalogElement, None, None]
 FolderReturnType = Generator[Folder, None, None]
 
 
@@ -38,7 +35,7 @@ class CatalogFactory(BaseModel):
 class CategoryFactory(CatalogFactory):
 
     def get_objects(self, folders: Mapping[FolderData, int]) -> FolderReturnType:
-        return (Folder(name=_, type=ElType.CATEGORY) for _ in self.object_names)
+        return (Folder(name=_, el_type=ElType.CATEGORY) for _ in self.object_names)
 
     
 class SubcategoryFactory(CatalogFactory):
@@ -49,7 +46,7 @@ class SubcategoryFactory(CatalogFactory):
         parent_id = folders[FolderData(None, self.category_name)]
         return (Folder(name=name,
                        parent_id=parent_id,
-                       type=ElType.SUBCATEGORY)
+                       el_type=ElType.SUBCATEGORY)
                 for name in self.object_names)
 
 
@@ -64,7 +61,7 @@ class GroupFactory(CatalogFactory):
         parent_id = folders[key]
         return (Folder(name=name,
                        parent_id=parent_id,
-                       type=ElType.GROUP)
+                       el_type=ElType.GROUP)
                 for name in self.object_names)
 
 
@@ -78,7 +75,7 @@ class ProductFactory(CatalogFactory):
     def __bool__(self) -> bool:
         return all((self.url, self.category_name, self.group_name))
 
-    def get_objects(self, folders: Mapping[FolderData, int]) -> Iterable[ICatalogElement]:
+    def get_objects(self, folders: Mapping[FolderData, int]) -> Iterable[BaseCatalogElement]:
         parent_id = folders[FolderData(self.subcategory_name, self.group_name)]
         return
 
@@ -91,7 +88,7 @@ class ProductFactory(CatalogFactory):
                 for _ in self.object_names)
 
 
-__FACTORIES: dict[ElType, type[CatalogFactory]] = {
+__FACTORIES_TYPES: dict[ElType, type[CatalogFactory]] = {
     ElType.CATEGORY: CategoryFactory,
     ElType.SUBCATEGORY: SubcategoryFactory,
     ElType.GROUP: GroupFactory,
@@ -101,4 +98,4 @@ __FACTORIES: dict[ElType, type[CatalogFactory]] = {
 
 def get_factory_class(type_: ElType):
     """Get factory by element type."""
-    return __FACTORIES[type_]
+    return __FACTORIES_TYPES[type_]

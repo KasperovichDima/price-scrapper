@@ -1,15 +1,8 @@
 """Core validation schamas."""
-from collections import deque
 from datetime import datetime
 from decimal import Decimal
-from typing import Iterable
 
-from catalog.models import Folder, Product
 from catalog.schemas import BaseCatScheme, FolderScheme, ProductScheme
-
-from interfaces import ICatalogElement
-
-from project_typing import ElType
 
 from pydantic import BaseModel, Field
 
@@ -60,5 +53,3 @@ class ReportScheme(BaseModel):
     products: list[ProductScheme]
     retailers: list[RetailerScheme]
     content: list[PriceLineSchema]
-
-

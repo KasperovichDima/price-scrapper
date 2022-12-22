@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 9c98756a5618
+Revision ID: d37e382f67ca
 Revises: 
-Create Date: 2022-12-04 14:55:50.426882
+Create Date: 2022-12-22 11:39:19.105085
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9c98756a5618'
+revision = 'd37e382f67ca'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,7 +22,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.Column('parent_id', sa.Integer(), nullable=True),
-    sa.Column('type', sa.Enum('PRODUCT', 'SUBGROUP', 'GROUP', name='cattype'), nullable=False),
+    sa.Column('el_type', sa.Enum('CATEGORY', 'SUBCATEGORY', 'GROUP', 'PRODUCT', name='eltype'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_folder_id'), 'folder', ['id'], unique=False)

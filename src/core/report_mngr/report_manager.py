@@ -4,7 +4,7 @@ TODO: Connect ParserDataCreator.
 """
 from collections import defaultdict
 
-import interfaces as i
+from authentication.models import User
 
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
@@ -28,12 +28,12 @@ class ReportManager:
     """
 
     def __init__(self) -> None:
-        self.__requests: defaultdict[i.IUser, Request] = defaultdict(Request)
+        self.__requests: defaultdict[User, Request] = defaultdict(Request)
 
-    def get_request(self, user: i.IUser) -> Request:
+    def get_request(self, user: User) -> Request:
         return self.__requests[user]
 
-    def add_request_data(self, user: i.IUser,
+    def add_request_data(self, user: User,
                          in_data: RequestInScheme,
                          session: Session) -> RequestOutScheme:
 
@@ -41,7 +41,7 @@ class ReportManager:
         request.add_objects(get_request_objects(in_data, session))
         return request.out_data
 
-    def remove_request_data(self, user: i.IUser,
+    def remove_request_data(self, user: User,
                             in_data: RequestInScheme,
                             session: Session) -> RequestOutScheme:
 
@@ -49,7 +49,7 @@ class ReportManager:
         request.remove_objects(get_request_objects(in_data, session))
         return request.out_data
 
-    def get_report(self, user: i.IUser,
+    def get_report(self, user: User,
                    header: ReportHeaderScheme,
                    session: Session):
         """
