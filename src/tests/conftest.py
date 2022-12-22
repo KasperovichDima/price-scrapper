@@ -115,9 +115,9 @@ def fake_db_content(fake_session) -> RequestObjects:
     """Fill database catalog with fake content."""
     content = RequestObjects(
         [
-            Folder(name='Alcohol', type=ElType.SUBGROUP),
-            Folder(name='Grocery', type=ElType.SUBGROUP),
-            Folder(name='Milk', type=ElType.SUBGROUP)
+            Folder(name='Alcohol', el_type=ElType.CATEGORY),
+            Folder(name='Grocery', el_type=ElType.CATEGORY),
+            Folder(name='Milk', el_type=ElType.CATEGORY),
         ],
         [
             Product(name='Beer Chernigovskoe 0,5', parent_id=1, prime_cost=23.5),  # noqa: E501

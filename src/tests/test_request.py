@@ -28,6 +28,8 @@ class TestReport:
         rsp = send_add_request(c.ADD_REQUEST_URL, fake_payload,
                                access_token)
 
+        print(rsp.json())
+
         assert rsp.status_code == 200\
             and rsp.json()['folders'] == add_ok_ref['folders']\
             and rsp.json()['products'] == add_ok_ref['products']\

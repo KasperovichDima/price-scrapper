@@ -1,6 +1,7 @@
 """TreeBuilder class for creating catalog tree."""
 from collections.abc import Mapping
 from typing import Iterable
+
 import crud
 
 from project_typing import ElType
@@ -25,14 +26,13 @@ class TreeBuilder:
             return
         self.__session = session
         self.__factories = FactoryCreator(home_url)()
-        pass
         self.__create_folders()
         # self.__create_products()
 
     def __create_folders(self) -> None:
         for type_ in folder_types:
             new_objects: list = []
-            existing_folders = crud.get_folders(self.__session, ids=())
+            existing_folders = crud.get_folders(self.__session)
             existing_id_to_name = {_.id: _.name for _ in existing_folders}
             f_data = {FolderData(existing_id_to_name[_.parent_id] if _.parent_id else None, _.name): _.id for _ in existing_folders}
 

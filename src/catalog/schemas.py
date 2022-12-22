@@ -12,7 +12,7 @@ class BaseCatScheme(BaseModel):
     id: int
     name: str
     parent_id: int | None
-    type: ElType
+    el_type: ElType
 
     class Config:
         orm_mode = True

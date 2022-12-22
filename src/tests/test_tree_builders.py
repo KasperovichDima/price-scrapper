@@ -17,8 +17,9 @@ class TestTreeBuilders:
     def test_tavria(self):
         """Test of Tavria TreeBuilder"""
         with TestSession() as session:
-            TavriaTreeBuilder(TAVRIA_TEST_URL, session)
+            TavriaTreeBuilder()(TAVRIA_TEST_URL, session)
             folders: Iterable[Folder] = session.query(Folder).all()
-        result = [(_.name, _.parent_id, _.type.value) for _ in folders]
+        result = [(_.name, _.parent_id, _.el_type.value) for _ in folders]
 
         assert result == tavria_tree_builder_result
+
