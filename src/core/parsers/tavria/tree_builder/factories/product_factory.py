@@ -2,6 +2,7 @@
 from catalog.models import Product
 
 from .base_factory import BaseFactory
+from .....constants import TAVRIA_URL
 from .....core_typing import ObjectParents
 
 
@@ -16,11 +17,20 @@ class ProductFactory(BaseFactory):
         return all((self.url, self.category_name, self.group_name))
 
     async def get_objects(self) -> str:
-        parent_id = self.parents_to_id_table[ObjectParents(self.subcategory_name, self.group_name)]
+        ...
 
     @property
-    def _parent_id(self) -> int:...
-        # parents = 
+    def _parent_id(self) -> int:
+        gp_name = self.subcategory_name if self.subcategory_name\
+            else self.category_name
+        parents = ObjectParents(grand_parent_name=gp_name,
+                                parent_name=self.group_name)
+        return self.parents_to_id_table[parents]
+
+    @property
+    def full_url(self) -> str:
+        return f'{TAVRIA_URL}{self.url}'
+
 
 
     # @property
