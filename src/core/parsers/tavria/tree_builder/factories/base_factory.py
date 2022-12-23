@@ -3,17 +3,23 @@ from collections import deque
 from collections.abc import Mapping
 from typing import ClassVar
 
+from catalog.models import BaseCatalogElement
+
 from pydantic import BaseModel, Field
 
+from project_typing import ElType
+
 from .....core_typing import BaseFactoryReturnType
-from .....core_typing import FolderParents
+from .....core_typing import ObjectParents
 
 
 class BaseFactory(BaseModel):
     """Contains all required information for catalog objects
     cretion. Creates objects using create_objects method."""
 
-    parent_to_id_table: ClassVar[Mapping[FolderParents, int]]
+    _creating_type: ClassVar[ElType]
+    _creating_class: ClassVar[type[BaseCatalogElement]]
+    parents_to_id_table: ClassVar[Mapping[ObjectParents, int]]
 
     object_names: deque[str] = Field(default_factory=deque)
 
@@ -23,7 +29,14 @@ class BaseFactory(BaseModel):
     def add_name(self, name: str) -> None:
         self.object_names.append(name)
 
-    def get_objects(self) -> BaseFactoryReturnType: ...
+    def get_objects(self) -> BaseFactoryReturnType:
+        return (self._creating_class(name=name,
+                       parent_id=self._parent_id,
+                       el_type=self._creating_type)
+                for name in self.object_names)
+
+    @property
+    def _parent_id(self) -> int | None: ...
 
     class Config:
         arbitrary_types_allowed = True

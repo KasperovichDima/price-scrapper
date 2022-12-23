@@ -16,7 +16,7 @@ class RequestObjects(NamedTuple):
     retailers: list[Retailer]
 
 
-FolderParents = namedtuple('FolderParents', 'grand_parent_name parent_name')
+ObjectParents = namedtuple('FolderParents', 'grand_parent_name parent_name')
 
 BaseFactoryReturnType = Generator[BaseCatalogElement, None, None]
 FolderReturnType = Generator[Folder, None, None]

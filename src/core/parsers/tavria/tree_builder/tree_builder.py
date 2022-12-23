@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from .factories import BaseFactory
 from .tag_data_preparator import FactoryCreator
 from ....constants import MAIN_PARSER, folder_types
-from ....core_typing import FolderParents
+from ....core_typing import ObjectParents
 
 
 class TreeBuilder:
@@ -49,7 +49,7 @@ class TreeBuilder:
         """
         saved_folders = crud.get_folders(self.__session)
         id_to_name_table = {_.id: _.name for _ in saved_folders}
-        BaseFactory.parent_to_id_table = {FolderParents(
+        BaseFactory.parents_to_id_table = {ObjectParents(
             grand_parent_name=id_to_name_table[_.parent_id]
             if _.parent_id else None, parent_name=_.name): _.id
             for _ in saved_folders

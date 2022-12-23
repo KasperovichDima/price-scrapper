@@ -4,43 +4,39 @@ from catalog.models import Folder
 from project_typing import ElType
 
 from .base_factory import BaseFactory
-from .....core_typing import FolderParents
+from .....core_typing import ObjectParents
 from .....core_typing import FolderReturnType
 
 
 class CategoryFactory(BaseFactory):
 
-    def get_objects(self) -> FolderReturnType:
-        return (Folder(name=_, el_type=ElType.CATEGORY)
-                for _ in self.object_names)
+    _creating_type = ElType.CATEGORY
+    _creating_class = Folder
+    _parent_id = None
 
 
 class SubcategoryFactory(BaseFactory):
 
+    _creating_type = ElType.SUBCATEGORY
+    _creating_class = Folder
     category_name: str
 
-    def get_objects(self) -> FolderReturnType:
-        parent_id = self.parent_to_id_table[FolderParents(None,
-                                            self.category_name)]
-        return (Folder(name=name,
-                       parent_id=parent_id,
-                       el_type=ElType.SUBCATEGORY)
-                for name in self.object_names)
+    @property
+    def _parent_id(self) -> int:
+        parents = ObjectParents(None, self.category_name)
+        return self.parents_to_id_table[parents]
 
 
 class GroupFactory(BaseFactory):
 
+    _creating_type = ElType.GROUP
+    _creating_class = Folder
     category_name: str
     subcategory_name: str | None = None
 
-    def get_objects(self) -> FolderReturnType:
-        return (Folder(name=name,
-                       parent_id=self.parent_to_id_table[self.__key],
-                       el_type=ElType.GROUP)
-                for name in self.object_names)
-
     @property
-    def __key(self) -> FolderParents:
-        return FolderParents(self.category_name, self.subcategory_name)\
+    def _parent_id(self) -> int:
+        parents = ObjectParents(self.category_name, self.subcategory_name)\
             if self.subcategory_name\
-            else FolderParents(None, self.category_name)
+            else ObjectParents(None, self.category_name)
+        return self.parents_to_id_table[parents]
