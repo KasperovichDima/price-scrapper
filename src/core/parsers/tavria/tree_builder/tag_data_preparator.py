@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 from .factories import BaseFactory
 from .factories import CategoryFactory
-from .factories import get_factory_class
+from .factories import factory_for
 from .utils import get_catalog_tags
 from .utils import get_tag_type
 from .utils import get_url
@@ -93,7 +93,7 @@ class FactoryCreator:
             return False
 
     def __create_factory(self, type_: ElType):
-        self.__current_factories[type_] = get_factory_class(type_)(
+        self.__current_factories[type_] = factory_for(type_)(
             url=get_url(self.__current_tag),
             category_name=self.__current_names[ElType.CATEGORY],
             subcategory_name=self.__current_names[ElType.SUBCATEGORY],
