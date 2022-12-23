@@ -1,7 +1,6 @@
 """Core custom datatypes."""
 from collections import namedtuple
-from collections.abc import Mapping
-from typing import Generator, NamedTuple, Protocol
+from typing import Generator, NamedTuple
 
 from catalog.models import BaseCatalogElement
 from catalog.models import Folder
@@ -17,15 +16,7 @@ class RequestObjects(NamedTuple):
     retailers: list[Retailer]
 
 
-FolderParents = namedtuple('FolderData', 'grand_parent_name parent_name')
+FolderParents = namedtuple('FolderParents', 'grand_parent_name parent_name')
 
 BaseFactoryReturnType = Generator[BaseCatalogElement, None, None]
 FolderReturnType = Generator[Folder, None, None]
-
-
-class Factory(Protocol):
-    def add_name(self, name: str) -> None: ...
-
-    def get_objects(self,
-                    folders: Mapping[FolderParents, int]
-                    ) -> BaseFactoryReturnType: ...

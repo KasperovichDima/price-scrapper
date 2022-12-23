@@ -8,12 +8,12 @@ import crud
 
 from project_typing import ElType
 
-from sqlalchemy import Column, Integer
 from sqlalchemy.orm import Session
 
+from .factories import BaseFactory
 from .tag_data_preparator import FactoryCreator
 from ...constants import MAIN_PARSER, folder_types
-from ...core_typing import Factory, FolderParents
+from ...core_typing import FolderParents
 
 
 class TreeBuilder:
@@ -22,9 +22,8 @@ class TreeBuilder:
     and update it with site information.
     TODO: slots.
     """
-    __factories: Mapping[ElType, Iterable[Factory]]
+    __factories: Mapping[ElType, Iterable[BaseFactory]]
     __folders_to_save: list[BaseCatalogElement] = []
-    __parents_to_id_table: dict[FolderParents, Column[Integer]]  # TODO: Remove
 
     def __call__(self, home_url: str, session: Session) -> None:
         if MAIN_PARSER != 'Tavria':
@@ -37,15 +36,20 @@ class TreeBuilder:
     def __create_folders(self) -> None:
         for type_ in folder_types:
             self.__folders_to_save.clear()
-            self.__prepare_parents_to_id_table()
+            self.__refresh_factory_table()
             self.__get_folders_to_save(type_)
             crud.add_instances(self.__folders_to_save,
                                self.__session)
 
-    def __prepare_parents_to_id_table(self) -> None:
+    def __refresh_factory_table(self) -> None:
+        """
+        Instead of passing a parent_to_id table in get_objects call, we
+        will make it a BaseFactory class variable and will refresh it before
+        the call.
+        """
         saved_folders = crud.get_folders(self.__session)
         id_to_name_table = {_.id: _.name for _ in saved_folders}
-        self.__parents_to_id_table = {FolderParents(
+        BaseFactory.parent_to_id_table = {FolderParents(
             grand_parent_name=id_to_name_table[_.parent_id]
             if _.parent_id else None, parent_name=_.name): _.id
             for _ in saved_folders
@@ -54,7 +58,7 @@ class TreeBuilder:
     def __get_folders_to_save(self, type_: ElType) -> None:
         for factory in self.__factories[type_]:
             self.__folders_to_save.extend(
-                factory.get_objects(self.__parents_to_id_table)
+                factory.get_objects()
             )
 
 
