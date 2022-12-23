@@ -3,11 +3,11 @@ from collections import deque
 from collections.abc import Mapping
 from typing import ClassVar
 
-from catalog.models import BaseCatalogElement
-
-from pydantic import BaseModel, Field
+from catalog.models import BaseCatalogElement, Folder
 
 from project_typing import ElType
+
+from pydantic import BaseModel, Field
 
 from .....core_typing import BaseFactoryReturnType
 from .....core_typing import ObjectParents
@@ -18,7 +18,7 @@ class BaseFactory(BaseModel):
     cretion. Creates objects using create_objects method."""
 
     _creating_type: ClassVar[ElType]
-    _creating_class: ClassVar[type[BaseCatalogElement]]
+    _creating_class: ClassVar[type[BaseCatalogElement]] = Folder
     parents_to_id_table: ClassVar[Mapping[ObjectParents, int]]
 
     object_names: deque[str] = Field(default_factory=deque)
@@ -30,9 +30,10 @@ class BaseFactory(BaseModel):
         self.object_names.append(name)
 
     def get_objects(self) -> BaseFactoryReturnType:
+        """Create and return factory objects. Template method."""
         return (self._creating_class(name=name,
-                       parent_id=self._parent_id,
-                       el_type=self._creating_type)
+                                     parent_id=self._parent_id,
+                                     el_type=self._creating_type)
                 for name in self.object_names)
 
     @property
