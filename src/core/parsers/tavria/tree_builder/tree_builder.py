@@ -12,8 +12,8 @@ from sqlalchemy.orm import Session
 
 from .factories import BaseFactory
 from .tag_data_preparator import FactoryCreator
-from ...constants import MAIN_PARSER, folder_types
-from ...core_typing import FolderParents
+from ....constants import MAIN_PARSER, folder_types
+from ....core_typing import FolderParents
 
 
 class TreeBuilder:
