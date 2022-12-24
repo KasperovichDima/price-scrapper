@@ -1,4 +1,6 @@
 """Product factory class."""
+import aiohttp
+
 from catalog.models import Product
 
 from .base_factory import BaseFactory
@@ -17,7 +19,11 @@ class ProductFactory(BaseFactory):
         return all((self.url, self.category_name, self.group_name))
 
     async def get_objects(self) -> str:
-        ...
+        async with aiohttp.ClientSession() as session:
+            async with session.get(self.full_url) as response:
+                if response.status != 200:
+                    return
+                html = await response.text()
 
     @property
     def _parent_id(self) -> int:

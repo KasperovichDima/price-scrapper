@@ -8,7 +8,6 @@ from .....core_typing import ObjectParents
 class CategoryFactory(BaseFactory):
 
     _creating_type = ElType.CATEGORY
-    _parent_id = None
 
 
 class SubcategoryFactory(BaseFactory):
