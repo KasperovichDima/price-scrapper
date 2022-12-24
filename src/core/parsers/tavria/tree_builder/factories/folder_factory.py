@@ -1,4 +1,6 @@
 """Folder factory class."""
+from functools import cached_property
+
 from project_typing import ElType
 
 from .base_factory import BaseFactory
@@ -15,7 +17,7 @@ class SubcategoryFactory(BaseFactory):
     _creating_type = ElType.SUBCATEGORY
     category_name: str
 
-    @property
+    @cached_property
     def _parent_id(self) -> int:
         parents = ObjectParents(grand_parent_name=None,
                                 parent_name=self.category_name)
@@ -28,7 +30,7 @@ class GroupFactory(BaseFactory):
     category_name: str
     subcategory_name: str | None = None
 
-    @property
+    @cached_property
     def _parent_id(self) -> int:
         grandparent = self.category_name if self.subcategory_name else None
         parent = self.subcategory_name if self.subcategory_name\

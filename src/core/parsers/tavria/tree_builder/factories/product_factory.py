@@ -1,11 +1,18 @@
 """Product factory class."""
 import aiohttp
 
+from bs4 import BeautifulSoup as bs
+from bs4.element import Tag
+
 from catalog.models import Product
 
 from .base_factory import BaseFactory
 from .....constants import TAVRIA_URL
 from .....core_typing import ObjectParents
+
+
+def tag_is_product(tag: Tag) -> bool:
+    return ('product' in tag.get('href'))
 
 
 class ProductFactory(BaseFactory):
@@ -23,7 +30,22 @@ class ProductFactory(BaseFactory):
             async with session.get(self.full_url) as response:
                 if response.status != 200:
                     return
-                html = await response.text()
+                html = bs(response.text(), 'lxml')
+                self.object_names = (_.text.strip() for _ in html.find_all('a') if tag_is_product(_))
+                objects = (Product)
+                if not self.__page_is_paginated:
+                    return objects
+                paginated_final_tag = html.find('a', {'aria-label': 'Next'})
+                paginated_href = paginated_final_tag.get('href')
+                count_slice = slice(paginated_href.find('=') + 1, None)
+                paginated_count = int(paginated_href[count_slice])
+                paginated_urls = (f'{self.full_url}/?page={_}' for _ in range(2, paginated_count))
+                async for url in paginated_urls:
+                    async with session.get(url) as response:
+                        pass
+
+    def __page_is_paginated(self) -> bool:
+        return False
 
     @property
     def _parent_id(self) -> int:
