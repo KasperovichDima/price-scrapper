@@ -1,5 +1,5 @@
 """Product factory class."""
-import aiohttp
+import requests
 
 from bs4 import BeautifulSoup as bs
 from bs4.element import Tag
@@ -25,24 +25,25 @@ class ProductFactory(BaseFactory):
     def __bool__(self) -> bool:
         return all((self.url, self.category_name, self.group_name))
 
-    async def get_objects(self) -> str:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(self.full_url) as response:
-                if response.status != 200:
-                    return
-                html = bs(response.text(), 'lxml')
-                self.object_names = (_.text.strip() for _ in html.find_all('a') if tag_is_product(_))
-                objects = (Product)
-                if not self.__page_is_paginated:
-                    return objects
-                paginated_final_tag = html.find('a', {'aria-label': 'Next'})
-                paginated_href = paginated_final_tag.get('href')
-                count_slice = slice(paginated_href.find('=') + 1, None)
-                paginated_count = int(paginated_href[count_slice])
-                paginated_urls = (f'{self.full_url}/?page={_}' for _ in range(2, paginated_count))
-                async for url in paginated_urls:
-                    async with session.get(url) as response:
-                        pass
+    def get_objects(self) -> str:
+        response = requests.get(self.full_url)
+        if response.status_code != 200:
+            return
+        print(f'Factory {self.group_name} got rsp from {self.full_url}')
+        return
+        # html = bs(response.text, 'lxml')
+        # self.object_names = (_.text.strip() for _ in html.find_all('a') if tag_is_product(_))
+        # objects = (Product)
+        # if not self.__page_is_paginated:
+        #     return objects
+        # paginated_final_tag = html.find('a', {'aria-label': 'Next'})
+        # paginated_href = paginated_final_tag.get('href')
+        # count_slice = slice(paginated_href.find('=') + 1, None)
+        # paginated_count = int(paginated_href[count_slice])
+        # paginated_urls = (f'{self.full_url}/?page={_}' for _ in range(2, paginated_count))
+        # async for url in paginated_urls:
+        #     async with session.get(url) as response:
+        #         pass
 
     def __page_is_paginated(self) -> bool:
         return False

@@ -23,7 +23,7 @@ class TreeBuilder:
     TODO: slots.
     """
     __factories: Mapping[ElType, Iterable[BaseFactory]]
-    __folders_to_save: list[BaseCatalogElement] = []
+    __objects_to_save: list[BaseCatalogElement] = []
 
     def __call__(self, home_url: str, session: Session) -> None:
         if MAIN_PARSER != 'Tavria':
@@ -31,14 +31,14 @@ class TreeBuilder:
         self.__session = session
         self.__factories = FactoryCreator(home_url)()
         self.__create_folders()
-        # self.__create_products()
+        self.__create_products()
 
     def __create_folders(self) -> None:
         for type_ in folder_types:
-            self.__folders_to_save.clear()
+            self.__objects_to_save.clear()
             self.__refresh_factory_table()
             self.__get_folders_to_save(type_)
-            crud.add_instances(self.__folders_to_save,
+            crud.add_instances(self.__objects_to_save,
                                self.__session)
 
     def __refresh_factory_table(self) -> None:
@@ -57,9 +57,13 @@ class TreeBuilder:
 
     def __get_folders_to_save(self, type_: ElType) -> None:
         for factory in self.__factories[type_]:
-            self.__folders_to_save.extend(
+            self.__objects_to_save.extend(
                 factory.get_objects()
             )
+
+    def __create_products(self) -> None:
+        self.__objects_to_save.clear()
+        self.__objects_to_save.extend(_.get_objects() for _ in self.__factories[ElType.PRODUCT])
 
 
     # def __get_objects(self):
