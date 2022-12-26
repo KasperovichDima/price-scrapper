@@ -1,4 +1,5 @@
 """TreeBuilder class for creating catalog tree."""
+import asyncio
 from collections.abc import Mapping
 from typing import Iterable
 
@@ -31,7 +32,7 @@ class TreeBuilder:
         self.__session = session
         self.__factories = FactoryCreator(home_url)()
         self.__create_folders()
-        self.__create_products()
+        asyncio.run(self.__create_products())
 
     def __create_folders(self) -> None:
         for type_ in folder_types:
@@ -61,9 +62,12 @@ class TreeBuilder:
                 factory.get_objects()
             )
 
-    def __create_products(self) -> None:
+    async def __create_products(self) -> None:
         self.__objects_to_save.clear()
-        self.__objects_to_save.extend(_.get_objects() for _ in self.__factories[ElType.PRODUCT])
+        jobs = [_.get_objects() for _ in self.__factories[ElType.PRODUCT]]
+        for job in asyncio.as_completed(jobs):
+            print('done!')
+
 
 
     # def __get_objects(self):

@@ -25,7 +25,7 @@ class ProductFactory(BaseFactory):
     def __bool__(self) -> bool:
         return all((self.url, self.category_name, self.group_name))
 
-    def get_objects(self) -> str:
+    async def get_objects(self) -> str:
         response = requests.get(self.full_url)
         if response.status_code != 200:
             return
