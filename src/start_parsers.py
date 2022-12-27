@@ -9,15 +9,15 @@ from database import test_engine
 
 from tests.constants import TAVRIA_TEST_URL
 
-session_type = SessionLocal
+session_maker = SessionLocal
 test_mode = True
 
 if test_mode:
     target_metadata = Base.metadata  # type: ignore
     target_metadata.create_all(test_engine)
-    session_type = TestSession
+    session_maker = TestSession
 
 
-with session_type() as session:
-    # TavriaTreeBuilder(TAVRIA_URL, session)
-    TavriaTreeBuilder()(TAVRIA_TEST_URL, session)
+with session_maker() as session:
+    TavriaTreeBuilder()(TAVRIA_URL, session)
+    # TavriaTreeBuilder()(TAVRIA_TEST_URL, session)

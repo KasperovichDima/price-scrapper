@@ -1,5 +1,6 @@
 """TreeBuilder class for creating catalog tree."""
 import asyncio
+import aiohttp
 from collections.abc import Mapping
 from typing import Iterable
 
@@ -64,9 +65,21 @@ class TreeBuilder:
 
     async def __create_products(self) -> None:
         self.__objects_to_save.clear()
-        jobs = [_.get_objects() for _ in self.__factories[ElType.PRODUCT]]
-        for job in asyncio.as_completed(jobs):
-            print('done!')
+        async with aiohttp.ClientSession() as session:
+            jobs = (_.get_objects(session) for _ in self.__factories[ElType.PRODUCT])
+            products = await asyncio.gather(*jobs)
+            return products
+            # await asyncio.gather(*self.get_jobs(session))
+
+    # def get_jobs(self, session):
+    #     return (_.get_objects(session) for _ in self.__factories[ElType.PRODUCT])
+
+
+
+        # self.__objects_to_save.clear()
+        # jobs = [_.get_objects() for _ in self.__factories[ElType.PRODUCT]]
+        # for job in asyncio.as_completed(jobs):
+        #     print('done!')
 
 
 

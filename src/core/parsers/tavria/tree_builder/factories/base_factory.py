@@ -1,6 +1,7 @@
 """Base factory class to inheritate from."""
 from collections import deque
 from collections.abc import Mapping
+from functools import cached_property
 from typing import ClassVar
 
 from catalog.models import BaseCatalogElement, Folder
@@ -41,3 +42,4 @@ class BaseFactory(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+        keep_untouched = (cached_property,)

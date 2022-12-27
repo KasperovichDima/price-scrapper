@@ -1,5 +1,6 @@
 """Product factory class."""
-import requests
+from functools import cached_property
+from typing import Iterable
 
 from bs4 import BeautifulSoup as bs
 from bs4.element import Tag
@@ -9,7 +10,8 @@ from catalog.models import Product
 from .base_factory import BaseFactory
 from .....constants import TAVRIA_URL
 from .....core_typing import ObjectParents
-
+import aiohttp
+import requests
 
 def tag_is_product(tag: Tag) -> bool:
     return ('product' in tag.get('href'))
@@ -25,12 +27,48 @@ class ProductFactory(BaseFactory):
     def __bool__(self) -> bool:
         return all((self.url, self.category_name, self.group_name))
 
-    async def get_objects(self) -> str:
-        response = requests.get(self.full_url)
-        if response.status_code != 200:
-            return
-        print(f'Factory {self.group_name} got rsp from {self.full_url}')
-        return
+    def scrap_page(self):
+        
+
+    async def get_objects(self, session: aiohttp.ClientSession) -> str:
+        async with session.get(self.full_url) as response:
+            # print(f'rsp from {self.full_url}')
+            if response.status != 200:
+                return
+            html = await response.text()
+            product_area: Iterable[Tag] = bs(html, 'lxml').find('div', {'class': 'catalog-products'})
+            # check pagination
+            number_of_pages = None
+            if paginator_tags := product_area.find('div', {'class': 'catalog__pagination'}).find_all('a'):
+                for tag in paginator_tags:
+                    try:
+                        assert tag.attrs['aria-label'] == 'Next'
+                        number_of_pages = int(tag.get('href').split('=')[-1])
+                        break
+                    except (AssertionError, KeyError):
+                        pass
+            # check pagination finished
+            tags: Iterable[Tag] = product_area.find_all('a')
+
+            for tag in tags:
+                name = tag.text.strip()
+                if 'product' in tag.get('href') and name:
+                    self.object_names.append(name)
+            if number_of_pages:
+                for page in range(1, number_of_pages + 1):
+                
+
+
+
+            
+
+
+        # response = requests.get(self.full_url)
+        # if response.status_code != 200:
+        #     return
+        # print(f'Factory {self.group_name} got rsp from {self.full_url}')
+        # return
+
         # html = bs(response.text, 'lxml')
         # self.object_names = (_.text.strip() for _ in html.find_all('a') if tag_is_product(_))
         # objects = (Product)
@@ -56,7 +94,7 @@ class ProductFactory(BaseFactory):
                                 parent_name=self.group_name)
         return self.parents_to_id_table[parents]
 
-    @property
+    @cached_property
     def full_url(self) -> str:
         return f'{TAVRIA_URL}{self.url}'
 
