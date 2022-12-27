@@ -1,7 +1,7 @@
 import gettext
 import json
 import fake_useragent
-import useragent as useragent
+# import useragent as useragent
 from aiohttp import ClientTimeout
 from fake_useragent import UserAgent
 import asyncio

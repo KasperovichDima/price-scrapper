@@ -2,16 +2,20 @@
 from functools import cached_property
 from typing import Iterable
 
-from bs4 import BeautifulSoup as bs
-from bs4.element import Tag
+import aiohttp
 
 from catalog.models import Product
+
+from bs4 import BeautifulSoup as bs
+from bs4.element import Tag
+from bs4 import ResultSet
+
+from fastapi import HTTPException
 
 from .base_factory import BaseFactory
 from .....constants import TAVRIA_URL
 from .....core_typing import ObjectParents
-import aiohttp
-import requests
+
 
 def tag_is_product(tag: Tag) -> bool:
     return ('product' in tag.get('href'))
@@ -27,18 +31,14 @@ class ProductFactory(BaseFactory):
     def __bool__(self) -> bool:
         return all((self.url, self.category_name, self.group_name))
 
-    def scrap_page(self):
-        
-
     async def get_objects(self, session: aiohttp.ClientSession) -> str:
         async with session.get(self.full_url) as response:
-            # print(f'rsp from {self.full_url}')
             if response.status != 200:
-                return
+                raise HTTPException(503, f'Error while parsing {self.full_url}')
             html = await response.text()
             product_area: Iterable[Tag] = bs(html, 'lxml').find('div', {'class': 'catalog-products'})
-            # check pagination
-            number_of_pages = None
+            tags: ResultSet = product_area.find_all('a')
+            # get paginated content
             if paginator_tags := product_area.find('div', {'class': 'catalog__pagination'}).find_all('a'):
                 for tag in paginator_tags:
                     try:
@@ -46,16 +46,19 @@ class ProductFactory(BaseFactory):
                         number_of_pages = int(tag.get('href').split('=')[-1])
                         break
                     except (AssertionError, KeyError):
-                        pass
-            # check pagination finished
-            tags: Iterable[Tag] = product_area.find_all('a')
+                        continue
+                for page_num in range(2, number_of_pages + 1):
+                    url = f'{self.full_url}?page={page_num}'
+                    async with session.get(url) as response:
+                        html = await response.text()
+                        product_area = bs(html, 'lxml').find('div', {'class': 'catalog-products'})
+                        tags.append(product_area.find_all('a'))
 
             for tag in tags:
                 name = tag.text.strip()
                 if 'product' in tag.get('href') and name:
                     self.object_names.append(name)
-            if number_of_pages:
-                for page in range(1, number_of_pages + 1):
+        pass
                 
 
 
@@ -82,9 +85,6 @@ class ProductFactory(BaseFactory):
         # async for url in paginated_urls:
         #     async with session.get(url) as response:
         #         pass
-
-    def __page_is_paginated(self) -> bool:
-        return False
 
     @property
     def _parent_id(self) -> int:

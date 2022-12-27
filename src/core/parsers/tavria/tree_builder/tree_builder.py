@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from .factories import BaseFactory
 from .tag_data_preparator import FactoryCreator
 from ....constants import MAIN_PARSER, folder_types
+from ....constants import TAVRIA_CONNECTIONS_LIMIT
 from ....core_typing import ObjectParents
 
 
@@ -65,85 +66,8 @@ class TreeBuilder:
 
     async def __create_products(self) -> None:
         self.__objects_to_save.clear()
-        async with aiohttp.ClientSession() as session:
+        connector = aiohttp.TCPConnector(limit=TAVRIA_CONNECTIONS_LIMIT)
+        async with aiohttp.ClientSession(connector=connector) as session:
             jobs = (_.get_objects(session) for _ in self.__factories[ElType.PRODUCT])
             products = await asyncio.gather(*jobs)
             return products
-            # await asyncio.gather(*self.get_jobs(session))
-
-    # def get_jobs(self, session):
-    #     return (_.get_objects(session) for _ in self.__factories[ElType.PRODUCT])
-
-
-
-        # self.__objects_to_save.clear()
-        # jobs = [_.get_objects() for _ in self.__factories[ElType.PRODUCT]]
-        # for job in asyncio.as_completed(jobs):
-        #     print('done!')
-
-
-
-    # def __get_objects(self):
-    #     for type_ in ElType:
-    #         saved_objects = crud.get_folders(self.__session, ())
-    #         objects = []
-    #         factories = self.__factories[type_]
-    #         for factory in factories:
-    #             subgroup_id = 
-    #             new_objects = factory.get_objects(parent_id)
-    #             objects.extend(new_objects)
-    #         crud.add_instances(objects, self.__session)
-
-    # def __get_parent_id(self, factory: CatalogFactory) -> id:
-
-
-    # def __create_categories(self) -> None:
-    #     """Creates Category objects in database."""
-    #     factory = self.__factories[ElType.CATEGORY][0]
-    #     objects = factory.get_objects()
-    #     crud.add_instances(objects, self.__session)
-
-    # def __create_subcategories(self) -> None:
-    #     """Creates Subcategories objects in database.
-    #     Must be called after the categories are created."""
-    #     subcategories = (Folder(name=_.name, type=ElType.SUBCATEGORY,
-    #                             parent_id=self.__cat_name_id[_.parent_name])
-    #                      for _ in self.__new_folders[ElType.SUBCATEGORY])
-    #     crud.add_instances(subcategories, self.__session)
-
-    # def __create_groups(self) -> None:
-    #     """Creates Group objects in database. Must be called
-    #     after the categories and subcategories are created."""
-    #     groups = (Folder(name=_.name, type=ElType.GROUP,
-    #                      parent_id=self.__cat_name_id[_.parent_name]
-    #                      if _.parent_type == ElType.CATEGORY
-    #                      else self.__subcat_name_id[_.parent_name])
-    #               for _ in self.__new_folders[ElType.GROUP])
-    #     crud.add_instances(groups, self.__session)
-
-    # def __create_products(self) -> None:
-    #     """Creates Product objects in database. Must be called
-    #     after the categories, subcategories and groups are created."""
-    #     ...
-
-    # @property
-    # def __folders(self) -> list[Folder]:
-    #     return crud.get_folders(self.__session, ())
-
-    # @cached_property
-    # def __cat_name_id(self) -> dict[str, int]:
-    #     return {_.name: _.id for _ in self.__saved_categories}
-
-    # @cached_property
-    # def __saved_categories(self) -> list[Folder]:
-    #     names = (_.name for _ in self.__new_folders[ElType.CATEGORY])
-    #     return crud.get_folders(self.__session, names=names)
-
-    # @cached_property
-    # def __subcat_name_id(self) -> dict[str, int]:
-    #     return {_.name: _.id for _ in self.__saved_subcategories}
-
-    # @cached_property
-    # def __saved_subcategories(self) -> list[Folder]:
-    #     names = (_.name for _ in self.__new_folders[ElType.SUBCATEGORY])
-    #     return crud.get_folders(self.__session, names=names)
