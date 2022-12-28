@@ -16,6 +16,7 @@ from .factories import BaseFactory
 from .tag_data_preparator import FactoryCreator
 from ....constants import MAIN_PARSER, folder_types
 from ....constants import TAVRIA_CONNECTIONS_LIMIT
+from ....constants import TAVRIA_URL
 from ....core_typing import ObjectParents
 
 
@@ -67,7 +68,7 @@ class TreeBuilder:
     async def __create_products(self) -> None:
         self.__objects_to_save.clear()
         connector = aiohttp.TCPConnector(limit=TAVRIA_CONNECTIONS_LIMIT)
-        async with aiohttp.ClientSession(connector=connector) as session:
+        async with aiohttp.ClientSession(base_url=TAVRIA_URL, connector=connector) as session:
             jobs = (_.get_objects(session) for _ in self.__factories[ElType.PRODUCT])
             products = await asyncio.gather(*jobs)
             return products
