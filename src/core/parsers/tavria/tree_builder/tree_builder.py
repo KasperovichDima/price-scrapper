@@ -67,6 +67,7 @@ class TreeBuilder:
 
     async def __create_products(self) -> None:
         self.__objects_to_save.clear()
+        self.__refresh_factory_table()
         connector = aiohttp.TCPConnector(limit=TAVRIA_CONNECTIONS_LIMIT)
         async with aiohttp.ClientSession(base_url=TAVRIA_URL, connector=connector) as session:
             jobs = (_.get_objects(session) for _ in self.__factories[ElType.PRODUCT])
