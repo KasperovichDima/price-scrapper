@@ -1,7 +1,7 @@
 """TreeBuilder class for creating catalog tree."""
 import asyncio
 from collections.abc import Mapping
-from typing import Iterable
+from typing import Iterable, MutableSequence
 
 import aiohttp
 
@@ -17,9 +17,7 @@ from .factories import BaseFactory
 from .factories import ProductFactory
 from .factory_creator import FactoryCreator
 from ..tavria_typing import ObjectParents
-from ....constants import MAIN_PARSER, folder_types
-from ....constants import TAVRIA_CONNECTIONS_LIMIT
-from ....constants import TAVRIA_URL
+from .... import constants as c
 
 
 class TreeBuilder:
@@ -28,11 +26,11 @@ class TreeBuilder:
     and update it with site information.
     TODO: slots.
     """
-    __factories: Mapping[ElType, Iterable[BaseFactory]]
+    __factories: Mapping[ElType, MutableSequence[BaseFactory]]
     __objects_to_save: set[BaseCatalogElement] = set()
 
     def __call__(self, home_url: str, session: Session) -> None:
-        if MAIN_PARSER != 'Tavria':
+        if c.MAIN_PARSER != 'Tavria':
             return
         self.__session = session
         self.__factories = FactoryCreator(home_url)()
@@ -40,12 +38,12 @@ class TreeBuilder:
         asyncio.run(self._create_products())
 
     def __create_folders(self) -> None:
-        for type_ in folder_types:
-            self.__objects_to_save.clear()
-            self.__refresh_factory_table()
+        for type_ in c.folder_types:
             self.__get_folders_to_save(type_)
             crud.add_instances(self.__objects_to_save,
                                self.__session)
+            self.__objects_to_save.clear()
+            self.__refresh_factory_table()
 
     def __refresh_factory_table(self) -> None:
         """
@@ -61,6 +59,24 @@ class TreeBuilder:
             for _ in saved_folders
         }
 
+    async def _create_products(self) -> None:
+        while self.__factories[ElType.PRODUCT]:
+            try:
+                await self.start_tasking()
+            except asyncio.exceptions.TimeoutError:
+                print('FINISHED', '!' * 20)
+                crud.add_instances(self.__objects_to_save, self.__session)
+
+    async def start_tasking(self):
+        timeout = aiohttp.ClientTimeout(total=c.TAVRIA_SESSION_TIMEOUT_SEC)
+        connector = aiohttp.TCPConnector(limit=c.TAVRIA_CONNECTIONS_LIMIT)
+        async with aiohttp.ClientSession(base_url=c.TAVRIA_URL,
+                                         connector=connector,
+                                         timeout=timeout) as session:
+            jobs = [self.one_factory_task(_, session) for _ in self.next_factories]
+            await asyncio.gather(*jobs)
+            raise asyncio.exceptions.TimeoutError
+
     def __get_folders_to_save(self, type_: ElType) -> None:
         for factory in self.__factories[type_]:
             self.__objects_to_save.update(factory.get_objects())
@@ -70,29 +86,8 @@ class TreeBuilder:
         self.__factories[ElType.PRODUCT].remove(factory)
         print('factory closed')
 
-    @staticmethod
-    def __tasks_are_finished():
-        raise asyncio.exceptions.TimeoutError
-
-    async def start_tasking(self):
-        timeout = aiohttp.ClientTimeout(total=60 * 5)
-        connector = aiohttp.TCPConnector(limit=TAVRIA_CONNECTIONS_LIMIT)
-        async with aiohttp.ClientSession(base_url=TAVRIA_URL, connector=connector, timeout=timeout) as session:
-            factories = []
-            for _ in range(5):
-                factories.append(self.__factories[ElType.PRODUCT][_])
-            jobs = [self.one_factory_task(_, session) for _ in factories]
-            await asyncio.gather(*jobs)
-            self.__tasks_are_finished()
-
-    async def _create_products(self) -> None:
-        self.__objects_to_save.clear()
-        self.__refresh_factory_table()
-
-        while self.__factories[ElType.PRODUCT]:
-            try:
-                await self.start_tasking()
-            except asyncio.exceptions.TimeoutError:
-                print('FINISHED', '!' * 20)
-                crud.add_instances(self.__objects_to_save, self.__session)
-
+    @property
+    def next_factories(self) -> Iterable[BaseFactory]:
+        return (self.__factories[ElType.PRODUCT][_] for _ in range(c.TAVRIA_FACTORIES_PER_SESSION))\
+            if len(self.__factories[ElType.PRODUCT]) >= c.TAVRIA_FACTORIES_PER_SESSION\
+            else self.__factories[ElType.PRODUCT]

@@ -7,6 +7,8 @@ from bs4.element import Tag
 
 from project_typing import ElType
 
+from .... import constants as c
+
 
 def group_is_outstanding(tag: Tag) -> bool:
     """Check if group has no subgroup parent."""
