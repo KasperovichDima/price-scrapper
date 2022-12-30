@@ -78,7 +78,7 @@ class FactoryCreator:
         self.__close_factory(type_)
         try:
             self.__create_factory(type_)
-        except ValidationError:
+        except ValidationError:  # type: ignore
             pass
 
     def __close_factory(self, type_: ElType) -> None:

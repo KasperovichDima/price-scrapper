@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 
 from .factories import BaseFactory
 from .factories import ProductFactory
-from .tag_data_preparator import FactoryCreator
+from .factory_creator import FactoryCreator
 from ..tavria_typing import ObjectParents
 from ....constants import MAIN_PARSER, folder_types
 from ....constants import TAVRIA_CONNECTIONS_LIMIT
