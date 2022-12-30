@@ -46,7 +46,6 @@ def get_element(cls: Type[BaseCatalogElement], id: int,
 
 def get_folder_content(id: int, session: Session) -> FolderContent:
     """Get content of folder with specified id."""
-
     return FolderContent(
         products=session.query(Product).filter(Product.parent_id == id).all(),
         folders=session.query(Folder).filter(Folder.parent_id == id).all()

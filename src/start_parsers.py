@@ -10,7 +10,7 @@ from database import test_engine
 from tests.constants import TAVRIA_TEST_URL
 
 session_maker = SessionLocal
-test_mode = True
+test_mode = False
 
 if test_mode:
     target_metadata = Base.metadata  # type: ignore

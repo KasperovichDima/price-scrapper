@@ -13,6 +13,7 @@ from project_typing import ElType
 from sqlalchemy.orm import Session
 
 from .factories import BaseFactory
+from .factories import ProductFactory
 from .tag_data_preparator import FactoryCreator
 from ....constants import MAIN_PARSER, folder_types
 from ....constants import TAVRIA_CONNECTIONS_LIMIT
@@ -65,11 +66,30 @@ class TreeBuilder:
                 factory.get_objects()
             )
 
+    async def one_factory_task(self, factory: ProductFactory, session):
+        self.__objects_to_save.extend(await factory.get_objects(session))
+        self.__factories[ElType.PRODUCT].remove(factory)
+        crud.add_instances(self.__objects_to_save, self.__session)
+        print('factory closed')
+
+    async def start_tasking(self):
+        timeout = aiohttp.ClientTimeout(total=20)
+        connector = aiohttp.TCPConnector(limit=TAVRIA_CONNECTIONS_LIMIT)
+        async with aiohttp.ClientSession(base_url=TAVRIA_URL, connector=connector, timeout=timeout) as session:
+            factories = []
+            for _ in range(10):
+                factories.append(self.__factories[ElType.PRODUCT][_])
+            jobs = [self.one_factory_task(_, session) for _ in factories]
+            # jobs = [self.one_factory_task(_, session) for _ in self.__factories[ElType.PRODUCT]]
+            await asyncio.gather(*jobs)
+
     async def __create_products(self) -> None:
         self.__objects_to_save.clear()
         self.__refresh_factory_table()
-        connector = aiohttp.TCPConnector(limit=TAVRIA_CONNECTIONS_LIMIT)
-        async with aiohttp.ClientSession(base_url=TAVRIA_URL, connector=connector) as session:
-            jobs = (_.get_objects(session) for _ in self.__factories[ElType.PRODUCT])
-            products = await asyncio.gather(*jobs)
-            return products
+
+        while self.__factories[ElType.PRODUCT]:
+            try:
+                await self.start_tasking()
+            except asyncio.exceptions.TimeoutError:
+                continue
+

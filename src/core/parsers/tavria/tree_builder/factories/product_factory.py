@@ -71,7 +71,7 @@ class ProductFactory(BaseFactory):
         if paginated_page_count := self.get_paginated_page_count(html):
             paginated_names = await self.get_paginated_content(paginated_page_count, session)
             self.object_names.extend(paginated_names)
-        return (Product(name=name, paretn_id=self._parent_id) for name in self.object_names)
+        return (Product(name=name, parent_id=self._parent_id) for name in self.object_names)
 
     @property
     def _parent_id(self) -> int:
