@@ -18,7 +18,7 @@ from .tag_data_preparator import FactoryCreator
 from ....constants import MAIN_PARSER, folder_types
 from ....constants import TAVRIA_CONNECTIONS_LIMIT
 from ....constants import TAVRIA_URL
-from ....core_typing import ObjectParents
+from ..tavria_typing import ObjectParents
 
 
 class TreeBuilder:

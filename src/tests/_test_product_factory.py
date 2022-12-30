@@ -14,7 +14,6 @@ p = ProductFactory(
 async def test():
     connector = aiohttp.TCPConnector(limit=5)
     session = aiohttp.ClientSession(base_url=TAVRIA_URL, connector=connector)
-    # async with mysession as session:
     await p.get_objects(session)
 
     await session.close()

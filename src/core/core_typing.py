@@ -15,6 +15,4 @@ class RequestObjects(NamedTuple):
     retailers: list[Retailer]
 
 
-ObjectParents = namedtuple('ObjectParents', 'grand_parent_name parent_name')
-
 BaseFactoryReturnType = Generator[BaseCatalogElement, None, None]

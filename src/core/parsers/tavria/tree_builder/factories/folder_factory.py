@@ -4,7 +4,7 @@ from functools import cached_property
 from project_typing import ElType
 
 from .base_factory import BaseFactory
-from .....core_typing import ObjectParents
+from ...tavria_typing import ObjectParents
 
 
 class CategoryFactory(BaseFactory):

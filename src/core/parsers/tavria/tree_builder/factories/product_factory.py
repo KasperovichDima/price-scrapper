@@ -13,7 +13,8 @@ from bs4.element import Tag
 from fastapi import HTTPException
 
 from .base_factory import BaseFactory
-from .....core_typing import BaseFactoryReturnType, ObjectParents
+from ...tavria_typing import ObjectParents
+from .....core_typing import BaseFactoryReturnType
 
 
 def tag_is_product(tag: Tag) -> bool:

@@ -11,7 +11,8 @@ from project_typing import ElType
 from pydantic import BaseModel, Field
 
 from .....core_typing import BaseFactoryReturnType
-from .....core_typing import ObjectParents
+# from .....core_typing import ObjectParents
+from ...tavria_typing import ObjectParents
 
 
 class BaseFactory(BaseModel):
