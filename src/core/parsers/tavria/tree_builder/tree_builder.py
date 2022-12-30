@@ -1,9 +1,10 @@
-"""TreeBuilder class for creating catalog tree."""
+"""
+TreeBuilder class for creating catalog tree.
+LAST RESULT: 11.36
+"""
 import asyncio
 from collections.abc import Mapping
 from typing import Iterable, MutableSequence
-
-import aiohttp
 
 from catalog.models import BaseCatalogElement
 
@@ -16,6 +17,8 @@ from sqlalchemy.orm import Session
 from .factories import BaseFactory
 from .factories import ProductFactory
 from .factory_creator import FactoryCreator
+from .utils import aiohttp_session_maker
+from .utils import tasks_are_finished
 from ..tavria_typing import ObjectParents
 from .... import constants as c
 
@@ -45,6 +48,10 @@ class TreeBuilder:
             self.__objects_to_save.clear()
             self.__refresh_factory_table()
 
+    def __get_folders_to_save(self, type_: ElType) -> None:
+        for factory in self.__factories[type_]:
+            self.__objects_to_save.update(factory.get_objects())
+
     def __refresh_factory_table(self) -> None:
         """
         Instead of passing a parent_to_id table in get_objects call, we
@@ -62,32 +69,26 @@ class TreeBuilder:
     async def _create_products(self) -> None:
         while self.__factories[ElType.PRODUCT]:
             try:
-                await self.start_tasking()
+                await self.__process_next_batch()
             except asyncio.exceptions.TimeoutError:
-                print('FINISHED', '!' * 20)
                 crud.add_instances(self.__objects_to_save, self.__session)
 
-    async def start_tasking(self):
-        timeout = aiohttp.ClientTimeout(total=c.TAVRIA_SESSION_TIMEOUT_SEC)
-        connector = aiohttp.TCPConnector(limit=c.TAVRIA_CONNECTIONS_LIMIT)
-        async with aiohttp.ClientSession(base_url=c.TAVRIA_URL,
-                                         connector=connector,
-                                         timeout=timeout) as session:
-            jobs = [self.one_factory_task(_, session) for _ in self.next_factories]
-            await asyncio.gather(*jobs)
-            raise asyncio.exceptions.TimeoutError
-
-    def __get_folders_to_save(self, type_: ElType) -> None:
-        for factory in self.__factories[type_]:
-            self.__objects_to_save.update(factory.get_objects())
-
-    async def one_factory_task(self, factory: ProductFactory, session):
-        self.__objects_to_save.update(await factory.get_objects(session))
-        self.__factories[ElType.PRODUCT].remove(factory)
-        print('factory closed')
+    async def __process_next_batch(self):
+        async with aiohttp_session_maker() as session:
+            tasks = (self.__single_factory_task(factory, session)
+                     for factory in self.__next_batch)
+            await asyncio.gather(*tasks)
+            tasks_are_finished()
 
     @property
-    def next_factories(self) -> Iterable[BaseFactory]:
-        return (self.__factories[ElType.PRODUCT][_] for _ in range(c.TAVRIA_FACTORIES_PER_SESSION))\
-            if len(self.__factories[ElType.PRODUCT]) >= c.TAVRIA_FACTORIES_PER_SESSION\
+    def __next_batch(self) -> Iterable[BaseFactory]:
+        return (self.__factories[ElType.PRODUCT][_]
+                for _ in range(c.TAVRIA_FACTORIES_PER_SESSION))\
+            if len(self.__factories[ElType.PRODUCT])\
+            >= c.TAVRIA_FACTORIES_PER_SESSION\
             else self.__factories[ElType.PRODUCT]
+
+    async def __single_factory_task(self, factory: ProductFactory,
+                                    session) -> None:
+        self.__objects_to_save.update(await factory.get_objects(session))
+        self.__factories[ElType.PRODUCT].remove(factory)

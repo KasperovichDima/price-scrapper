@@ -1,4 +1,7 @@
-"""Database crud operations."""
+"""
+Database crud operations.
+TODO: Add async
+"""
 from typing import Iterable, Type
 
 from authentication.models import User

@@ -1,6 +1,9 @@
 """Tavria parser utils."""
+import asyncio
 from typing import Iterable
 from urllib import request
+
+import aiohttp
 
 from bs4 import BeautifulSoup as bs
 from bs4.element import Tag
@@ -43,3 +46,16 @@ def get_tag_type(tag: Tag) -> ElType | None:
         return ElType.CATEGORY
     else:
         return None
+
+
+def aiohttp_session_maker() -> aiohttp.ClientSession:
+    timeout = aiohttp.ClientTimeout(total=c.TAVRIA_SESSION_TIMEOUT_SEC)
+    connector = aiohttp.TCPConnector(limit=c.TAVRIA_CONNECTIONS_LIMIT)
+    return aiohttp.ClientSession(base_url=c.TAVRIA_URL,
+                                 connector=connector,
+                                 timeout=timeout)
+
+
+def tasks_are_finished() -> None:
+    """Just raise TimeoutError, which will be normally captured."""
+    raise asyncio.exceptions.TimeoutError
