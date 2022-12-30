@@ -5,16 +5,16 @@ from typing import Iterable
 
 import aiohttp
 
-from catalog.models import Product
-
 from bs4 import BeautifulSoup as bs
 from bs4.element import Tag
+
+from catalog.models import Product
 
 from fastapi import HTTPException
 
 from .base_factory import BaseFactory
+from ...tavria_typing import BaseFactoryReturnType
 from ...tavria_typing import ObjectParents
-from .....core_typing import BaseFactoryReturnType
 
 
 def tag_is_product(tag: Tag) -> bool:

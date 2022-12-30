@@ -1,5 +1,5 @@
 """Core custom datatypes."""
-from typing import Generator, NamedTuple
+from typing import NamedTuple
 
 from catalog.models import BaseCatalogElement
 
@@ -12,6 +12,3 @@ class RequestObjects(NamedTuple):
     folders: list[BaseCatalogElement]
     products: list[BaseCatalogElement]
     retailers: list[Retailer]
-
-
-BaseFactoryReturnType = Generator[BaseCatalogElement, None, None]

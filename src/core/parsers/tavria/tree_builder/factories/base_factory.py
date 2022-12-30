@@ -10,8 +10,8 @@ from project_typing import ElType
 
 from pydantic import BaseModel, Field
 
-from .....core_typing import BaseFactoryReturnType
-# from .....core_typing import ObjectParents
+# from .....core_typing import BaseFactoryReturnType
+from ...tavria_typing import BaseFactoryReturnType
 from ...tavria_typing import ObjectParents
 
 

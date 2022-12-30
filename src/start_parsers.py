@@ -7,7 +7,7 @@ from database import SessionLocal
 from database import TestSession
 from database import test_engine
 
-from tests.constants import TAVRIA_TEST_URL
+from tests.constants import TAVRIA_TEST_URL  # noqa: F401
 
 session_maker = SessionLocal
 test_mode = True
