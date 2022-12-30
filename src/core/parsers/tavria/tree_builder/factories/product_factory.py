@@ -9,13 +9,11 @@ from catalog.models import Product
 
 from bs4 import BeautifulSoup as bs
 from bs4.element import Tag
-from bs4 import ResultSet
 
 from fastapi import HTTPException
 
 from .base_factory import BaseFactory
-from .....constants import TAVRIA_URL
-from .....core_typing import ObjectParents
+from .....core_typing import BaseFactoryReturnType, ObjectParents
 
 
 def tag_is_product(tag: Tag) -> bool:
@@ -65,7 +63,7 @@ class ProductFactory(BaseFactory):
             res.extend(self.get_object_names(_))
         return res
 
-    async def get_objects(self, session: aiohttp.ClientSession) -> str:
+    async def get_objects(self, session: aiohttp.ClientSession) -> BaseFactoryReturnType:
         html = await self.get_page_html(self.url, session)
         self.object_names = self.get_object_names(html)
         if paginated_page_count := self.get_paginated_page_count(html):
@@ -73,7 +71,7 @@ class ProductFactory(BaseFactory):
             self.object_names.extend(paginated_names)
         return (Product(name=name, parent_id=self._parent_id) for name in self.object_names)
 
-    @property
+    @cached_property
     def _parent_id(self) -> int:
         gp_name = self.subcategory_name if self.subcategory_name\
             else self.category_name

@@ -28,7 +28,7 @@ class TreeBuilder:
     TODO: slots.
     """
     __factories: Mapping[ElType, Iterable[BaseFactory]]
-    __objects_to_save: list[BaseCatalogElement] = []
+    __objects_to_save: set[BaseCatalogElement] = set()
 
     def __call__(self, home_url: str, session: Session) -> None:
         if MAIN_PARSER != 'Tavria':
@@ -62,26 +62,28 @@ class TreeBuilder:
 
     def __get_folders_to_save(self, type_: ElType) -> None:
         for factory in self.__factories[type_]:
-            self.__objects_to_save.extend(
-                factory.get_objects()
-            )
+            self.__objects_to_save.update(factory.get_objects())
 
     async def one_factory_task(self, factory: ProductFactory, session):
-        self.__objects_to_save.extend(await factory.get_objects(session))
+        self.__objects_to_save.update(await factory.get_objects(session))
         self.__factories[ElType.PRODUCT].remove(factory)
-        crud.add_instances(self.__objects_to_save, self.__session)
         print('factory closed')
 
+    @staticmethod
+    def __tasks_are_finished():
+        raise asyncio.exceptions.TimeoutError
+
     async def start_tasking(self):
-        timeout = aiohttp.ClientTimeout(total=20)
+        timeout = aiohttp.ClientTimeout(total=60 * 5)
         connector = aiohttp.TCPConnector(limit=TAVRIA_CONNECTIONS_LIMIT)
         async with aiohttp.ClientSession(base_url=TAVRIA_URL, connector=connector, timeout=timeout) as session:
             factories = []
-            for _ in range(10):
+            for _ in range(5):
                 factories.append(self.__factories[ElType.PRODUCT][_])
             jobs = [self.one_factory_task(_, session) for _ in factories]
-            # jobs = [self.one_factory_task(_, session) for _ in self.__factories[ElType.PRODUCT]]
             await asyncio.gather(*jobs)
+            self.__tasks_are_finished()
+            
 
     async def _create_products(self) -> None:
         self.__objects_to_save.clear()
@@ -91,5 +93,6 @@ class TreeBuilder:
             try:
                 await self.start_tasking()
             except asyncio.exceptions.TimeoutError:
-                continue
+                print('FINISHED', '!' * 20)
+                crud.add_instances(self.__objects_to_save, self.__session)
 
