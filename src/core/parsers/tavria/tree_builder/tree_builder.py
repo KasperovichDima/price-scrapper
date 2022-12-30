@@ -1,8 +1,9 @@
 """TreeBuilder class for creating catalog tree."""
 import asyncio
-import aiohttp
 from collections.abc import Mapping
 from typing import Iterable
+
+import aiohttp
 
 from catalog.models import BaseCatalogElement
 
@@ -15,10 +16,10 @@ from sqlalchemy.orm import Session
 from .factories import BaseFactory
 from .factories import ProductFactory
 from .tag_data_preparator import FactoryCreator
+from ..tavria_typing import ObjectParents
 from ....constants import MAIN_PARSER, folder_types
 from ....constants import TAVRIA_CONNECTIONS_LIMIT
 from ....constants import TAVRIA_URL
-from ..tavria_typing import ObjectParents
 
 
 class TreeBuilder:
@@ -83,7 +84,6 @@ class TreeBuilder:
             jobs = [self.one_factory_task(_, session) for _ in factories]
             await asyncio.gather(*jobs)
             self.__tasks_are_finished()
-            
 
     async def _create_products(self) -> None:
         self.__objects_to_save.clear()

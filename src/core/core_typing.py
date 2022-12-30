@@ -1,5 +1,4 @@
 """Core custom datatypes."""
-from collections import namedtuple
 from typing import Generator, NamedTuple
 
 from catalog.models import BaseCatalogElement
