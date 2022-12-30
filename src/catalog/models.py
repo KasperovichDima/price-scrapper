@@ -14,6 +14,9 @@ class BaseCatalogElement(BaseWithRepr):
     parent_id: Column
     el_type: Column
 
+    def __hash__(self) -> int:
+        return hash((self.name, self.parent_id))
+
 
 class Folder(BaseCatalogElement):
     """Product folder class."""
