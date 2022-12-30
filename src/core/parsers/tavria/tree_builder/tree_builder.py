@@ -36,7 +36,7 @@ class TreeBuilder:
         self.__session = session
         self.__factories = FactoryCreator(home_url)()
         self.__create_folders()
-        asyncio.run(self.__create_products())
+        asyncio.run(self._create_products())
 
     def __create_folders(self) -> None:
         for type_ in folder_types:
@@ -83,7 +83,7 @@ class TreeBuilder:
             # jobs = [self.one_factory_task(_, session) for _ in self.__factories[ElType.PRODUCT]]
             await asyncio.gather(*jobs)
 
-    async def __create_products(self) -> None:
+    async def _create_products(self) -> None:
         self.__objects_to_save.clear()
         self.__refresh_factory_table()
 
