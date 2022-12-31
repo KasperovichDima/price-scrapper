@@ -1,4 +1,7 @@
-"""Base factory class to inheritate from."""
+"""
+Base factory class to inheritate from.
+TODO: Move from Pydantic model.
+"""
 from collections import deque
 from collections.abc import Mapping
 from functools import cached_property

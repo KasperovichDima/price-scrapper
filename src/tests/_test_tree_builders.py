@@ -30,7 +30,7 @@ class TestTavriaTreeBuilders:
         """Test of Tavria TreeBuilder folders creation."""
         with TestSession() as session:
             #  mock product creation
-            TavriaTreeBuilder._create_products = just_pass
+            TavriaTreeBuilder.__create_products = just_pass
             TavriaTreeBuilder()(TAVRIA_TEST_URL, session)
             all_folders: Iterable[Folder] = crud.get_folders(session)
         result = [(_.name, _.parent_id, _.el_type.value) for _ in all_folders]

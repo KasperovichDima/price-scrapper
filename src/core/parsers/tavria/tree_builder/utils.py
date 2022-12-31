@@ -12,10 +12,26 @@ from project_typing import ElType
 
 from .... import constants as c
 
+from functools import lru_cache
+from typing import Callable
+
+from project_typing import ElType
+
+from bs4.element import Tag
+
+from .factories import BaseFactory
+from .factories import CategoryFactory
+from .factories import GroupFactory
+from .factories import SubcategoryFactory
+from .factories import ProductFactory
+
 
 def group_is_outstanding(tag: Tag) -> bool:
     """Check if group has no subgroup parent."""
-    return tag.parent.name == 'h4'
+    try:
+        return tag.parent.name == 'h4'
+    except AttributeError:
+        return False
 
 
 def get_catalog_tags(url: str) -> Iterable[Tag]:
@@ -59,3 +75,19 @@ def aiohttp_session_maker() -> aiohttp.ClientSession:
 def tasks_are_finished() -> None:
     """Just raise TimeoutError, which will be normally captured."""
     raise asyncio.exceptions.TimeoutError
+
+
+def __create_class_getter() -> Callable[[ElType], type[BaseFactory]]:
+    types: dict[ElType, type[BaseFactory]] = {
+        ElType.CATEGORY: CategoryFactory,
+        ElType.SUBCATEGORY: SubcategoryFactory,
+        ElType.GROUP: GroupFactory,
+        ElType.PRODUCT: ProductFactory
+    }
+
+    def get_class(type_: ElType) -> type[BaseFactory]:
+        return types[type_]
+    return get_class
+
+
+factory_for = __create_class_getter()

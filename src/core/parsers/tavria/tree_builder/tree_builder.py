@@ -38,7 +38,7 @@ class TreeBuilder:
         self.__session = session
         self.__factories = FactoryCreator(home_url)()
         self.__create_folders()
-        asyncio.run(self._create_products())
+        asyncio.run(self.__create_products())
 
     def __create_folders(self) -> None:
         for type_ in c.folder_types:
@@ -66,12 +66,13 @@ class TreeBuilder:
             for _ in saved_folders
         }
 
-    async def _create_products(self) -> None:
+    async def __create_products(self) -> None:
         while self.__factories[ElType.PRODUCT]:
             try:
                 await self.__process_next_batch()
             except asyncio.exceptions.TimeoutError:
                 crud.add_instances(self.__objects_to_save, self.__session)
+                print('batch saved...')
 
     async def __process_next_batch(self):
         async with aiohttp_session_maker() as session:

@@ -8,13 +8,9 @@ from project_typing import ElType
 
 from pydantic import ValidationError
 
+from . import utils as u
 from .factories import BaseFactory
 from .factories import CategoryFactory
-from .factories import factory_for
-from .utils import get_catalog_tags
-from .utils import get_tag_type
-from .utils import get_url
-from .utils import group_is_outstanding
 
 
 class FactoryCreator:
@@ -31,7 +27,7 @@ class FactoryCreator:
         = defaultdict(deque)
 
     def __init__(self, home_url: str) -> None:
-        self.__tags = get_catalog_tags(home_url)
+        self.__tags = u.get_catalog_tags(home_url)
         self.__current_factories[ElType.CATEGORY] = CategoryFactory()
 
     def __call__(self) -> defaultdict[ElType, deque[BaseFactory]]:
@@ -44,7 +40,7 @@ class FactoryCreator:
         """Prepare catalog factories from site information."""
 
         for tag in self.__tags:
-            if not self.__tag_can_be_processed(tag_type := get_tag_type(tag)):
+            if not self.__tag_can_be_processed(tag_type := u.get_tag_type(tag)):  # noqa: E501
                 continue
             self.__current_tag = tag
             self.__process_tag(tag_type)  # type: ignore
@@ -63,7 +59,7 @@ class FactoryCreator:
             self.__try_to_create_factory(ElType.GROUP)
 
         elif tag_type is ElType.GROUP:
-            if group_is_outstanding(self.__current_tag):
+            if u.group_is_outstanding(self.__current_tag):
                 self.__current_names[ElType.SUBCATEGORY] = None
                 self.__try_to_create_factory(ElType.GROUP)
             self.__try_to_create_factory(ElType.PRODUCT)
@@ -93,8 +89,8 @@ class FactoryCreator:
             return False
 
     def __create_factory(self, type_: ElType):
-        self.__current_factories[type_] = factory_for(type_)(
-            url=get_url(self.__current_tag),
+        self.__current_factories[type_] = u.factory_for(type_)(
+            url=u.get_url(self.__current_tag),
             category_name=self.__current_names[ElType.CATEGORY],
             subcategory_name=self.__current_names[ElType.SUBCATEGORY],
             group_name=self.__current_names[ElType.GROUP]
