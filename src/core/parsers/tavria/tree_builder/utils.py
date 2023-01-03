@@ -1,6 +1,6 @@
 """Tavria parser utils."""
 import asyncio
-from typing import Iterable
+from typing import Callable, Iterable
 from urllib import request
 
 import aiohttp
@@ -10,20 +10,8 @@ from bs4.element import Tag
 
 from project_typing import ElType
 
+from . import factories as f
 from .... import constants as c
-
-from functools import lru_cache
-from typing import Callable
-
-from project_typing import ElType
-
-from bs4.element import Tag
-
-from .factories import BaseFactory
-from .factories import CategoryFactory
-from .factories import GroupFactory
-from .factories import SubcategoryFactory
-from .factories import ProductFactory
 
 
 def group_is_outstanding(tag: Tag) -> bool:
@@ -77,15 +65,15 @@ def tasks_are_finished() -> None:
     raise asyncio.exceptions.TimeoutError
 
 
-def __create_class_getter() -> Callable[[ElType], type[BaseFactory]]:
-    types: dict[ElType, type[BaseFactory]] = {
-        ElType.CATEGORY: CategoryFactory,
-        ElType.SUBCATEGORY: SubcategoryFactory,
-        ElType.GROUP: GroupFactory,
-        ElType.PRODUCT: ProductFactory
+def __create_class_getter() -> Callable[[ElType], type[f.BaseFactory]]:
+    types: dict[ElType, type[f.BaseFactory]] = {
+        ElType.CATEGORY: f.CategoryFactory,
+        ElType.SUBCATEGORY: f.SubcategoryFactory,
+        ElType.GROUP: f.GroupFactory,
+        ElType.PRODUCT: f.ProductFactory
     }
 
-    def get_class(type_: ElType) -> type[BaseFactory]:
+    def get_class(type_: ElType) -> type[f.BaseFactory]:
         return types[type_]
     return get_class
 

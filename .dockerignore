@@ -1,0 +1,17 @@
+.dockerignore
+documentation
+.env
+.git
+.gitignore
+migrations
+.mypy_cache
+.pytest_cache
+README.md
+terminal
+venv
+.vscode
+
+src/database/app_database.db
+*/__pycache__*
+*/.mypy_cache*
+*/.pytest_cache*
