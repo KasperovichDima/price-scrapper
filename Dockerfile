@@ -1,13 +1,12 @@
 FROM python:3.10
 WORKDIR /app
-# COPY . .
-RUN git clone
+COPY . .
 RUN apt-get update -y \
-&& apt-get install -y mc nano
+&& apt-get install -y mc
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 WORKDIR /app/src
-CMD uvicorn main:app --host 0.0.0.0 --port 8000
+# CMD uvicorn main:app --host 0.0.0.0 --port 8000
 
 
 
-# docker build . -t monitoring:dev
+# delete all unnecessary from requirements.txt
