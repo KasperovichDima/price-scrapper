@@ -1,17 +1,15 @@
 """
 Base factory class to inheritate from.
-TODO: Move from Pydantic model.
+TODO: use slots.
 """
 from collections import deque
 from collections.abc import Mapping
 from functools import cached_property
-# from typing import ClassVar
 
 from catalog.models import BaseCatalogElement, Folder
 
 from project_typing import ElType
 
-# from pydantic import BaseModel, Field
 from .exceptions import EmptyFactoryDataError
 from ...tavria_typing import BaseFactoryReturnType
 from ...tavria_typing import ObjectParents
