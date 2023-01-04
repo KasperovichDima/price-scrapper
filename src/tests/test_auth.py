@@ -54,7 +54,7 @@ class TestDeleteUser:
             '/auth/delete_user',
             params={'email': create_fake_user.email})
         assert rsp.status_code == 200\
-            and rsp.json()['email'] == create_fake_user.email
+            and rsp.json() == create_fake_user.email
 
     def test_delete_not_exists_user(self, fake_user_data: UserCreate):
         """Attempt to delete not existing user."""

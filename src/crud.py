@@ -4,6 +4,7 @@ TODO: Add async
 """
 from typing import Iterable, Type
 
+from authentication.exceptions import user_not_exists_exeption
 from authentication.models import User
 
 from catalog.models import BaseCatalogElement, Folder, Product
@@ -23,8 +24,11 @@ def get_user(email: str, session: Session) -> User | None:
     return session.query(User).filter(User.email == email).first()
 
 
-def delete_user(user: User, session: Session) -> None:
-    """Delete specified user."""
+def delete_user(email: str, session: Session) -> None:
+    """Delete user, specified by email. Raises
+    user_not_exists_exeption if email not in database."""
+    if not (user := get_user(email, session)):
+        raise user_not_exists_exeption
     session.delete(user)
     session.commit()
 

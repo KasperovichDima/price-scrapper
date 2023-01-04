@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from .constants import access_token_expires
-from .exceptions import email_exists_exeption, user_not_exists_exeption
+from .exceptions import email_exists_exeption
 from .models import User
 from .schemas import TokenScheme, UserCreate, UserScheme
 from .utils import authenticate_user
@@ -54,12 +54,9 @@ async def create_user(user_data: UserCreate,
     return user
 
 
-@router.delete('/delete_user', response_model=UserScheme)
+@router.delete('/delete_user', response_description='email of deleted user')
 async def delete_user(email: str, session=Depends(get_session)):
     """Delete user by email. If email is not in
     database - raise user_not_exists_exeption."""
-    if user := crud.get_user(email, session):
-        crud.delete_user(user, session)
-    else:
-        raise user_not_exists_exeption
-    return user
+    crud.delete_user(email, session)
+    return email
