@@ -24,6 +24,6 @@ if test_mode:
 with session_maker() as session:
     now = time.perf_counter()
     print(now)
-    TavriaTreeBuilder()(TAVRIA_URL, session)
-    # TavriaTreeBuilder()(TAVRIA_TEST_URL, session)
+    # TavriaTreeBuilder()(TAVRIA_URL, session)
+    TavriaTreeBuilder()(TAVRIA_TEST_URL, session)
     print(time.perf_counter() - now)
