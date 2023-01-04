@@ -60,11 +60,12 @@ class TreeBuilder:
         """
         saved_folders = crud.get_folders(self.__session)
         id_to_name_table = {_.id: _.name for _ in saved_folders}
-        BaseFactory.parents_to_id_table = {ObjectParents(
+        table = {ObjectParents(
             grand_parent_name=id_to_name_table[_.parent_id]
             if _.parent_id else None, parent_name=_.name): _.id
             for _ in saved_folders
         }
+        BaseFactory.refresh_parent_table(table)
 
     async def __create_products(self) -> None:
         while self.__factories[ElType.PRODUCT]:

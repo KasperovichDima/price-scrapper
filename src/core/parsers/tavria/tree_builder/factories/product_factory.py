@@ -20,38 +20,45 @@ from ...tavria_typing import ObjectParents
 
 class ProductFactory(BaseFactory):
 
-    url: str
-    category_name: str
-    group_name: str
-    session: aiohttp.ClientSession | None = None
+    __session: aiohttp.ClientSession
+    __html: str
+    
+    def __init__(self, url: str, category_name: str, group_name: str,
+                 subcategory_name: str | None = None, **kwargs) -> None:
 
-    html: str | None = None  # TODO: Looks ugly
-    subcategory_name: str | None = None
+        if not all((url, category_name, group_name)):
+            raise TypeError
+
+        self.url = url
+        self.category_name = category_name
+        self.group_name = group_name
+        self.subcategory_name = subcategory_name
+        super().__init__()
 
     async def get_objects(self, session: aiohttp.ClientSession
                           ) -> BaseFactoryReturnType:
         # TODO: Make session class var
-        self.session = session
+        self.__session = session
         await self.scrap_object_names()
         if self.__page_is_paginated:
             await self.get_paginated_content()
 
         return (Product(name=name, parent_id=self._parent_id)
-                for name in self.object_names)
+                for name in self._object_names)
 
     async def scrap_object_names(self) -> None:
         await self.get_page_html()
-        a_tags: ResultSet[Tag] = bs(self.html, 'lxml').find_all('a')
+        a_tags: ResultSet[Tag] = bs(self.__html, 'lxml').find_all('a')
         correct_names = (get_product_name(_)
                          for _ in a_tags if get_product_name(_))
-        self.object_names.extend(correct_names)  # type: ignore
+        self._object_names.extend(correct_names)  # type: ignore
 
     async def get_page_html(self) -> None:
-        async with self.session.get(self.url) as response:
+        async with self.__session.get(self.url) as response:
             if response.status != 200:
                 raise HTTPException(503, f'Error while parsing {self.url}')
                 #  TODO: add log and email developer here
-            self.html = await response.text()
+            self.__html = await response.text()
 
     @property
     def __page_is_paginated(self) -> bool:
@@ -70,7 +77,7 @@ class ProductFactory(BaseFactory):
 
     @cached_property
     def paginator(self) -> ResultSet:
-        return bs(self.html, 'lxml')\
+        return bs(self.__html, 'lxml')\
             .find('div', {'class': 'catalog__pagination'}).find_all('a')
 
     async def get_paginated_content(self):
@@ -89,7 +96,7 @@ class ProductFactory(BaseFactory):
             if self.subcategory_name else self.category_name
         parents = ObjectParents(grand_parent_name=grand_parent_name,
                                 parent_name=self.group_name)
-        return self.parents_to_id_table[parents]
+        return self._parents_to_id_table[parents]
 
     def __bool__(self) -> bool:
         return all((self.url, self.category_name, self.group_name))
