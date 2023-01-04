@@ -17,7 +17,8 @@ from .constants import FAKE_GROUP_URL
 from .references.references import tavria_tree_builder_result
 
 
-async def just_pass(_):...
+async def just_pass(_): ...
+
 
 def fake_parent_id():
     return 1

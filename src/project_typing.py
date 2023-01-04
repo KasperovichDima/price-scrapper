@@ -1,5 +1,6 @@
 """Custom datatypes for the project."""
 from enum import Enum, auto
+from typing import TypeVar
 
 
 class UserType(Enum):
@@ -17,3 +18,6 @@ class ElType(Enum):
     SUBCATEGORY = auto()
     GROUP = auto()
     PRODUCT = auto()
+
+
+db_type = TypeVar('db_type')

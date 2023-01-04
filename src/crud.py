@@ -12,7 +12,7 @@ from catalog.schemas import FolderContent
 
 from database import Base
 
-from project_typing import ElType
+from project_typing import db_type
 
 from retailer.models import Retailer
 
@@ -39,8 +39,8 @@ def get_user(email: str, session: Session) -> User | None:
 def get_folder_content(id: int, session: Session) -> FolderContent:
     """Get content of folder with specified id."""
     return FolderContent(
-        products=session.query(Product).filter(Product.parent_id == id).all(),
-        folders=session.query(Folder).filter(Folder.parent_id == id).all()
+        products=__get_elements(Product, session, parent_id=(id,)),
+        folders=__get_elements(Folder, session, parent_id=(id,))
     )
 
 
@@ -50,13 +50,24 @@ def get_element(cls: Type[BaseCatalogElement], id: int,
     return session.get(cls, id)
 
 
+def __get_elements(cls_: type[db_type], session: Session,
+                   **kwargs) -> list[db_type]:
+    """Returns elements of specified class using
+    IN statement. NOTE: kwargs dict keys must be
+    named exactly like class attributes."""
+
+    elements = session.query(cls_)
+    for k, v in kwargs.items():
+        if v:
+            elements = elements.where(getattr(cls_, k).in_(v))
+    return elements.all()
+
+
 def get_products(session: Session, prod_ids: Container[int],
                  folder_ids: Container[int] | None = None) -> list[Product]:
     """Get product objects from product and folder ids."""
-    return session.query(Product).where(
-            Product.id.in_(prod_ids)
-            | Product.parent_id.in_(folder_ids if folder_ids else [])
-        ).all()
+
+    return __get_elements(Product, session, id=prod_ids, parent_id=folder_ids)
 
 
 def get_folders(session: Session,
@@ -64,19 +75,14 @@ def get_folders(session: Session,
     """
     Get folder objects by folder ids. If no
     ids are specified - all folders wil be returned.
-    TODO: Try to refactor after migration to postgres.
     """
-
-    folders = session.query(Folder)
-    if ids:
-        folders = folders.where(Folder.id.in_(ids))
-    return folders.all()
+    return __get_elements(Folder, session, id=ids)
 
 
 def get_retailers(ids: list[int],
                   session: Session) -> list[Retailer]:
     """Get retailer objects by retailer names."""
-    return session.query(Retailer).where(Retailer.id.in_(ids)).all()
+    return __get_elements(Retailer, session, id=ids)
 
 
 def delete_user(email: str, session: Session) -> None:
