@@ -25,15 +25,15 @@ class ProductFactory(BaseFactory):
 
     def __init__(self, url: str, category_name: str, group_name: str,
                  subcategory_name: str | None = None, **kwargs) -> None:
-        self.url = url
+        self._url = url
         self._category_name = category_name
-        self._group_name = group_name
+        self.group_name = group_name
         self._subcategory_name = subcategory_name
         super().__init__()
 
     def _validate_init_data(self) -> None:
-        if (all((self.url, self._category_name,
-           self._group_name, self._subcategory_name != ''))):
+        if (all((self._url, self._category_name,
+           self.group_name, self._subcategory_name != ''))):
             return
         super()._validate_init_data()
 
@@ -56,9 +56,9 @@ class ProductFactory(BaseFactory):
         self._object_names.extend(correct_names)  # type: ignore
 
     async def get_page_html(self) -> None:
-        async with self.__session.get(self.url) as response:
+        async with self.__session.get(self._url) as response:
             if response.status != 200:
-                raise HTTPException(503, f'Error while parsing {self.url}')
+                raise HTTPException(503, f'Error while parsing {self._url}')
                 #  TODO: add log and email developer here
             self.__html = await response.text()
 
@@ -83,13 +83,13 @@ class ProductFactory(BaseFactory):
             .find('div', {'class': 'catalog__pagination'}).find_all('a')
 
     async def get_paginated_content(self):
-        urls = (f'{self.url}?page={_}'
+        urls = (f'{self._url}?page={_}'
                 for _ in range(2, self.paginator_size + 1))
         jobs = (self.page_task(_) for _ in urls)
         await asyncio.gather(*jobs)
 
     async def page_task(self, url: str) -> None:
-        self.url = url
+        self._url = url
         await self.scrap_object_names()
 
     @cached_property
@@ -97,8 +97,8 @@ class ProductFactory(BaseFactory):
         grand_parent_name = self._subcategory_name\
             if self._subcategory_name else self._category_name
         parents = ObjectParents(grand_parent_name=grand_parent_name,
-                                parent_name=self._group_name)
+                                parent_name=self.group_name)
         return self._parents_to_id_table[parents]
 
     def __bool__(self) -> bool:
-        return all((self.url, self._category_name, self._group_name))
+        return all((self._url, self._category_name, self.group_name))

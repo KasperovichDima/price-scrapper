@@ -93,6 +93,6 @@ class TreeBuilder:
 
     async def __single_factory_task(self, factory: ProductFactory,
                                     session) -> None:
-        print(f'{factory.url} is in progress...')
+        print(f'Group "{factory.group_name}" added to batch...')
         self.__objects_to_save.update(await factory.get_objects(session))
         self.__factories[ElType.PRODUCT].remove(factory)

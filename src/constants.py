@@ -9,4 +9,4 @@ load_dotenv()
 
 SQLALCHEMY_DATABASE_URL: str = os.environ['DATABASE_URL']
 
-test_mode = False
+test_mode = True
