@@ -47,6 +47,7 @@ class TreeBuilder:
                                self.__session)
             self.__objects_to_save.clear()
             self.__refresh_factory_table()
+        print('Folders successfully created...')
 
     def __get_folders_to_save(self, type_: ElType) -> None:
         for factory in self.__factories[type_]:
@@ -92,5 +93,6 @@ class TreeBuilder:
 
     async def __single_factory_task(self, factory: ProductFactory,
                                     session) -> None:
+        print(f'{factory.url} is in progress...')
         self.__objects_to_save.update(await factory.get_objects(session))
         self.__factories[ElType.PRODUCT].remove(factory)

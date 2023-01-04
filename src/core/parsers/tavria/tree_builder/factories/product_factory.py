@@ -22,18 +22,20 @@ class ProductFactory(BaseFactory):
 
     __session: aiohttp.ClientSession
     __html: str
-    
+
     def __init__(self, url: str, category_name: str, group_name: str,
                  subcategory_name: str | None = None, **kwargs) -> None:
-
-        if not all((url, category_name, group_name)):
-            raise TypeError
-
         self.url = url
-        self.category_name = category_name
-        self.group_name = group_name
-        self.subcategory_name = subcategory_name
+        self._category_name = category_name
+        self._group_name = group_name
+        self._subcategory_name = subcategory_name
         super().__init__()
+
+    def _validate_init_data(self) -> None:
+        if (all((self.url, self._category_name,
+           self._group_name, self._subcategory_name != ''))):
+            return
+        super()._validate_init_data()
 
     async def get_objects(self, session: aiohttp.ClientSession
                           ) -> BaseFactoryReturnType:
@@ -92,11 +94,11 @@ class ProductFactory(BaseFactory):
 
     @cached_property
     def _parent_id(self) -> int:
-        grand_parent_name = self.subcategory_name\
-            if self.subcategory_name else self.category_name
+        grand_parent_name = self._subcategory_name\
+            if self._subcategory_name else self._category_name
         parents = ObjectParents(grand_parent_name=grand_parent_name,
-                                parent_name=self.group_name)
+                                parent_name=self._group_name)
         return self._parents_to_id_table[parents]
 
     def __bool__(self) -> bool:
-        return all((self.url, self.category_name, self.group_name))
+        return all((self.url, self._category_name, self._group_name))

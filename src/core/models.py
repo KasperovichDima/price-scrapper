@@ -1,5 +1,5 @@
 """Core models."""
-from models import BaseWithID
+from base_models import BaseWithID
 
 from sqlalchemy import Column, ForeignKey, Numeric
 

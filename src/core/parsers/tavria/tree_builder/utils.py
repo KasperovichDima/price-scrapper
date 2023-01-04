@@ -78,4 +78,4 @@ def __create_class_getter() -> Callable[[ElType], type[f.BaseFactory]]:
     return get_class
 
 
-factory_for = __create_class_getter()
+class_for = __create_class_getter()

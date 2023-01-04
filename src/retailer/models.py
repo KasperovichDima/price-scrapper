@@ -1,5 +1,5 @@
 """Retailer models."""
-from models import BaseWithRepr
+from base_models import BaseWithRepr
 
 from sqlalchemy import Column, String
 

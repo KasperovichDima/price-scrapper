@@ -1,5 +1,5 @@
 """Product catalog models and get model function."""
-from models import BaseWithRepr
+from base_models import BaseWithRepr
 
 from project_typing import ElType
 

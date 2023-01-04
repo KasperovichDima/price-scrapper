@@ -6,8 +6,6 @@ from bs4.element import Tag
 
 from project_typing import ElType
 
-from pydantic import ValidationError
-
 from . import utils as u
 from .factories import BaseFactory
 from .factories import CategoryFactory
@@ -52,17 +50,17 @@ class FactoryCreator:
         self.__change_current_name(tag_type)
 
         if tag_type is ElType.CATEGORY:
-            self.__try_to_create_factory(ElType.SUBCATEGORY)
-            self.__try_to_create_factory(ElType.GROUP)
+            self.__recreate_factory(ElType.SUBCATEGORY)
+            self.__recreate_factory(ElType.GROUP)
 
         elif tag_type is ElType.SUBCATEGORY:
-            self.__try_to_create_factory(ElType.GROUP)
+            self.__recreate_factory(ElType.GROUP)
 
         elif tag_type is ElType.GROUP:
             if u.group_is_outstanding(self.__current_tag):
                 self.__current_names[ElType.SUBCATEGORY] = None
-                self.__try_to_create_factory(ElType.GROUP)
-            self.__try_to_create_factory(ElType.PRODUCT)
+                self.__recreate_factory(ElType.GROUP)
+            self.__recreate_factory(ElType.PRODUCT)
 
         self.__current_factories[tag_type]\
             .add_name(self.__current_tag.text.strip())
@@ -70,12 +68,9 @@ class FactoryCreator:
     def __change_current_name(self, type_: ElType) -> None:
         self.__current_names[type_] = self.__current_tag.text.strip()
 
-    def __try_to_create_factory(self, type_: ElType):
+    def __recreate_factory(self, type_: ElType):
         self.__close_factory(type_)
-        try:
-            self.__create_factory(type_)
-        except ValidationError:  # type: ignore
-            pass
+        self.__create_factory(type_)
 
     def __close_factory(self, type_: ElType) -> None:
         if self.__factory_is_ready_to_close(type_):
@@ -89,7 +84,8 @@ class FactoryCreator:
             return False
 
     def __create_factory(self, type_: ElType):
-        self.__current_factories[type_] = u.factory_for(type_)(
+        factory_class = u.class_for(type_)
+        self.__current_factories[type_] = factory_class(
             url=u.get_url(self.__current_tag),
             category_name=self.__current_names[ElType.CATEGORY],
             subcategory_name=self.__current_names[ElType.SUBCATEGORY],

@@ -11,6 +11,9 @@ class CategoryFactory(BaseFactory):
 
     _creating_type = ElType.CATEGORY
 
+    def _validate_init_data(self) -> None:
+        pass
+
 
 class SubcategoryFactory(BaseFactory):
     """TODO: category name to _"""
@@ -18,17 +21,18 @@ class SubcategoryFactory(BaseFactory):
     _creating_type = ElType.SUBCATEGORY
 
     def __init__(self, category_name: str, **kwargs) -> None:
-
-        if not category_name:
-            raise TypeError
-            
-        self.category_name = category_name
+        self._category_name = category_name
         super().__init__()
+
+    def _validate_init_data(self) -> None:
+        if self._category_name:
+            return
+        super()._validate_init_data()
 
     @cached_property
     def _parent_id(self) -> int:
         parents = ObjectParents(grand_parent_name=None,
-                                parent_name=self.category_name)
+                                parent_name=self._category_name)
         return self._parents_to_id_table[parents]
 
 
@@ -39,17 +43,18 @@ class GroupFactory(BaseFactory):
 
     def __init__(self, category_name: str,
                  subcategory_name: str | None = None, **kwargs) -> None:
-        
-        if not category_name:
-            raise TypeError
-
-        self.category_name = category_name
-        self.subcategory_name = subcategory_name
+        self._category_name = category_name
+        self._subcategory_name = subcategory_name
         super().__init__()
+
+    def _validate_init_data(self) -> None:
+        if self._category_name and self._subcategory_name != '':
+            return
+        super()._validate_init_data()
 
     @cached_property
     def _parent_id(self) -> int:
-        grandparent = self.category_name if self.subcategory_name else None
-        parent = self.subcategory_name if self.subcategory_name\
-            else self.category_name
+        grandparent = self._category_name if self._subcategory_name else None
+        parent = self._subcategory_name if self._subcategory_name\
+            else self._category_name
         return self._parents_to_id_table[ObjectParents(grandparent, parent)]

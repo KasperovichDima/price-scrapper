@@ -1,6 +1,8 @@
 """Script to start parsing process."""
 import time
 
+from constants import test_mode
+
 from core.constants import TAVRIA_URL  # noqa: F401
 from core.parsers import TreeBuilder as TavriaTreeBuilder
 
@@ -12,7 +14,6 @@ from database import test_engine
 from tests.constants import TAVRIA_TEST_URL  # noqa: F401
 
 session_maker = SessionLocal
-test_mode = True
 
 if test_mode:
     target_metadata = Base.metadata  # type: ignore

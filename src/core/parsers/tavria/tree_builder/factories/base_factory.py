@@ -12,7 +12,7 @@ from catalog.models import BaseCatalogElement, Folder
 from project_typing import ElType
 
 # from pydantic import BaseModel, Field
-
+from .exceptions import EmptyFactoryDataError
 from ...tavria_typing import BaseFactoryReturnType
 from ...tavria_typing import ObjectParents
 
@@ -26,6 +26,7 @@ class BaseFactory:
     _parents_to_id_table: Mapping[ObjectParents, int]
 
     def __init__(self, **kwargs) -> None:
+        self._validate_init_data()
         self._object_names: deque[str] = deque()
 
     def __bool__(self) -> bool:
@@ -47,6 +48,11 @@ class BaseFactory:
         """Set new parent to id table as a class variable."""
 
         cls._parents_to_id_table = table
+
+    def _validate_init_data(self) -> None:
+        """Validates init data. Raises EmptyFactoryDataError
+        if required data miss or is empty."""
+        raise EmptyFactoryDataError('Some of init data args are empty.')
 
     @cached_property
     def _parent_id(self) -> int | None: ...

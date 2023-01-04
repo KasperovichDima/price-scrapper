@@ -1,5 +1,5 @@
 """Authentication models."""
-from models import BaseWithID
+from base_models import BaseWithID
 
 from project_typing import UserType
 
