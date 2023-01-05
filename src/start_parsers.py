@@ -1,4 +1,5 @@
 """Script to start parsing process."""
+import asyncio
 import time
 
 from constants import test_mode
@@ -21,9 +22,12 @@ if test_mode:
     session_maker = TestSession
 
 
-with session_maker() as session:
+async def run_parser(session):
     now = time.perf_counter()
-    print(now)
-    # TavriaTreeBuilder()(TAVRIA_URL, session)
-    TavriaTreeBuilder()(TAVRIA_TEST_URL, session)
+    await TavriaTreeBuilder()(TAVRIA_URL, session)
+    # await TavriaTreeBuilder()(TAVRIA_TEST_URL, session)
     print(time.perf_counter() - now)
+
+
+with session_maker() as session:
+    asyncio.run(run_parser(session))

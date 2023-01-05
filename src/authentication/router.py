@@ -29,7 +29,7 @@ async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session=Depends(get_session)
 ):
-    user = authenticate_user(form_data.username, form_data.password, session)
+    user = await authenticate_user(form_data.username, form_data.password, session)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -46,11 +46,11 @@ async def login_for_access_token(
 async def create_user(user_data: UserCreate,
                       session=Depends(get_session)):
     """Create new user and return new user's data."""
-    if crud.get_user(user_data.email, session):
+    if await crud.get_user(user_data.email, session):
         raise email_exists_exeption
     user_data.password = get_password_hash(user_data.password)
     user = User(**user_data.dict())
-    crud.add_instance(user, session)
+    await crud.add_instance(user, session)
     return user
 
 
@@ -58,5 +58,5 @@ async def create_user(user_data: UserCreate,
 async def delete_user(email: str, session=Depends(get_session)):
     """Delete user by email. If email is not in
     database - raise user_not_exists_exeption."""
-    crud.delete_user(email, session)
+    await crud.delete_user(email, session)
     return email

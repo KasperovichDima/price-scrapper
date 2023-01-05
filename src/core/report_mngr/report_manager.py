@@ -33,20 +33,20 @@ class ReportManager:
     def get_request(self, user: User) -> Request:
         return self.__requests[user]
 
-    def add_request_data(self, user: User,
+    async def add_request_data(self, user: User,
                          in_data: RequestInScheme,
                          session: Session) -> RequestOutScheme:
 
         request = self.get_request(user)
-        request.add_objects(get_request_objects(in_data, session))
+        request.add_objects(await get_request_objects(in_data, session))
         return request.out_data
 
-    def remove_request_data(self, user: User,
+    async def remove_request_data(self, user: User,
                             in_data: RequestInScheme,
                             session: Session) -> RequestOutScheme:
 
         request = self.get_request(user)
-        request.remove_objects(get_request_objects(in_data, session))
+        request.remove_objects(await get_request_objects(in_data, session))
         return request.out_data
 
     def get_report(self, user: User,

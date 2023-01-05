@@ -21,7 +21,7 @@ async def add_request_data(data: RequestInScheme,
                            session=Depends(get_session)):
     """Add products or retailers to report of current authorized user."""
 
-    return report_mngr.add_request_data(user, data, session)
+    return await report_mngr.add_request_data(user, data, session)
 
 
 @router.delete('/remove_request_data', response_model=RequestOutScheme)
@@ -31,7 +31,7 @@ async def remove_request_data(data: RequestInScheme,
                               session=Depends(get_session)):
     """Remove products or retailers from report of current authorized user."""
 
-    return report_mngr.remove_request_data(user, data, session)
+    return await report_mngr.remove_request_data(user, data, session)
 
 
 @router.post('/get_report', response_model=ReportScheme)

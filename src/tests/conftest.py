@@ -80,7 +80,7 @@ def create_fake_user(fake_user_data: UserCreate) -> UserScheme:
 
 
 @pytest.fixture
-def del_fake_user(fake_user_data: UserCreate):
+async def del_fake_user(fake_user_data: UserCreate):
     """Delete fake user from database."""
     yield
     client.delete('/auth/delete_user', params={'email': fake_user_data.email})
@@ -109,9 +109,8 @@ def fake_session():
     from database import TestSession
     return TestSession()
 
-
 @pytest.fixture(scope='module')
-def fake_db_content(fake_session) -> RequestObjects:
+async def fake_db_content(fake_session) -> RequestObjects:
     """Fill database catalog with fake content."""
     content = RequestObjects(
         [
@@ -137,7 +136,7 @@ def fake_db_content(fake_session) -> RequestObjects:
         ]
     )
 
-    crud.add_instances((*content.folders,
+    await crud.add_instances((*content.folders,
                         *content.products,
                         *content.retailers),
                        fake_session)

@@ -4,7 +4,7 @@ from database.config import Base
 from sqlalchemy import Column, Integer
 
 
-class BaseWithID(Base):
+class BaseWithID(Base):  # type: ignore
     """Base model class with int id as primary key + __hash__ and __eq__."""
 
     __abstract__ = True
@@ -12,7 +12,7 @@ class BaseWithID(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     def __eq__(self, __o: object) -> bool:
-        return self.id == __o.id
+        return self.id == __o.id  # type: ignore
 
     def __hash__(self) -> int:
         return hash(self.id)

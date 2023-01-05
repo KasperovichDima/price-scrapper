@@ -32,34 +32,34 @@ class TreeBuilder:
     __factories: Mapping[ElType, MutableSequence[BaseFactory]]
     __objects_to_save: set[BaseCatalogElement] = set()
 
-    def __call__(self, home_url: str, session: Session) -> None:
+    async def __call__(self, home_url: str, session: Session) -> None:
         if c.MAIN_PARSER != 'Tavria':
             return
         self.__session = session
         self.__factories = FactoryCreator(home_url)()
-        self.__create_folders()
-        asyncio.run(self.__create_products())
+        await self.__create_folders()
+        await self.__create_products()
 
-    def __create_folders(self) -> None:
+    async def __create_folders(self) -> None:
         for type_ in c.folder_types:
             self.__get_folders_to_save(type_)
-            crud.add_instances(self.__objects_to_save,
+            await crud.add_instances(self.__objects_to_save,
                                self.__session)
             self.__objects_to_save.clear()
-            self.__refresh_factory_table()
+            await self.__refresh_factory_table()
         print('Folders successfully created...')
 
     def __get_folders_to_save(self, type_: ElType) -> None:
         for factory in self.__factories[type_]:
             self.__objects_to_save.update(factory.get_objects())
 
-    def __refresh_factory_table(self) -> None:
+    async def __refresh_factory_table(self) -> None:
         """
         Instead of passing a parent_to_id table in get_objects call, we
         will make it a BaseFactory class variable and will refresh it before
         the call.
         """
-        saved_folders = crud.get_folders(self.__session)
+        saved_folders = await crud.get_folders(self.__session)
         id_to_name_table = {_.id: _.name for _ in saved_folders}
         table = {ObjectParents(
             grand_parent_name=id_to_name_table[_.parent_id]
@@ -73,8 +73,8 @@ class TreeBuilder:
             try:
                 await self.__process_next_batch()
             except asyncio.exceptions.TimeoutError:
-                crud.add_instances(self.__objects_to_save, self.__session)
-                print('batch saved...')
+                print('saving batch...')
+                await crud.add_instances(self.__objects_to_save, self.__session)
 
     async def __process_next_batch(self):
         async with aiohttp_session_maker() as session:

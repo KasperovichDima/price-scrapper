@@ -7,11 +7,13 @@ from authentication.schemas import UserCreate, UserScheme
 
 from .conftest import client
 
+import pytest
+
 
 class TestGetCurrentUser:
     """Test of '/auth/current_user' endpoint."""
-
-    def test_get_current_user_ok(self, create_superuser: UserScheme,
+    @pytest.mark.asyncio
+    async def test_get_current_user_ok(self, create_superuser: UserScheme,
                                  access_token):
         """Attempt to get current user with correct token."""
 
@@ -29,8 +31,8 @@ class TestGetCurrentUser:
 
 class TestCreateUser:
     """Test of '/auth/create_user' endpoint."""
-
-    def test_create_user_ok(self, fake_user_data: UserCreate, del_fake_user):
+    @pytest.mark.asyncio
+    async def test_create_user_ok(self, fake_user_data: UserCreate, del_fake_user):
         """Attempt to create user with correct data."""
 
         resp = client.post('/auth/create_user', data=fake_user_data.json())
@@ -47,7 +49,8 @@ class TestCreateUser:
 class TestDeleteUser:
     """Test of '/auth/delete_user' endpoint."""
 
-    def test_delete_user_ok(self, create_fake_user: UserScheme):
+    @pytest.mark.asyncio
+    async def test_delete_user_ok(self, create_fake_user: UserScheme):
         """Attempt to delete existing user."""
 
         rsp = client.delete(
@@ -56,7 +59,8 @@ class TestDeleteUser:
         assert rsp.status_code == 200\
             and rsp.json() == create_fake_user.email
 
-    def test_delete_not_exists_user(self, fake_user_data: UserCreate):
+    @pytest.mark.asyncio
+    async def test_delete_not_exists_user(self, fake_user_data: UserCreate):
         """Attempt to delete not existing user."""
 
         rsp = client.delete(

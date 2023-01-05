@@ -52,7 +52,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme),
     except JWTError:
         raise credentials_exception
     assert token_data.username
-    current_user = crud.get_user(token_data.username, db)
+    current_user = await crud.get_user(token_data.username, db)
     return current_user
 
 
