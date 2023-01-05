@@ -36,22 +36,16 @@ def get_user(email: str, session: Session) -> User | None:
     return session.query(User).filter(User.email == email).first()
 
 
-def get_folder_content(id: int, session: Session) -> FolderContent:
+async def get_folder_content(id: int, session: Session) -> FolderContent:
     """Get content of folder with specified id."""
     return FolderContent(
-        products=__get_elements(Product, session, parent_id=(id,)),
-        folders=__get_elements(Folder, session, parent_id=(id,))
+        products=await __get_elements(Product, session, parent_id=(id,)),
+        folders=await __get_elements(Folder, session, parent_id=(id,))
     )
 
 
-def get_element(cls: Type[BaseCatalogElement], id: int,
-                session: Session) -> BaseCatalogElement | None:
-    """Returns catalog instance with specified params, if exists."""
-    return session.get(cls, id)
-
-
-def __get_elements(cls_: type[db_type], session: Session,
-                   **kwargs) -> list[db_type]:
+async def __get_elements(cls_: type[db_type], session: Session,
+                         **kwargs) -> list[db_type]:
     """Returns elements of specified class using
     IN statement. NOTE: kwargs dict keys must be
     named exactly like class attributes."""
@@ -59,7 +53,7 @@ def __get_elements(cls_: type[db_type], session: Session,
     elements = session.query(cls_)
     for k, v in kwargs.items():
         if v:
-            elements = elements.where(getattr(cls_, k).in_(v))
+            elements = elements.filter(getattr(cls_, k).in_(v))
     return elements.all()
 
 
@@ -81,7 +75,7 @@ def get_folders(session: Session,
 
 def get_retailers(ids: list[int],
                   session: Session) -> list[Retailer]:
-    """Get retailer objects by retailer names."""
+    """Get retailer objects by retailer id."""
     return __get_elements(Retailer, session, id=ids)
 
 
