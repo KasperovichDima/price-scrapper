@@ -28,7 +28,9 @@ def fake_user_data():
 async def create_fake_user(fake_session: Session,
                            fake_user_data: UserCreate):
     """Creates and saves fake user to db. Deletes it after test."""
+    print('creating fake user')
     user = User(**fake_user_data.dict())
     await crud.add_instance(user, fake_session)
-    yield user
-    await crud.delete_user(user.email)  # type: ignore
+    return user
+    # yield user
+    # await crud.delete_user(user.email, fake_session)
