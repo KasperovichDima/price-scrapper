@@ -10,5 +10,7 @@ class TestRequest:
     """
 
     @staticmethod
-    def get_response(payload, access_token):
+    def get_response(url: str, payload, access_token):
         return client.post(url, data=payload.json(), headers=access_token)
+
+    

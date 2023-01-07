@@ -1,4 +1,5 @@
 """Authentication conftest."""
+import asyncio
 from authentication.models import User
 from authentication.schemas import UserCreate
 
@@ -25,12 +26,11 @@ def fake_user_data():
 
 
 @pytest.fixture
-async def create_fake_user(fake_session: Session,
+def create_fake_user(fake_session: Session,
                            fake_user_data: UserCreate):
     """Creates and saves fake user to db. Deletes it after test."""
     print('creating fake user')
     user = User(**fake_user_data.dict())
-    await crud.add_instance(user, fake_session)
-    return user
-    # yield user
-    # await crud.delete_user(user.email, fake_session)
+    asyncio.run(crud.add_instance(user, fake_session))
+    yield user
+    asyncio.run(crud.delete_user(user.email, fake_session))
