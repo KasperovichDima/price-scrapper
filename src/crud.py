@@ -1,8 +1,5 @@
-"""
-Database crud operations.
-TODO: Add async
-"""
-from typing import Container, Iterable
+"""Database crud operations."""
+from typing import Sequence
 
 from authentication.exceptions import user_not_exists_exeption
 from authentication.models import User
@@ -16,6 +13,7 @@ from project_typing import db_type
 
 from retailer.models import Retailer
 
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 
@@ -25,7 +23,8 @@ async def add_instance(instance: BaseWithID, session: Session) -> None:
     session.commit()
 
 
-async def add_instances(instances: Iterable[BaseWithID], session: Session) -> None:
+async def add_instances(instances: Sequence[BaseWithID],
+                        session: Session) -> None:
     """Add new instances to database."""
     session.add_all(instances)
     session.commit()
@@ -57,15 +56,19 @@ async def __get_elements(cls_: type[db_type], session: Session,
     return elements.all()
 
 
-async def get_products(session: Session, prod_ids: Container[int],
-                       folder_ids: Container[int] | None = None) -> list[Product]:
+async def get_products(
+    session: Session,
+    prod_ids: Sequence[int],
+    folder_ids: Sequence[int] | None = None
+) -> list[Product]:
     """Get product objects from product and folder ids."""
 
-    return await __get_elements(Product, session, id=prod_ids, parent_id=folder_ids)
+    return await __get_elements(Product, session, id=prod_ids,
+                                parent_id=folder_ids)
 
 
 async def get_folders(session: Session,
-                ids: Container[int] | None = None) -> list[Folder]:
+                      ids: Sequence[int] | None = None) -> list[Folder]:
     """
     Get folder objects by folder ids. If no
     ids are specified - all folders wil be returned.
@@ -74,9 +77,22 @@ async def get_folders(session: Session,
 
 
 async def get_retailers(ids: list[int],
-                  session: Session) -> list[Retailer]:
+                        session: Session) -> list[Retailer]:
     """Get retailer objects by retailer id."""
     return await __get_elements(Retailer, session, id=ids)
+
+
+async def delete_cls_instances(instances: Sequence[BaseWithID],
+                               session: Session) -> None:
+    """
+    Remove specified objects from database.
+    NOTE: All objects must the same class.
+    Raises assertion error if not.
+    """
+    cls_ = instances[0].__class__
+    assert all((isinstance(_, cls_) for _ in instances))
+    session.execute(delete(cls_).where(cls_.id.in_((_.id for _ in instances))))
+    session.commit()
 
 
 async def delete_user(email: str, session: Session) -> None:

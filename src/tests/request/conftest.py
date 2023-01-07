@@ -1,13 +1,22 @@
 """Request conftest."""
-import pytest
-import crud
+import asyncio
+
 from catalog.models import Folder, Product
-from retailer.models import Retailer
+
 from core.core_typing import RequestObjects
+from core.schemas import RequestInScheme
+
+import crud
+
 from project_typing import ElType
 
+import pytest
+
+from retailer.models import Retailer
+
+
 @pytest.fixture(scope='module')
-async def fake_db_content(fake_session) -> RequestObjects:
+def fake_db_content(fake_session):
     """Fill database catalog with fake content."""
     content = RequestObjects(
         [
@@ -33,7 +42,19 @@ async def fake_db_content(fake_session) -> RequestObjects:
         ]
     )
 
-    await crud.add_instances((*content.folders,
-                        *content.products,
-                        *content.retailers),
-                       fake_session)
+    asyncio.run(crud.add_instances((*content.folders, *content.products,
+                                    *content.retailers), fake_session))
+    yield
+    for container in content:
+        asyncio.run(crud.delete_cls_instances(container, fake_session))
+
+
+@pytest.fixture(scope='module')
+def fake_payload() -> RequestInScheme:
+    """Fake request payload."""
+
+    return RequestInScheme(
+        folders=[2, 3],
+        products=[1, 2, 3, 4, 5, 6],
+        retailers=[1, 2]
+    )

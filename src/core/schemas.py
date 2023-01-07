@@ -11,17 +11,17 @@ from retailer.schemas import RetailerScheme
 
 class RequestInScheme(BaseModel):
     """Edit request data scheme."""
-    folders: list[int] = []
-    products: list[int] = []
-    retailers: list[int] = []
+    folders: list[int] = Field(default_factory=list)
+    products: list[int] = Field(default_factory=list)
+    retailers: list[int] = Field(default_factory=list)
 
 
 class RequestOutScheme(BaseModel):
     """Request content scheme."""
 
-    folders: list[BaseCatScheme] = []
-    products: list[BaseCatScheme] = []
-    retailers: list[RetailerScheme] = []
+    folders: list[BaseCatScheme] = Field(default_factory=list)
+    products: list[BaseCatScheme] = Field(default_factory=list)
+    retailers: list[RetailerScheme] = Field(default_factory=list)
 
 
 class ReportHeaderScheme(BaseModel):

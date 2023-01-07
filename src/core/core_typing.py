@@ -12,3 +12,8 @@ class RequestObjects(NamedTuple):
     folders: list[BaseCatalogElement]
     products: list[BaseCatalogElement]
     retailers: list[Retailer]
+
+    def __iter__(self):
+        return (_ for _ in (self.folders,
+                            self.products,
+                            self.retailers))

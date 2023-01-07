@@ -1,5 +1,4 @@
 """Authentication tests."""
-from authentication.models import User
 from authentication.schemas import UserCreate
 
 import pytest
@@ -39,16 +38,15 @@ class TestGetCurrentUser:
         return client.get(url='/auth/current_user', headers=access_token)
 
     @pytest.mark.asyncio
-    async def test_get_current_user_ok(self, access_token,
-                                       create_fake_user: User):
+    async def test_get_current_user_ok(self, access_token, fake_user_data: UserCreate):
         """Attempt to get current user with correct token."""
         response = self.get_response(access_token)
         rsp_json = response.json()
         assert response.status_code == 200\
-            and rsp_json['email'] == create_fake_user.email
+            and rsp_json['email'] == fake_user_data.email
 
     @pytest.mark.asyncio
-    async def test_get_current_user_unauthorized(self, create_fake_user):
+    async def test_get_current_user_unauthorized(self):
         """Attempt to get current user info without authebntication."""
         response = self.get_response(None)
         assert response.status_code == 401
