@@ -5,6 +5,11 @@ from authentication.models import User
 from authentication.schemas import UserCreate
 from authentication.utils import create_access_token
 
+from catalog.models import Folder, Product
+
+from core.core_typing import RequestObjects
+from core.schemas import RequestInScheme
+
 import crud
 
 from database import Base, TestSession, test_engine
@@ -15,9 +20,11 @@ from fastapi.testclient import TestClient
 
 from main import app
 
-from project_typing import UserType
+from project_typing import ElType, UserType
 
 import pytest
+
+from retailer.models import Retailer
 
 from sqlalchemy.orm import Session
 
@@ -47,7 +54,6 @@ def fake_user_data():
 def create_fake_user(fake_session: Session,
                      fake_user_data: UserCreate):
     """Creates and saves fake user to db. Deletes it after test."""
-    print('creating fake user')
     user = User(**fake_user_data.dict())
     asyncio.run(crud.add_instance(user, fake_session))
     yield user
@@ -65,3 +71,48 @@ def access_token(fake_user_data: UserCreate, create_fake_user):
     """Get access token for tests."""
     token = 'Bearer ' + create_access_token({'sub': fake_user_data.email})
     return {'Authorization': token}
+
+
+@pytest.fixture
+def fake_payload() -> RequestInScheme:
+    """Fake request payload."""
+
+    return RequestInScheme(
+        folders=[2, 3],
+        products=[1, 2, 3, 4, 5, 6],
+        retailers=[1, 2]
+    )
+
+
+@pytest.fixture(scope='module')
+def fake_db_content(fake_session):
+    """Fill database catalog with fake content."""
+    content = RequestObjects(
+        [
+            Folder(name='Alcohol', el_type=ElType.CATEGORY),
+            Folder(name='Grocery', el_type=ElType.CATEGORY),
+            Folder(name='Milk', el_type=ElType.CATEGORY),
+        ],
+        [
+            Product(name='Beer Chernigovskoe 0,5', parent_id=1, prime_cost=23.5),  # noqa: E501
+            Product(name='Vine Cartuli Vazi 0,7', parent_id=1, prime_cost=58.15),  # noqa: E501
+            Product(name='Vodka Finlandia 0,7', parent_id=1, prime_cost=115.96),  # noqa: E501
+            Product(name='Sunflower Oil 1l', parent_id=2, prime_cost=20.99),
+            Product(name='Chips 500 gr', parent_id=2, prime_cost=15.20),
+            Product(name='Sugar 1kg', parent_id=2, prime_cost=9.99),
+            Product(name='Milk 1l', parent_id=3, prime_cost=12.35),
+            Product(name='Jogurt Fructegut 400ml', parent_id=3, prime_cost=19.84),  # noqa: E501
+            Product(name='Spred 200gr', parent_id=3, prime_cost=27.80),
+        ],
+        [
+            Retailer(name='Tavria', home_url='https://www.tavriav.ua/'),
+            Retailer(name='Silpo', home_url='https://shop.silpo.ua/'),
+            Retailer(name='Epicentr', home_url='https://epicentrk.ua/shop/'),
+        ]
+    )
+
+    asyncio.run(crud.add_instances((*content.folders, *content.products,
+                                    *content.retailers), fake_session))
+    yield content
+    for container in content:
+        asyncio.run(crud.delete_cls_instances(container, fake_session))

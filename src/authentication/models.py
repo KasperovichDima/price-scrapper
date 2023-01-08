@@ -20,3 +20,6 @@ class User(BaseWithID):
 
     def __repr__(self) -> str:
         return f'{self.first_name} {self.last_name}'
+
+    def __hash__(self) -> int:
+        return hash(self.email)

@@ -12,7 +12,7 @@ class BaseWithID(Base):  # type: ignore
     id = Column(Integer, primary_key=True, index=True)
 
     def __eq__(self, __o: object) -> bool:
-        return self.id == __o.id  # type: ignore
+        return hash(self) == hash(__o)
 
     def __hash__(self) -> int:
         return hash(self.id)
