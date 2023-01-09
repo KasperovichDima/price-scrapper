@@ -27,9 +27,6 @@ class BaseFactory:
         self._validate_init_data()
         self._object_names: deque[str] = deque()
 
-    def __bool__(self) -> bool:
-        return bool(self._object_names)
-
     def add_name(self, name: str) -> None:
         self._object_names.append(name)
 
@@ -54,3 +51,6 @@ class BaseFactory:
 
     @cached_property
     def _parent_id(self) -> int | None: ...
+
+    def __bool__(self) -> bool:
+        return bool(self._object_names)

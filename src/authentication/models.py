@@ -23,3 +23,6 @@ class User(BaseWithID):
 
     def __hash__(self) -> int:
         return hash(self.email)
+
+    def __eq__(self, __o: object) -> bool:
+        return self.email == __o.email

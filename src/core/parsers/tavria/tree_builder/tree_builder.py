@@ -74,7 +74,8 @@ class TreeBuilder:
                 await self.__process_next_batch()
             except asyncio.exceptions.TimeoutError:
                 print('saving batch...')
-                await crud.add_instances(self.__objects_to_save, self.__session)
+                await crud.add_instances(self.__objects_to_save,
+                                         self.__session)
 
     async def __process_next_batch(self):
         async with aiohttp_session_maker() as session:
