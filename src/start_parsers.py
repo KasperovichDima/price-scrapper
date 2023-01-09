@@ -2,8 +2,6 @@
 import asyncio
 import time
 
-from database.constants import test_mode
-
 from core.constants import TAVRIA_URL  # noqa: F401
 from core.parsers import TreeBuilder as TavriaTreeBuilder
 
@@ -11,6 +9,7 @@ from database import Base
 from database import SessionLocal
 from database import TestSession
 from database import test_engine
+from database.constants import test_mode
 
 from tests.constants import TAVRIA_TEST_URL  # noqa: F401
 

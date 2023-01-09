@@ -25,4 +25,4 @@ class User(BaseWithID):
         return hash(self.email)
 
     def __eq__(self, __o: object) -> bool:
-        return self.email == __o.email
+        return self.email == __o.email  # type: ignore

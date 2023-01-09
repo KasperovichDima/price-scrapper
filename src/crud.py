@@ -1,5 +1,5 @@
 """Database crud operations."""
-from typing import Sequence
+from typing import Iterable, Sequence
 
 from authentication.exceptions import user_not_exists_exeption
 from authentication.models import User
@@ -23,7 +23,7 @@ async def add_instance(instance: BaseWithID, session: Session) -> None:
     session.commit()
 
 
-async def add_instances(instances: Sequence[BaseWithID],
+async def add_instances(instances: Iterable[BaseWithID],
                         session: Session) -> None:
     """Add new instances to database."""
     session.add_all(instances)
@@ -58,8 +58,8 @@ async def __get_elements(cls_: type[db_type], session: Session,
 
 async def get_products(
     session: Session,
-    prod_ids: Sequence[int],
-    folder_ids: Sequence[int] | None = None
+    prod_ids: Iterable[int],
+    folder_ids: Iterable[int] | None = None
 ) -> list[Product]:
     """Get product objects from product and folder ids."""
 
@@ -68,7 +68,7 @@ async def get_products(
 
 
 async def get_folders(session: Session,
-                      ids: Sequence[int] | None = None) -> list[Folder]:
+                      ids: Iterable[int] | None = None) -> list[Folder]:
     """
     Get folder objects by folder ids. If no
     ids are specified - all folders wil be returned.
