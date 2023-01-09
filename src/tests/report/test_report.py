@@ -1,9 +1,8 @@
 """Report tests."""
-import constants as c
-
 from core.schemas import ReportHeaderScheme
 
 from .references import get_report_ok_ref
+from .. import constants as c
 from ..conftest import client
 
 

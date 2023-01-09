@@ -9,13 +9,54 @@
 > 1. Select categories, subcategories, groups and subgroups
 > 2. Select internet-stores
 > 3. Select additional parameters, if they are
-> 4. Push "create report" button.
+> 4. Push "get report" button.
 
 > ## 2. Collecting and processing data
+> 1. Save reference shop's catalog to database.
+> 2. Once a day scrap prices from all internet shops and save them to database.
+> 3. Report by email if some new products appeared.
 > 
-> ## 3. Output data (report) in a specific format
+> ## 3. Output data (report) in a json format
+{
+  "header": {
+    "name": "string",
+    "note": "string",
+    "time_created": "2023-01-09:10:41",
+    "user_name": "string"
+  },
+  "folders": [
+    {
+      "id": 0,
+      "name": "string",
+      "parent_id": 0,
+      "el_type": 1
+    }
+  ],
+  "products": [
+    {
+      "id": 0,
+      "name": "string",
+      "parent_id": 0,
+      "el_type": 1,
+      "prime_cost": 0
+    }
+  ],
+  "retailers": [
+    {
+      "id": 0,
+      "name": "string"
+    }
+  ],
+  "content": [
+    {
+      "product_id": 0,
+      "retailer_id": 0,
+      "retail_price": 0,
+      "promo_price": 0
+    }
+  ]
+}
 > 
-> ## 4. Saving data (report) to database
 
 ## **ADDITIONAL FUNCTIONALITY:**
 
@@ -25,15 +66,16 @@
  - groups
  - subgroups
  - products
- - internet-shop urls
+ - internet-shop
  - reports
  - users
  
 ## 2. AUTHORIZATION AND AUTHENTIFICATION
 - register new user
+ - edit profile
 - login
 - logout
-- delete profile
+- delete user
 
 ## 3. PAYABLE FUNCTIONALITY
 ### Drawing up detailed reports with:
@@ -42,32 +84,3 @@
 - Company marging
 - add something else
 - and else...
-- and else...
-
-
-# INPUT DATA:
-## USER INFORMATION:
-> - source: user input in UI
-> - format: text -> JSON
-
-## PRODUCT CATALOG:
-> - source: user file from UI
-> - format xls/xlsx -> JSON
-
-> - later: integration with with company products
-
-## INTERNET-SHOP URLS:
-> - source: user input in UI
-> - format: text
-> - securuty: superuser authorization
-
-## SYSTEM PARAMETERS:
-> - source: user input in UI
-> - format: text
-> - securuty: superuser authorization
-
-
-# OUTPUT DATA:
-## MONITORING REPORTS:
-> - source: this system
-> - format: web-page/xls/xlsx/csv 

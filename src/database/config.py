@@ -1,7 +1,7 @@
 """SQLAlchemy database configuration."""
 from abc import ABCMeta
 
-from constants import SQLALCHEMY_DATABASE_URL
+from database.constants import SQLALCHEMY_DATABASE_URL
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base

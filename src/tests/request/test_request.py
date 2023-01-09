@@ -1,12 +1,10 @@
 """Request tests."""
-from constants import ADD_REQUEST_URL
-from constants import REMOVE_REQUEST_URL
-
 from core.schemas import RequestInScheme
 
 from pydantic import BaseModel
 
 from . import references as r
+from .. import constants as c
 from ..conftest import client
 
 
@@ -19,12 +17,12 @@ class TestRequest:
 
     @staticmethod
     def get_add_response(payload: BaseModel, access_token):
-        return client.post(ADD_REQUEST_URL, data=payload.json(),
+        return client.post(c.ADD_REQUEST_URL, data=payload.json(),
                            headers=access_token)
 
     @staticmethod
     def get_remove_response(payload, access_token):
-        return client.delete(REMOVE_REQUEST_URL, data=payload.json(),
+        return client.delete(c.REMOVE_REQUEST_URL, data=payload.json(),
                              headers=access_token)
 
     def test_add_request_ok(self, access_token, fake_payload, fake_db_content):
