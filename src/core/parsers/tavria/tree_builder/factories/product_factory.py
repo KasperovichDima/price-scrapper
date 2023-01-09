@@ -37,9 +37,8 @@ class ProductFactory(BaseFactory):
             return
         super()._validate_init_data()
 
-    async def get_objects(self, session: aiohttp.ClientSession
+    async def get_objects(self, session: aiohttp.ClientSession  # type: ignore
                           ) -> BaseFactoryReturnType:
-        # TODO: Make session class var
         self.__session = session
         await self.scrap_object_names()
         if self.__page_is_paginated:
