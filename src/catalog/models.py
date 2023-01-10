@@ -34,7 +34,8 @@ class Product(BaseCatalogElement):
     __tablename__ = "product"
 
     name = Column(String(150), index=True, nullable=False, unique=True)
-    parent_id = Column(Integer, ForeignKey('folder.id'), nullable=False)
+    parent_id = Column(Integer, ForeignKey('folder.id', ondelete='CASCADE'),
+                       nullable=False)
     prime_cost = Column(Numeric(scale=2))
 
     el_type = ElType.PRODUCT  # type: ignore

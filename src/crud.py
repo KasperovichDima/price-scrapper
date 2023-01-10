@@ -1,13 +1,14 @@
 """Database crud operations."""
 from typing import Iterable, Sequence
 
-from authentication.exceptions import user_not_exists_exeption
 from authentication.models import User
 
 from base_models import BaseWithID
 
 from catalog.models import Folder, Product
 from catalog.schemas import FolderContent
+
+import crud_exceptions as c_ex
 
 from project_typing import db_type
 
@@ -87,11 +88,16 @@ async def delete_cls_instances(instances: Sequence[BaseWithID],
                                session: Session) -> None:
     """
     Remove specified objects from database.
-    NOTE: All objects must the same class.
-    Raises assertion error if not.
+    NOTE: All objects must be the same class.
+    Raises same_type_exception if not.
+    TODO: separate try except.
     """
-    cls_ = instances[0].__class__
-    assert all((isinstance(_, cls_) for _ in instances))
+    try:
+        cls_ = instances[0].__class__
+        assert all((isinstance(_, cls_) for _ in instances))
+    except AssertionError:
+        raise c_ex.same_type_exception
+
     session.execute(delete(cls_).where(cls_.id.in_((_.id for _ in instances))))
     session.commit()
 
@@ -100,6 +106,15 @@ async def delete_user(email: str, session: Session) -> None:
     """Delete user, specified by email. Raises
     user_not_exists_exeption if email not in database."""
     if not (user := await get_user(email, session)):
-        raise user_not_exists_exeption
+        raise c_ex.user_not_exists_exeption
     session.delete(user)
     session.commit()
+
+
+async def try_to_delete_folder(id, session) -> int:
+    try:
+        folder = (await __get_elements(Folder, session, id=(id,)))[0]
+    except IndexError:
+        raise c_ex.instance_not_exists_exeption
+    await delete_cls_instances([folder], session)
+    return id

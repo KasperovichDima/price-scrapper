@@ -1,13 +1,14 @@
 """Authentication router."""
 import crud
 
+from crud_exceptions import email_exists_exeption
+
 from dependencies import get_current_active_user, get_session, oauth2_scheme
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from .constants import access_token_expires
-from .exceptions import email_exists_exeption
 from .models import User
 from .schemas import TokenScheme, UserCreate, UserScheme
 from .utils import authenticate_user
@@ -29,8 +30,9 @@ async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session=Depends(get_session)
 ):
-    user = await authenticate_user(form_data.username, form_data.password, session)
-    if not user:
+    if not (user := await authenticate_user(form_data.username,
+                                            form_data.password,
+                                            session)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",

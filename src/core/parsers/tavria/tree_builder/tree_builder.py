@@ -44,7 +44,7 @@ class TreeBuilder:
         for type_ in c.folder_types:
             self.__get_folders_to_save(type_)
             await crud.add_instances(self.__objects_to_save,
-                               self.__session)
+                                     self.__session)
             self.__objects_to_save.clear()
             await self.__refresh_factory_table()
         print('Folders successfully created...')
