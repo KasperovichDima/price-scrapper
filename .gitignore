@@ -1,6 +1,7 @@
 /documentation/schema.png
 *.db
 settings.json
+_test.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
