@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-SQLALCHEMY_DATABASE_URL: str = os.environ['SQLITE_URL']
 POSTGRES_DRIVER = os.environ['POSTGRES_DRIVER']
 POSTGRES_USER = os.environ['POSTGRES_USER']
 POSTGRES_PASSWORD = os.environ['POSTGRES_PASSWORD']

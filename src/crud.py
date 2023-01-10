@@ -47,13 +47,14 @@ async def __get_elements(cls_: type[db_type], session: Session,
                          **params) -> list[db_type]:
     """Returns elements of specified class using
     IN statement. NOTE: kwargs dict keys must be
-    named exactly like class attributes."""
+    named exactly like class attributes. Elements
+    are ordered by name."""
 
     elements = session.query(cls_)
     for param_name, seq in params.items():
         if seq:
             elements = elements.filter(getattr(cls_, param_name).in_(seq))
-    return elements.all()
+    return elements.order_by(cls_.name.asc()).all()  # type: ignore
 
 
 async def get_products(
