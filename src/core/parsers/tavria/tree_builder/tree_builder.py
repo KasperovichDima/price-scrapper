@@ -1,6 +1,9 @@
 """
 TreeBuilder class for creating catalog tree.
 LAST RESULT: 11.36
+TODO: -Take home_url from base
+      -Change file name
+      -Refactoring
 """
 import asyncio
 from collections.abc import Mapping
@@ -23,16 +26,24 @@ from ..tavria_typing import ObjectParents
 from .... import constants as c
 
 
-class TreeBuilder:
-    """
-    Check if catalog tree exists in database
-    and update it with site information.
-    TODO: slots.
-    """
+class TavriaParser:
+    """Check if catalog tree exists in database
+    and update it with site information."""
+
     __factories: Mapping[ElType, MutableSequence[BaseFactory]]
     __objects_to_save: set[BaseCatalogElement] = set()
 
-    async def __call__(self, home_url: str, session: Session) -> None:
+    async def collect_prices(self, home_url: str, session: Session) -> None:
+        """Collect all product prices from site and save them to database."""
+
+        self.__session = session
+        
+
+        
+
+    async def create_catalog(self, home_url: str, session: Session) -> None:
+        """Collect all folders and products from site and save same structure to database."""
+
         if c.MAIN_PARSER != 'Tavria':
             return
         self.__session = session

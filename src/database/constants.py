@@ -13,5 +13,3 @@ POSTGRES_PASSWORD = os.environ['POSTGRES_PASSWORD']
 POSTGRES_HOST = os.environ['POSTGRES_HOST']
 POSTGRES_PORT = int(os.environ['POSTGRES_PORT'])
 POSTGRES_BASE_NAME = os.environ['POSTGRES_BASE_NAME']
-
-test_mode = False
