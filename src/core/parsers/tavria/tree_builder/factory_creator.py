@@ -84,8 +84,7 @@ class FactoryCreator:
             return False
 
     def __create_factory(self, type_: ElType):
-        factory_class = u.class_for(type_)
-        self.__current_factories[type_] = factory_class(
+        self.__current_factories[type_] = u.class_for(type_)(
             url=u.get_url(self.__current_tag),
             category_name=self.__current_names[ElType.CATEGORY],
             subcategory_name=self.__current_names[ElType.SUBCATEGORY],
