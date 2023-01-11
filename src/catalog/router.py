@@ -3,7 +3,7 @@ import crud
 
 from dependencies import get_session, oauth2_scheme
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Path
 
 from .schemas import FolderContent
 
@@ -12,7 +12,7 @@ router = APIRouter(prefix='/catalog', tags=['catalog'])
 
 
 @router.get('/folder_content/{id}', response_model=FolderContent)
-async def get_folder_content(id: int, token=Depends(oauth2_scheme),
+async def get_folder_content(id: int = Path(gt=0), token=Depends(oauth2_scheme),
                              session=Depends(get_session)):
     """Get content of folder with specified id."""
 
@@ -20,7 +20,7 @@ async def get_folder_content(id: int, token=Depends(oauth2_scheme),
 
 
 @router.delete('/delete_folder/{id}')
-async def delete_folder(id: int, session=Depends(get_session),
+async def delete_folder(id: int = Path(gt=0), session=Depends(get_session),
                         token=Depends(oauth2_scheme)) -> int:
     """Delete folder, specified by id."""
     return await crud.try_to_delete_folder(id, session)
