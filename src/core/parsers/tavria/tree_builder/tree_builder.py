@@ -52,8 +52,10 @@ class TavriaParser:
         await self.__create_products()
 
     async def __create_folders(self) -> None:
+        saved_folders = await crud.get_folders(self.__session)
         for type_ in c.folder_types:
             self.__get_folders_to_save(type_)
+            
             await crud.add_instances(self.__objects_to_save,
                                      self.__session)
             self.__objects_to_save.clear()

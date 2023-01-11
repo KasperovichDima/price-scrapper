@@ -52,7 +52,7 @@ class ProductFactory(BaseFactory):
         a_tags: ResultSet[Tag] = bs(self.__html, 'lxml').find_all('a')
         correct_names = (get_product_name(_)
                          for _ in a_tags if get_product_name(_))
-        self._object_names.extend(correct_names)  # type: ignore
+        self._object_names.update(correct_names)  # type: ignore
 
     async def get_page_html(self) -> None:
         async with self.__session.get(self._url) as response:

@@ -2,7 +2,6 @@
 Base factory class to inheritate from.
 TODO: use slots.
 """
-from collections import deque
 from collections.abc import Mapping
 from functools import cached_property
 
@@ -25,10 +24,10 @@ class BaseFactory:
 
     def __init__(self, **kwargs) -> None:
         self._validate_init_data()
-        self._object_names: deque[str] = deque()
+        self._object_names: set[str] = set()
 
     def add_name(self, name: str) -> None:
-        self._object_names.append(name)
+        self._object_names.add(name)
 
     def get_objects(self) -> BaseFactoryReturnType:
         """Create and return factory objects. Template method."""
