@@ -28,8 +28,6 @@ config.set_main_option('sqlalchemy.url', str(my_config.url))
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 
-
-path.append(os.environ['SRC_PATH'])  # do we need it?
 from authentication.models import User
 from catalog.models import Folder, Product
 from core.models import PriceLine
