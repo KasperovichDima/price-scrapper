@@ -33,16 +33,9 @@ class TavriaParser:
     __factories: Mapping[ElType, MutableSequence[BaseFactory]]
     __objects_to_save: set[BaseCatalogElement] = set()
 
-    async def collect_prices(self, home_url: str, session: Session) -> None:
-        """Collect all product prices from site and save them to database."""
-
-        self.__session = session
-        
-
-        
-
     async def create_catalog(self, home_url: str, session: Session) -> None:
-        """Collect all folders and products from site and save same structure to database."""
+        """Collect all folders and products from
+        site and save same structure to database."""
 
         if c.MAIN_PARSER != 'Tavria':
             return
@@ -52,10 +45,8 @@ class TavriaParser:
         await self.__create_products()
 
     async def __create_folders(self) -> None:
-        saved_folders = await crud.get_folders(self.__session)
         for type_ in c.folder_types:
             self.__get_folders_to_save(type_)
-            
             await crud.add_instances(self.__objects_to_save,
                                      self.__session)
             self.__objects_to_save.clear()

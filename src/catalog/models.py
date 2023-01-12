@@ -10,12 +10,12 @@ class BaseCatalogElement(BaseWithRepr):
 
     __abstract__ = True
 
-    name: Column
-    parent_id: Column
-    el_type: Column
+    name: Column(String)
+    parent_id: Column(Integer)
+    el_type: Column(Enum(ElType))
 
     def __hash__(self) -> int:
-        return hash((self.name, self.parent_id))
+        return hash((self.name, self.parent_id, self.el_type))
 
 
 class Folder(BaseCatalogElement):
