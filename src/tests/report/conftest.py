@@ -41,7 +41,7 @@ def fake_header():
     )
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def fake_prices(fake_session, fake_db_content: RequestObjects):
     """Create random prices for products for retailers."""
 

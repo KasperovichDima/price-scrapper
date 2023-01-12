@@ -12,8 +12,9 @@ router = APIRouter(prefix='/catalog', tags=['catalog'])
 
 
 @router.get('/folder_content/{id}', response_model=FolderContent)
-async def get_folder_content(id: int = Path(gt=0), token=Depends(oauth2_scheme),
-                             session=Depends(get_session)):
+async def get_folder_content(id: int = Path(gt=0),
+                             session=Depends(get_session),
+                             token=Depends(oauth2_scheme)):
     """Get content of folder with specified id."""
 
     return await crud.get_folder_content(id, session)
@@ -23,4 +24,4 @@ async def get_folder_content(id: int = Path(gt=0), token=Depends(oauth2_scheme),
 async def delete_folder(id: int = Path(gt=0), session=Depends(get_session),
                         token=Depends(oauth2_scheme)) -> int:
     """Delete folder, specified by id."""
-    return await crud.try_to_delete_folder(id, session)
+    return await crud.delete_folder(id, session)

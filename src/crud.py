@@ -60,7 +60,7 @@ async def __get_elements(cls_: type[db_type], session: Session,
 
 async def get_products(
     session: Session,
-    prod_ids: Iterable[int],
+    prod_ids: Iterable[int] | None = None,
     folder_ids: Iterable[int] | None = None
 ) -> list[Product]:
     """Get product objects from product and folder ids."""
@@ -111,10 +111,20 @@ async def delete_user(email: str, session: Session) -> None:
     session.commit()
 
 
-async def try_to_delete_folder(id, session) -> int:
-    try:
-        folder = (await __get_elements(Folder, session, id=(id,)))[0]
-    except IndexError:
+async def delete_folder(id: int, session: Session) -> int:
+    """Recursively deletes folder specified by id and child folders. Also
+    deletes products by CASCADE. Raises instance_not_exists_exeption if
+    specified folder not exists."""
+    if not (del_folders := await __get_elements(Folder, session, id=(id,))):
         raise c_ex.instance_not_exists_exeption
-    await delete_cls_instances([folder], session)
+    parent_ids = [id]
+    while childs := await __get_elements(Folder, session,
+                                         parent_id=parent_ids):
+        del_folders.extend(childs)
+        parent_ids.clear()
+        parent_ids.extend((_.id for _ in childs))
+        childs.clear()
+        childs.extend(await __get_elements(Folder, session,
+                                           parent_id=parent_ids))
+    await delete_cls_instances(del_folders, session)
     return id

@@ -24,7 +24,6 @@ class Folder(BaseCatalogElement):
     __tablename__ = 'folder'
 
     name = Column(String(100), index=True, nullable=False)
-    site_id = Column(Integer, comment='Folder id on a site. Part of url.')
     parent_id = Column(Integer, index=True)
     el_type = Column(Enum(ElType), nullable=False)
 

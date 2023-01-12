@@ -84,7 +84,7 @@ def fake_payload() -> RequestInScheme:
     )
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def fake_db_content(fake_session):
     """Fill database catalog with fake content."""
     content = RequestObjects(
@@ -108,7 +108,7 @@ def fake_db_content(fake_session):
             Retailer(name='Tavria', home_url='https://www.tavriav.ua/'),
             Retailer(name='Silpo', home_url='https://shop.silpo.ua/'),
             Retailer(name='Epicentr', home_url='https://epicentrk.ua/shop/'),
-        ]
+        ],
     )
 
     asyncio.run(crud.add_instances((*content.folders, *content.products,

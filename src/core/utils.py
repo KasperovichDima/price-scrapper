@@ -8,7 +8,7 @@ from .schemas import RequestInScheme
 
 
 async def get_request_objects(in_data: RequestInScheme,
-                        session: Session) -> RequestObjects:
+                              session: Session) -> RequestObjects:
     """Get objects for request by specified ids."""
     return RequestObjects(
         await crud.get_folders(session, ids=in_data.folders),
