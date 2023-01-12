@@ -7,6 +7,7 @@ TODO: -Take home_url from base
 """
 import asyncio
 from collections.abc import Mapping
+from copy import copy
 from typing import Iterable, MutableSequence
 
 from catalog.models import BaseCatalogElement
@@ -45,12 +46,26 @@ class TavriaParser:
         await self.__create_products()
 
     async def __create_folders(self) -> None:
+        #  getting existing folders
+        existing_folders = set(await crud.get_folders(self.__session))
         for type_ in c.folder_types:
             self.__get_folders_to_save(type_)
-            await crud.add_instances(self.__objects_to_save,
-                                     self.__session)
-            self.__objects_to_save.clear()
+            if existing_folders:
+                # removing existing folders from save_list
+                copy_to_save = copy(self.__objects_to_save)
+                self.__objects_to_save.difference_update(existing_folders)
+                #  getting folders from db to be deleted
+                existing_folders.difference_update(copy_to_save)
+                # existing_folders.difference_update(self.__objects_to_save)
+            if self.__objects_to_save:
+                await crud.add_instances(self.__objects_to_save,
+                                         self.__session)
+                self.__objects_to_save.clear()
             await self.__refresh_factory_table()
+        #  deleteing redundant folders
+        if existing_folders:
+            await crud.delete_cls_instances(tuple(existing_folders), self.__session)
+
         print('Folders successfully created...')
 
     def __get_folders_to_save(self, type_: ElType) -> None:
