@@ -1,5 +1,6 @@
 """Catalog tests."""
 from catalog.models import Folder
+
 from core.core_typing import RequestObjects
 
 import crud
@@ -33,12 +34,15 @@ class TestCatalog:
             and not response.json()['folders']
 
     @pytest.mark.asyncio
-    async def test_del_folder_ok(self, access_token, fake_session, fake_db_del_content: list[Folder]):
-        """Correct attempt to delete folder. Cant test delete products because of SQLite PRAGMA."""
+    async def test_del_folder_ok(self, access_token, fake_session,
+                                 fake_db_del_content: list[Folder]):
+        """Correct attempt to delete folder. Cant
+        test delete products because of SQLite PRAGMA."""
         del_id = 3
         del_folders_num = 3
 
-        response = client.delete(self.__del_url + str(del_id), headers=access_token)
+        response = client.delete(self.__del_url + str(del_id),
+                                 headers=access_token)
         folders = await crud.get_folders(fake_session)
 
         assert response.status_code == 200\
