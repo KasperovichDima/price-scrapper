@@ -24,7 +24,7 @@ if test_mode:
 
 async def run_parser(session):
     now = time.perf_counter()
-    await TavriaTreeBuilder().create_catalog(TAVRIA_URL, session)
+    await TavriaTreeBuilder().refresh_catalog(TAVRIA_URL, session)
     # await TavriaTreeBuilder().create_catalog(TAVRIA_TEST_URL, session)
     print(time.perf_counter() - now)
 

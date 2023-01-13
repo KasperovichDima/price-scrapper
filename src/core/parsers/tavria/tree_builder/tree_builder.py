@@ -7,7 +7,6 @@ TODO: -Take home_url from base
 """
 import asyncio
 from collections.abc import Mapping
-from copy import copy
 from typing import Iterable, MutableSequence
 
 from catalog.models import BaseCatalogElement
@@ -32,45 +31,69 @@ class TavriaParser:
     and update it with site information."""
 
     __factories: Mapping[ElType, MutableSequence[BaseFactory]]
+    __saved_folders: set[BaseCatalogElement]
     __objects_to_save: set[BaseCatalogElement] = set()
+    __deprecated: set[BaseCatalogElement] = set()
 
-    async def create_catalog(self, home_url: str, session: Session) -> None:
-        """Collect all folders and products from
-        site and save same structure to database."""
+    async def refresh_catalog(self, home_url: str, session: Session) -> None:
+        """Collect all folders and products from site and save same structure
+        to database. All new objects will be saved, existing will stay
+        untouched, redundant will be marked as 'deprecated'."""
 
         if c.MAIN_PARSER != 'Tavria':
             return
         self.__session = session
         self.__factories = FactoryCreator(home_url)()
-        await self.__create_folders()
-        await self.__create_products()
+        await self.__refresh_folders()
+        print('Folders refreshed...')
+        await self.__refresh_products()
+        print('Products refreshed...')
 
-    async def __create_folders(self) -> None:
-        #  getting existing folders
-        existing_folders = set(await crud.get_folders(self.__session))
+    async def __refresh_folders(self) -> None:
+        await self.__refresh_saved_folders()
         for type_ in c.folder_types:
-            self.__get_folders_to_save(type_)
-            if existing_folders:
-                # removing existing folders from save_list
-                copy_to_save = copy(self.__objects_to_save)
-                self.__objects_to_save.difference_update(existing_folders)
-                #  getting folders from db to be deleted
-                existing_folders.difference_update(copy_to_save)
-                # existing_folders.difference_update(self.__objects_to_save)
-            if self.__objects_to_save:
-                await crud.add_instances(self.__objects_to_save,
-                                         self.__session)
-                self.__objects_to_save.clear()
+            self.__grab_folders(type_)
+            self.__add_deprecated(type_)
+            self.__objects_to_save.difference_update(self.__saved_folders)
+            await self.__save_new_folders()
+            await self.__refresh_saved_folders()
             await self.__refresh_factory_table()
-        #  deleteing redundant folders
-        if existing_folders:
-            await crud.delete_cls_instances(tuple(existing_folders), self.__session)
+        if self.__deprecated:
+            self.__mark_depricated()
+            self.__unmark_deprecated()
+            self.__session.commit()
 
-        print('Folders successfully created...')
+    def __add_deprecated(self, type_) -> None:
+        deprecated = set((_ for _ in self.__saved_folders
+                          if _.el_type == type_))
+        deprecated.difference_update(self.__objects_to_save)
+        self.__deprecated.update(deprecated)
 
-    def __get_folders_to_save(self, type_: ElType) -> None:
+    async def __refresh_saved_folders(self) -> None:
+        self.__saved_folders = set(await crud.get_folders(self.__session))
+
+    def __grab_folders(self, type_: ElType) -> None:
         for factory in self.__factories[type_]:
             self.__objects_to_save.update(factory.get_objects())
+
+    async def __save_new_folders(self) -> None:
+        if not self.__objects_to_save:
+            return
+        await crud.add_instances(self.__objects_to_save,
+                                 self.__session)
+        self.__objects_to_save.clear()
+
+    def __mark_depricated(self) -> None:
+        if to_mark := (_ for _ in self.__deprecated if not _.deprecated):
+            for _ in to_mark:
+                _.deprecated = True
+
+    def __unmark_deprecated(self) -> None:
+        self.__saved_folders.difference_update(self.__deprecated)
+        if to_unmark := (_ for _ in self.__saved_folders
+                         if _.deprecated):
+            for _ in to_unmark:
+                _.deprecated = False
 
     async def __refresh_factory_table(self) -> None:
         """
@@ -78,16 +101,15 @@ class TavriaParser:
         will make it a BaseFactory class variable and will refresh it before
         the call.
         """
-        saved_folders = await crud.get_folders(self.__session)
-        id_to_name_table = {_.id: _.name for _ in saved_folders}
+        id_to_name_table = {_.id: _.name for _ in self.__saved_folders}
         table = {ObjectParents(
             grand_parent_name=id_to_name_table[_.parent_id]
             if _.parent_id else None, parent_name=_.name): _.id
-            for _ in saved_folders
+            for _ in self.__saved_folders
         }
         BaseFactory.refresh_parent_table(table)
 
-    async def __create_products(self) -> None:
+    async def __refresh_products(self) -> None:
         while self.__factories[ElType.PRODUCT]:
             try:
                 await self.__process_next_batch()

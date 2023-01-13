@@ -3,16 +3,18 @@ from base_models import BaseWithRepr
 
 from project_typing import ElType
 
-from sqlalchemy import Column, Enum, ForeignKey, Integer, Numeric, String
+from sqlalchemy import Boolean, Column, Enum, ForeignKey
+from sqlalchemy import Integer, Numeric, String
 
 
 class BaseCatalogElement(BaseWithRepr):
 
     __abstract__ = True
 
-    name: Column(String)
-    parent_id: Column(Integer)
-    el_type: Column(Enum(ElType))
+    name: Column
+    parent_id: Column
+    el_type: Column
+    deprecated = Column(Boolean, default=False)
 
     def __hash__(self) -> int:
         return hash((self.name, self.parent_id, self.el_type))
