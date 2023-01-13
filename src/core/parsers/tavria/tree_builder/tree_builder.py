@@ -31,7 +31,7 @@ class TavriaParser:
     and update it with site information."""
 
     __factories: Mapping[ElType, MutableSequence[BaseFactory]]
-    __saved_folders: set[BaseCatalogElement]
+    __saved_objects: set[BaseCatalogElement]
     __objects_to_save: set[BaseCatalogElement] = set()
     __deprecated: set[BaseCatalogElement] = set()
 
@@ -54,7 +54,7 @@ class TavriaParser:
         for type_ in c.folder_types:
             self.__grab_folders(type_)
             self.__add_deprecated(type_)
-            self.__objects_to_save.difference_update(self.__saved_folders)
+            self.__objects_to_save.difference_update(self.__saved_objects)
             await self.__save_new_folders()
             await self.__refresh_saved_folders()
             await self.__refresh_factory_table()
@@ -64,13 +64,13 @@ class TavriaParser:
             self.__session.commit()
 
     def __add_deprecated(self, type_) -> None:
-        deprecated = set((_ for _ in self.__saved_folders
+        deprecated = set((_ for _ in self.__saved_objects
                           if _.el_type == type_))
         deprecated.difference_update(self.__objects_to_save)
         self.__deprecated.update(deprecated)
 
     async def __refresh_saved_folders(self) -> None:
-        self.__saved_folders = set(await crud.get_folders(self.__session))
+        self.__saved_objects = set(await crud.get_folders(self.__session))
 
     def __grab_folders(self, type_: ElType) -> None:
         for factory in self.__factories[type_]:
@@ -89,8 +89,8 @@ class TavriaParser:
                 _.deprecated = True
 
     def __unmark_deprecated(self) -> None:
-        self.__saved_folders.difference_update(self.__deprecated)
-        if to_unmark := (_ for _ in self.__saved_folders
+        self.__saved_objects.difference_update(self.__deprecated)
+        if to_unmark := (_ for _ in self.__saved_objects
                          if _.deprecated):
             for _ in to_unmark:
                 _.deprecated = False
@@ -101,15 +101,16 @@ class TavriaParser:
         will make it a BaseFactory class variable and will refresh it before
         the call.
         """
-        id_to_name_table = {_.id: _.name for _ in self.__saved_folders}
+        id_to_name_table = {_.id: _.name for _ in self.__saved_objects}
         table = {ObjectParents(
             grand_parent_name=id_to_name_table[_.parent_id]
             if _.parent_id else None, parent_name=_.name): _.id
-            for _ in self.__saved_folders
+            for _ in self.__saved_objects
         }
         BaseFactory.refresh_parent_table(table)
 
     async def __refresh_products(self) -> None:
+        self.__saved_objects = set(await crud.get_products(self.__session))
         while self.__factories[ElType.PRODUCT]:
             try:
                 await self.__process_next_batch()
@@ -136,5 +137,7 @@ class TavriaParser:
     async def __single_factory_task(self, factory: ProductFactory,
                                     session) -> None:
         print(f'Group "{factory.group_name}" added to batch...')
-        self.__objects_to_save.update(await factory.get_objects(session))
+        factory_objects = set(await factory.get_objects(session))
+        factory_objects.difference_update(self.__saved_objects)
+        self.__objects_to_save.update(factory_objects)
         self.__factories[ElType.PRODUCT].remove(factory)
