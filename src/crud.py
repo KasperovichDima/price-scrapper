@@ -93,7 +93,7 @@ async def delete_cls_instances(instances: Sequence[BaseWithID],
     TODO: separate try except.
     """
     try:
-        cls_ = instances[0].__class__
+        cls_ = type(instances[0])
         assert all((isinstance(_, cls_) for _ in instances))
     except AssertionError:
         raise c_ex.same_type_exception

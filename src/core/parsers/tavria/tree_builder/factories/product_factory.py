@@ -21,7 +21,7 @@ from ...tavria_typing import ObjectParents
 class ProductFactory(BaseFactory):
 
     __session: aiohttp.ClientSession
-    __html: str
+    _html: str
 
     def __init__(self, url: str, category_name: str, group_name: str,
                  subcategory_name: str | None = None, **kwargs) -> None:
@@ -49,7 +49,7 @@ class ProductFactory(BaseFactory):
 
     async def scrap_object_names(self) -> None:
         await self.get_page_html()
-        a_tags: ResultSet[Tag] = bs(self.__html, 'lxml').find_all('a')
+        a_tags: ResultSet[Tag] = bs(self._html, 'lxml').find_all('a')
         correct_names = (get_product_name(_)
                          for _ in a_tags if get_product_name(_))
         self._object_names.update(correct_names)  # type: ignore
@@ -59,7 +59,7 @@ class ProductFactory(BaseFactory):
             if response.status != 200:
                 raise HTTPException(503, f'Error while parsing {self._url}')
                 #  TODO: add log and email developer here
-            self.__html = await response.text()
+            self._html = await response.text()
 
     @property
     def __page_is_paginated(self) -> bool:
@@ -78,7 +78,7 @@ class ProductFactory(BaseFactory):
 
     @cached_property
     def paginator(self) -> ResultSet:
-        return bs(self.__html, 'lxml')\
+        return bs(self._html, 'lxml')\
             .find('div', {'class': 'catalog__pagination'}).find_all('a')
 
     async def get_paginated_content(self):

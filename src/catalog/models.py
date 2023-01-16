@@ -17,7 +17,7 @@ class BaseCatalogElement(BaseWithRepr):
     deprecated = Column(Boolean, default=False)
 
     def __hash__(self) -> int:
-        return hash((self.name, self.parent_id, self.el_type))
+        return hash((self.name, self.parent_id))
 
 
 class Folder(BaseCatalogElement):

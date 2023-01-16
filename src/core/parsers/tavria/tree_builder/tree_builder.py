@@ -35,7 +35,10 @@ class TavriaParser:
     __objects_to_save: set[BaseCatalogElement] = set()
     __deprecated: set[BaseCatalogElement] = set()
 
-    async def refresh_catalog(self, home_url: str, session: Session) -> None:
+    def __init__(self, factory_creator: FactoryCreator) -> None:
+        self.__factory_creator = factory_creator
+
+    async def refresh_catalog(self, session: Session) -> None:
         """Collect all folders and products from site and save same structure
         to database. All new objects will be saved, existing will stay
         untouched, redundant will be marked as 'deprecated'."""
@@ -43,7 +46,7 @@ class TavriaParser:
         if c.MAIN_PARSER != 'Tavria':
             return
         self.__session = session
-        self.__factories = FactoryCreator(home_url)()
+        self.__factories = self.__factory_creator()
         await self.__refresh_folders()
         print('Folders refreshed...')
         await self.__refresh_products()
@@ -62,6 +65,7 @@ class TavriaParser:
             self.__mark_depricated()
             self.__unmark_deprecated()
             self.__session.commit()
+            self.__deprecated.clear()
 
     def __add_deprecated(self, type_) -> None:
         deprecated = set((_ for _ in self.__saved_objects
@@ -84,14 +88,14 @@ class TavriaParser:
         self.__objects_to_save.clear()
 
     def __mark_depricated(self) -> None:
-        if to_mark := (_ for _ in self.__deprecated if not _.deprecated):
+        if to_mark := [_ for _ in self.__deprecated if not _.deprecated]:
             for _ in to_mark:
                 _.deprecated = True
 
     def __unmark_deprecated(self) -> None:
         self.__saved_objects.difference_update(self.__deprecated)
-        if to_unmark := (_ for _ in self.__saved_objects
-                         if _.deprecated):
+        if to_unmark := [_ for _ in self.__saved_objects
+                         if _.deprecated]:
             for _ in to_unmark:
                 _.deprecated = False
 
@@ -110,7 +114,16 @@ class TavriaParser:
         BaseFactory.refresh_parent_table(table)
 
     async def __refresh_products(self) -> None:
-        self.__saved_objects = set(await crud.get_products(self.__session))
+        """TODO: Refactoring"""
+        from collections import defaultdict
+        
+        products_from_db = await crud.get_products(self.__session)
+        self.__saved_objects = defaultdict(list)
+
+        while products_from_db:
+            _ = products_from_db.pop()
+            self.__saved_objects[_.parent_id].append(_)
+
         while self.__factories[ElType.PRODUCT]:
             try:
                 await self.__process_next_batch()
@@ -118,6 +131,9 @@ class TavriaParser:
                 print('saving batch...')
                 await crud.add_instances(self.__objects_to_save,
                                          self.__session)
+
+        self.__mark_depricated()
+        self.__session.commit()
 
     async def __process_next_batch(self):
         async with aiohttp_session_maker() as session:
@@ -138,6 +154,13 @@ class TavriaParser:
                                     session) -> None:
         print(f'Group "{factory.group_name}" added to batch...')
         factory_objects = set(await factory.get_objects(session))
-        factory_objects.difference_update(self.__saved_objects)
+        saved_objects = set(self.__saved_objects.pop(factory._parent_id)) if factory._parent_id in self.__saved_objects else set()
+        must_be_not_deprecated = saved_objects.intersection(factory_objects)
+        if (to_unmark := [_ for _ in must_be_not_deprecated if _.deprecated]):
+            for _ in to_unmark:
+                _.deprecated = False
+            self.__session.commit()        
+        self.__deprecated.update(saved_objects - factory_objects)
+        factory_objects.difference_update(saved_objects)
         self.__objects_to_save.update(factory_objects)
         self.__factories[ElType.PRODUCT].remove(factory)
