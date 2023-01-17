@@ -112,9 +112,6 @@ class GroupFactory(BaseFactory):
         return self._parents_to_id_table[ObjectParents(grandparent, parent)]
 
 
-
-
-
 class ProductFactory(BaseFactory):
 
     __session: aiohttp.ClientSession
@@ -155,7 +152,6 @@ class ProductFactory(BaseFactory):
     @lru_cache(1)
     def __get_product_name(tag: Tag) -> str | None:
         """Returns a name of product, if tag contains it."""
-        print('called with {}'.format(tag))
         return tag.text.strip()\
             if 'product' in tag.get('href', '')\
             and not tag.text.isspace() else None
