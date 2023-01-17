@@ -1,21 +1,25 @@
+"""Test mocks and changes to allow testing."""
 from typing import Callable
-from core.parsers import FactoryCreator
+
+from parsers.tavria import FactoryCreator
+from parsers.tavria import factory as f
+from parsers.tavria import utils as u
+
 from project_typing import ElType
 
-from core .parsers.tavria.tree_builder import factories as f
-from core .parsers.tavria.tree_builder import utils as u
 from .html import groups as g
 
 
 def __create_html_getter() -> Callable[[str], str]:
     html = dict(
-        catalog_buckwheat = g.catalog_buckwheat,
-        catalog_corn = g.catalog_corn,
-        catalog_empty = g.catalog_empty,
-        catalog_fast_food = g.catalog_fast_food,
-        catalog_protein = g.catalog_protein,
-        catalog_rice = g.catalog_rice,
+        catalog_buckwheat=g.catalog_buckwheat,
+        catalog_corn=g.catalog_corn,
+        catalog_empty=g.catalog_empty,
+        catalog_fast_food=g.catalog_fast_food,
+        catalog_protein=g.catalog_protein,
+        catalog_rice=g.catalog_rice,
     )
+
     def get_html(url: str) -> str:
         return html[url]
     return get_html
