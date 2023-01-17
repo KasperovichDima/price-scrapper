@@ -90,7 +90,6 @@ async def delete_cls_instances(instances: Sequence[BaseWithID],
     Remove specified objects from database.
     NOTE: All objects must be the same class.
     Raises same_type_exception if not.
-    TODO: separate try except.
     """
     try:
         cls_ = type(instances[0])

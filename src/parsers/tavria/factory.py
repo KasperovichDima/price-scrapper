@@ -112,12 +112,7 @@ class GroupFactory(BaseFactory):
         return self._parents_to_id_table[ObjectParents(grandparent, parent)]
 
 
-@lru_cache(1)
-def get_product_name(tag: Tag) -> str | None:
-    """Returns a name of product, if tag contains it."""
-    return tag.text.strip()\
-        if 'product' in tag.get('href', '')\
-        and not tag.text.isspace() else None
+
 
 
 class ProductFactory(BaseFactory):
@@ -152,9 +147,18 @@ class ProductFactory(BaseFactory):
     async def scrap_object_names(self) -> None:
         await self.get_page_html()
         a_tags: ResultSet[Tag] = bs(self._html, 'lxml').find_all('a')
-        correct_names = (get_product_name(_)
-                         for _ in a_tags if get_product_name(_))
+        correct_names = (self.__get_product_name(_)
+                         for _ in a_tags if self.__get_product_name(_))
         self._object_names.update(correct_names)  # type: ignore
+
+    @staticmethod
+    @lru_cache(1)
+    def __get_product_name(tag: Tag) -> str | None:
+        """Returns a name of product, if tag contains it."""
+        print('called with {}'.format(tag))
+        return tag.text.strip()\
+            if 'product' in tag.get('href', '')\
+            and not tag.text.isspace() else None
 
     async def get_page_html(self) -> None:
         async with self.__session.get(self._url) as response:
