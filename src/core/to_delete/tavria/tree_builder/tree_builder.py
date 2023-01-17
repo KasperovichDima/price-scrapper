@@ -116,7 +116,7 @@ class TavriaParser:
     async def __refresh_products(self) -> None:
         """TODO: Refactoring"""
         from collections import defaultdict
-        
+
         products_from_db = await crud.get_products(self.__session)
         self.__saved_objects = defaultdict(list)
 

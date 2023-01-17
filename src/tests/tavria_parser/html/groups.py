@@ -27,7 +27,40 @@ catalog_fast_food = """
 <a href="/product/9258/">Каша Терра 38 г вівсяна з яблуком та корицею</a>
 <a href="/product/9259/">Каша Овсяночка 450 г Асорті</a>
 <a href="/product/9260/">Каша Терра вівсяна 38 г з ананасом</a>
-<div class="catalog__pagination"> </div>
+<div class="catalog__pagination">
+    <nav aria-label="Page navigation">
+    <ul class="pagination">
+        <li class="page-item">
+            <a class="page-link" href="/catalog/97/?page=1" aria-label="Previous">
+            </a>
+        </li>
+        <li class="page-item current"><span class="page-link">1</span></li>
+        <li class="page-item"><a class="page-link" href="/catalog/97/?page=2">2</a></li>
+        <li class="page-item"><a class="page-link" href="/catalog/97/?page=3">3</a></li>
+        <li class="page-item">
+            <a class="page-link" href="/catalog/97/?page=3" aria-label="Next">
+            <span aria-hidden="true">
+            ...3
+            </span>
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="/catalog/97/?page=3" aria-label="Next">
+            </a>
+        </li>
+    </ul>
+    </nav>
+</div>
+"""
+
+catalog_fast_food_2 = """
+<a href="/product/9292/">Каша Вівсянушка 40 г з ананасом</a>
+<a href="/product/9296/">Каша Вівсянушка Подвійна насолода 47 г з бананом та полуницею</a>
+"""
+
+catalog_fast_food_3 = """
+<a href="/product/9358/">Суп Тетя Соня 60 г пак. Курячий зірочки</a>
+<a href="/product/9359/">Суп Тетя Соня Гороховий 180 г брик. Харчо</a>
 """
 
 catalog_protein = """

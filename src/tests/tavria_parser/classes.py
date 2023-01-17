@@ -19,6 +19,8 @@ def __create_html_getter() -> Callable[[str], str]:
         catalog_protein=g.catalog_protein,
         catalog_rice=g.catalog_rice,
     )
+    html['catalog_fast_food?page=2'] = g.catalog_fast_food_2
+    html['catalog_fast_food?page=3'] = g.catalog_fast_food_3
 
     def get_html(url: str) -> str:
         return html[url]

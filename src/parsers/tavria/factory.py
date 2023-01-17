@@ -2,6 +2,7 @@
 import asyncio
 from collections.abc import Mapping
 from functools import cached_property, lru_cache
+from typing import Generator
 
 import aiohttp
 
@@ -169,6 +170,7 @@ class ProductFactory(BaseFactory):
 
     @cached_property
     def paginator_size(self) -> int:  # type: ignore
+        """TODO: try to Remove paginator := self.paginator."""
         if not (paginator := self.paginator):
             return 0
         for tag in reversed(paginator):
@@ -184,10 +186,13 @@ class ProductFactory(BaseFactory):
             .find('div', {'class': 'catalog__pagination'}).find_all('a')
 
     async def get_paginated_content(self):
-        urls = (f'{self._url}?page={_}'
-                for _ in range(2, self.paginator_size + 1))
-        jobs = (self.page_task(_) for _ in urls)
+        jobs = (self.page_task(_) for _ in self.__paginated_urls)
         await asyncio.gather(*jobs)
+
+    @property
+    def __paginated_urls(self) -> Generator[str, None, None]:
+        return (f'{self._url}?page={_}'
+                for _ in range(2, self.paginator_size + 1))
 
     async def page_task(self, url: str) -> None:
         self._url = url
