@@ -39,12 +39,12 @@ async def get_user(email: str, session: Session) -> User | None:
 async def get_folder_content(id: int, session: Session) -> FolderContent:
     """Get content of folder with specified id."""
     return FolderContent(
-        products=await __get_elements(Product, session, parent_id=(id,)),
-        folders=await __get_elements(Folder, session, parent_id=(id,))
+        products=await get_elements(Product, session, parent_id=(id,)),
+        folders=await get_elements(Folder, session, parent_id=(id,))
     )
 
 
-async def __get_elements(cls_: type[db_type], session: Session,
+async def get_elements(cls_: type[db_type], session: Session,
                          **params) -> list[db_type]:
     """Returns elements of specified class using
     IN statement. NOTE: kwargs dict keys must be
@@ -65,7 +65,7 @@ async def get_products(
 ) -> list[Product]:
     """Get product objects from product and folder ids."""
 
-    return await __get_elements(Product, session, id=prod_ids,
+    return await get_elements(Product, session, id=prod_ids,
                                 parent_id=folder_ids)
 
 
@@ -75,13 +75,13 @@ async def get_folders(session: Session,
     Get folder objects by folder ids. If no
     ids are specified - all folders wil be returned.
     """
-    return await __get_elements(Folder, session, id=ids)
+    return await get_elements(Folder, session, id=ids)
 
 
 async def get_retailers(ids: list[int],
                         session: Session) -> list[Retailer]:
     """Get retailer objects by retailer id."""
-    return await __get_elements(Retailer, session, id=ids)
+    return await get_elements(Retailer, session, id=ids)
 
 
 async def delete_cls_instances(instances: Sequence[BaseWithID],
@@ -114,16 +114,16 @@ async def delete_folder(id: int, session: Session) -> int:
     """Recursively deletes folder specified by id and child folders. Also
     deletes products by CASCADE. Raises instance_not_exists_exeption if
     specified folder not exists."""
-    if not (del_folders := await __get_elements(Folder, session, id=(id,))):
+    if not (del_folders := await get_elements(Folder, session, id=(id,))):
         raise c_ex.instance_not_exists_exeption
     parent_ids = [id]
-    while childs := await __get_elements(Folder, session,
+    while childs := await get_elements(Folder, session,
                                          parent_id=parent_ids):
         del_folders.extend(childs)
         parent_ids.clear()
         parent_ids.extend((_.id for _ in childs))
         childs.clear()
-        childs.extend(await __get_elements(Folder, session,
+        childs.extend(await get_elements(Folder, session,
                                            parent_id=parent_ids))
     await delete_cls_instances(del_folders, session)
     return id
