@@ -80,7 +80,7 @@ def tasks_are_finished() -> None:
     raise asyncio.exceptions.TimeoutError
 
 
-def __create_class_getter() -> Callable[[ElType], type[f.BaseFactory]]:
+def __create_factory_class_getter() -> Callable[[ElType], type[f.BaseFactory]]:
     types: dict[ElType, type[f.BaseFactory]] = {
         ElType.CATEGORY: f.CategoryFactory,
         ElType.SUBCATEGORY: f.SubcategoryFactory,
@@ -93,4 +93,4 @@ def __create_class_getter() -> Callable[[ElType], type[f.BaseFactory]]:
     return get_class
 
 
-class_for = __create_class_getter()
+factory_class_for = __create_factory_class_getter()

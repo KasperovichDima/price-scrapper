@@ -33,7 +33,7 @@ def fake_parser_db(fake_session):
         Product(name="Крупа Сквирянка Гречана 800 г", parent_id=3, prime_cost=62.15),  # noqa: E501
         Product(name="Крупа Сквирянка Гречана 800 г непропарена", parent_id=3, prime_cost=65.75),  # noqa: E501
         Product(name="Крупа Українська Зірка 800 г Кукурудзяна", parent_id=4, prime_cost=12.42),  # noqa: E501
-        Product(name="Крупа Терра Кукурудзяна 5х80 г", parent_id=4, prime_cost=27.68),  # noqa: E501
+        Product(name="Крупа Терра Кукурудзяна 5х80 г", parent_id=4, prime_cost=27.68, deprecated=True),  # noqa: E501
         Product(name="Крупа Моя Країна Кукурудзяна 600 г", parent_id=4, prime_cost=28.63),  # noqa: E501
         Product(name="Крупа Жменька Кукурудзяна 300 г картон", parent_id=4, prime_cost=17.21),  # noqa: E501
         Product(name="Рис круглий ваг.", parent_id=5, prime_cost=34.85),

@@ -45,7 +45,7 @@ async def get_folder_content(id: int, session: Session) -> FolderContent:
 
 
 async def get_elements(cls_: type[db_type], session: Session,
-                         **params) -> list[db_type]:
+                       **params) -> list[db_type]:
     """Returns elements of specified class using
     IN statement. NOTE: kwargs dict keys must be
     named exactly like class attributes. Elements
@@ -66,7 +66,7 @@ async def get_products(
     """Get product objects from product and folder ids."""
 
     return await get_elements(Product, session, id=prod_ids,
-                                parent_id=folder_ids)
+                              parent_id=folder_ids)
 
 
 async def get_folders(session: Session,
@@ -118,12 +118,12 @@ async def delete_folder(id: int, session: Session) -> int:
         raise c_ex.instance_not_exists_exeption
     parent_ids = [id]
     while childs := await get_elements(Folder, session,
-                                         parent_id=parent_ids):
+                                       parent_id=parent_ids):
         del_folders.extend(childs)
         parent_ids.clear()
         parent_ids.extend((_.id for _ in childs))
         childs.clear()
         childs.extend(await get_elements(Folder, session,
-                                           parent_id=parent_ids))
+                                         parent_id=parent_ids))
     await delete_cls_instances(del_folders, session)
     return id

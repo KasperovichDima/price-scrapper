@@ -36,8 +36,11 @@ class BaseFactory:
     def add_name(self, name: str) -> None:
         self._object_names.add(name)
 
-    def get_objects(self) -> BaseFactoryReturnType:
-        """Create and return factory objects. Template method."""
+    def get_objects(self, *args) -> BaseFactoryReturnType:
+        """
+        Create and return factory objects. Template method.
+        TODO: Check speed with async.
+        """
 
         return (self._creating_class(name=name,
                                      parent_id=self._parent_id,
@@ -107,10 +110,10 @@ class GroupFactory(BaseFactory):
 
     @cached_property
     def _parent_id(self) -> int:
-        grandparent = self._category_name if self._subcategory_name else None
-        parent = self._subcategory_name if self._subcategory_name\
+        gp_name = self._category_name if self._subcategory_name else None
+        p_name = self._subcategory_name if self._subcategory_name\
             else self._category_name
-        return self._parents_to_id_table[ObjectParents(grandparent, parent)]
+        return self._parents_to_id_table[ObjectParents(gp_name, p_name)]
 
 
 class ProductFactory(BaseFactory):
@@ -132,7 +135,7 @@ class ProductFactory(BaseFactory):
             return
         super()._validate_init_data()
 
-    async def get_objects(self, session: aiohttp.ClientSession  # type: ignore
+    async def get_objects(self, session: aiohttp.ClientSession
                           ) -> BaseFactoryReturnType:
         self.__session = session
         await self.scrap_object_names()
