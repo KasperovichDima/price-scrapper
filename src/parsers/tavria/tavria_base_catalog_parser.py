@@ -17,7 +17,9 @@ from .tavria_typing import ObjectParents
 
 class TavriaBaseCatalogParser:
 
-    objects_in_db: set[BaseCatalogElement]
+    """TODO: Think about objects_in_db optimization."""
+
+    objects_in_db: list[BaseCatalogElement]
     factory_objects: set[BaseCatalogElement] = set()
     create_class: Type[BaseCatalogElement]
 
@@ -40,8 +42,8 @@ class TavriaBaseCatalogParser:
         cls.factories = factories
 
     async def get_db_objects(self):
-        self.objects_in_db = set(await crud.get_elements(self.create_class,
-                                                         self.db_session))
+        self.objects_in_db = await crud.get_elements(self.create_class,
+                                                     self.db_session)
 
     def refresh_factory_table(self) -> None:
         """
@@ -61,11 +63,10 @@ class TavriaBaseCatalogParser:
 
     def mark_depricated(self, type_=ElType.PRODUCT):
         """TODO: put this code to db?"""
-        # to_deprecate = (_ for _ in
-        #                 self.factory_objects.symmetric_difference(self.objects_in_db)
-        #                 if not _.deprecated and _.el_type is type_)
-        to_deprecate = (_ for _ in self.objects_in_db - self.factory_objects
-                        if not _.deprecated and _.el_type is type_)
+        to_deprecate = (_ for _ in self.objects_in_db
+                        if _.el_type is type_
+                        and _ not in self.factory_objects
+                        and not _.deprecated)
         for _ in to_deprecate:
             _.deprecated = True
 
@@ -80,7 +81,7 @@ class TavriaBaseCatalogParser:
         self.factory_objects.difference_update(self.objects_in_db)
         if self.factory_objects:
             await crud.add_instances(self.factory_objects, self.db_session)
-            self.objects_in_db.update(self.factory_objects)  # TODO: Think about it.
+            self.objects_in_db.extend(self.factory_objects)  # TODO: Think about it.
 
     async def process_factory_objects(self):
         self.mark_depricated()

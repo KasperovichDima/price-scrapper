@@ -1,27 +1,8 @@
-from parsers.tavria.tavria_base_catalog_parser import TavriaBaseCatalogParser
-
-import asyncio
-from collections import defaultdict
-from collections.abc import Mapping
-from functools import singledispatchmethod
-from typing import Iterable, MutableSequence
-
-from catalog.models import BaseCatalogElement, Folder, Product
-from catalog.utils import get_catalog_class
-
-import crud
-
-from parsers.constants import MAIN_PARSER
+from catalog.models import Folder
 
 from project_typing import ElType
 
-from sqlalchemy.orm import Session
-
-from . import constants as c
-from .factory import BaseFactory, ProductFactory
-from .factory_creator import FactoryCreator
-from .tavria_typing import ObjectParents
-from . import utils as u
+from .tavria_base_catalog_parser import TavriaBaseCatalogParser
 
 
 class TavriaFolderParser(TavriaBaseCatalogParser):

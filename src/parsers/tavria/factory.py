@@ -1,5 +1,6 @@
 """Folder and Product factory class + base class."""
 import asyncio
+import reprlib
 from collections.abc import Mapping
 from functools import cached_property, lru_cache
 from typing import Generator
@@ -64,6 +65,10 @@ class BaseFactory:
     def __bool__(self) -> bool:
         return bool(self._object_names)
 
+    def __repr__(self) -> str:
+        return (f'{self._creating_type.name}: '
+                f'{reprlib.repr(self._object_names)}')
+
 
 class CategoryFactory(BaseFactory):
 
@@ -117,6 +122,8 @@ class GroupFactory(BaseFactory):
 
 
 class ProductFactory(BaseFactory):
+
+    _creating_type = ElType.PRODUCT
 
     __session: aiohttp.ClientSession
     _html: str
