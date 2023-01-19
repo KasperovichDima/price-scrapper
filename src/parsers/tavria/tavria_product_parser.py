@@ -1,28 +1,13 @@
-from parsers.tavria.tavria_base_catalog_parser import TavriaBaseCatalogParser
-
 import asyncio
-import itertools
-from collections import defaultdict
-from collections.abc import Mapping
-from functools import singledispatchmethod
-from typing import Generator, Iterable, MutableSequence
 
-from catalog.models import BaseCatalogElement, Folder, Product
-from catalog.utils import get_catalog_class
-
-import crud
-
-from parsers.constants import MAIN_PARSER
+from catalog.models import Product
 
 from project_typing import ElType
 
-from sqlalchemy.orm import Session
-
+from . import TavriaBaseCatalogParser
 from . import constants as c
-from .factory import BaseFactory, ProductFactory
-from .factory_creator import FactoryCreator
-from .tavria_typing import ObjectParents
 from . import utils as u
+from .factory import ProductFactory
 
 
 class TavriaProductParser(TavriaBaseCatalogParser):
@@ -32,10 +17,6 @@ class TavriaProductParser(TavriaBaseCatalogParser):
     def refresh_factory_table(self) -> None:
         """Factory tables are allready refreshed after folder parser."""
 
-    # def get_factory_objects(self):
-    #     asyncio.run(self.get_objects())
-
-    # async def get_objects(self):
     async def get_factory_objects(self):
         while self.factories[ElType.PRODUCT]:
             self.get_next_batch()
@@ -56,7 +37,8 @@ class TavriaProductParser(TavriaBaseCatalogParser):
     @property
     def batch_size(self) -> int:
         return c.TAVRIA_FACTORIES_PER_SESSION\
-            if c.TAVRIA_FACTORIES_PER_SESSION <= len(self.factories[ElType.PRODUCT])\
+            if c.TAVRIA_FACTORIES_PER_SESSION\
+            <= len(self.factories[ElType.PRODUCT])\
             else len(self.factories[ElType.PRODUCT])
 
     async def single_factory_task(self, factory: ProductFactory, aio_session):

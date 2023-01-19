@@ -28,7 +28,7 @@ class TavriaFolderParser(TavriaBaseCatalogParser):
 
     create_class = Folder
 
-    async def post_create_tasks(self):
+    async def process_factory_objects(self):
         self.factory_objects.clear()
 
     async def get_factory_objects(self):

@@ -12,29 +12,28 @@ from project_typing import ElType
 from sqlalchemy.orm import Session
 
 from .factory import BaseFactory
-from .factory_creator import FactoryCreator
 from .tavria_typing import ObjectParents
 
 
 class TavriaBaseCatalogParser:
 
-    factory_creator: FactoryCreator
-    db_session: Session
-    factories: Mapping[ElType, MutableSequence[BaseFactory]]
-    type: ElType
     objects_in_db: set[BaseCatalogElement]
     factory_objects: set[BaseCatalogElement] = set()
-    deprecated: set[BaseCatalogElement] = set()
     create_class: Type[BaseCatalogElement]
 
-    async def __call__(self, db_session: Session) -> None:
+    def __init__(self,
+                 factories: Mapping[ElType, MutableSequence[BaseFactory]],
+                 db_session: Session) -> None:
+        self.factories = factories
+        self.db_session = db_session
+
+    async def __call__(self) -> None:
         if MAIN_PARSER != 'Tavria':
             return
-        self.db_session = db_session
         await self.get_db_objects()
         self.refresh_factory_table()
         await self.get_factory_objects()  # TODO: Fix name.
-        await self.post_create_tasks()
+        await self.process_factory_objects()
 
     @classmethod
     def set_factories(cls, factories):
@@ -62,6 +61,9 @@ class TavriaBaseCatalogParser:
 
     def mark_depricated(self, type_=ElType.PRODUCT):
         """TODO: put this code to db?"""
+        # to_deprecate = (_ for _ in
+        #                 self.factory_objects.symmetric_difference(self.objects_in_db)
+        #                 if not _.deprecated and _.el_type is type_)
         to_deprecate = (_ for _ in self.objects_in_db - self.factory_objects
                         if not _.deprecated and _.el_type is type_)
         for _ in to_deprecate:
@@ -80,7 +82,7 @@ class TavriaBaseCatalogParser:
             await crud.add_instances(self.factory_objects, self.db_session)
             self.objects_in_db.update(self.factory_objects)  # TODO: Think about it.
 
-    async def post_create_tasks(self):
+    async def process_factory_objects(self):
         self.mark_depricated()
         self.unmark_depricated()
         await self.save_objects()
