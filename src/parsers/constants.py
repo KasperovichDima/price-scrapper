@@ -11,4 +11,4 @@ load_dotenv()
 
 MAIN_PARSER = os.environ['MAIN_PARSER']
 
-folder_types = (ElType.CATEGORY, ElType.SUBCATEGORY, ElType.GROUP)
+folder_types = (ElType.CATEGORY, ElType.SUBCATEGORY, ElType.GROUP)  # TODO: del after refactoring

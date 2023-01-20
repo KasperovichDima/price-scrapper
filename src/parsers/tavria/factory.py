@@ -1,5 +1,6 @@
 """Folder and Product factory class + base class."""
 import asyncio
+import reprlib
 from collections.abc import Mapping
 from functools import cached_property, lru_cache
 from typing import Generator
@@ -27,7 +28,7 @@ class BaseFactory:
 
     _creating_type: ElType
     _creating_class: type[BaseCatalogElement] = Folder
-    _parents_to_id_table: Mapping[ObjectParents, int]
+    parent_table: Mapping[ObjectParents, int]
 
     def __init__(self, **kwargs) -> None:
         self._validate_init_data()
@@ -36,19 +37,16 @@ class BaseFactory:
     def add_name(self, name: str) -> None:
         self._object_names.add(name)
 
-    def get_objects(self) -> BaseFactoryReturnType:
-        """Create and return factory objects. Template method."""
+    def get_objects(self, *args) -> BaseFactoryReturnType:
+        """
+        Create and return factory objects. Template method.
+        TODO: Check speed with async.
+        """
 
         return (self._creating_class(name=name,
                                      parent_id=self._parent_id,
                                      el_type=self._creating_type)
                 for name in self._object_names)
-
-    @classmethod
-    def refresh_parent_table(cls, table: Mapping[ObjectParents, int]) -> None:
-        """Set new parent to id table as a class variable."""
-
-        cls._parents_to_id_table = table
 
     def _validate_init_data(self) -> None:
         """Validates init data. Raises EmptyFactoryDataError
@@ -60,6 +58,10 @@ class BaseFactory:
 
     def __bool__(self) -> bool:
         return bool(self._object_names)
+
+    def __repr__(self) -> str:
+        return (f'{self._creating_type.name}: '
+                f'{reprlib.repr(self._object_names)}')
 
 
 class CategoryFactory(BaseFactory):
@@ -87,7 +89,7 @@ class SubcategoryFactory(BaseFactory):
     def _parent_id(self) -> int:
         parents = ObjectParents(grand_parent_name=None,
                                 parent_name=self._category_name)
-        return self._parents_to_id_table[parents]
+        return self.parent_table[parents]
 
 
 class GroupFactory(BaseFactory):
@@ -107,13 +109,15 @@ class GroupFactory(BaseFactory):
 
     @cached_property
     def _parent_id(self) -> int:
-        grandparent = self._category_name if self._subcategory_name else None
-        parent = self._subcategory_name if self._subcategory_name\
+        gp_name = self._category_name if self._subcategory_name else None
+        p_name = self._subcategory_name if self._subcategory_name\
             else self._category_name
-        return self._parents_to_id_table[ObjectParents(grandparent, parent)]
+        return self.parent_table[ObjectParents(gp_name, p_name)]
 
 
 class ProductFactory(BaseFactory):
+
+    _creating_type = ElType.PRODUCT
 
     __session: aiohttp.ClientSession
     _html: str
@@ -132,7 +136,7 @@ class ProductFactory(BaseFactory):
             return
         super()._validate_init_data()
 
-    async def get_objects(self, session: aiohttp.ClientSession  # type: ignore
+    async def get_objects(self, session: aiohttp.ClientSession
                           ) -> BaseFactoryReturnType:
         self.__session = session
         await self.scrap_object_names()
@@ -204,7 +208,7 @@ class ProductFactory(BaseFactory):
             if self._subcategory_name else self._category_name
         parents = ObjectParents(grand_parent_name=grand_parent_name,
                                 parent_name=self.group_name)
-        return self._parents_to_id_table[parents]
+        return self.parent_table[parents]
 
     def __bool__(self) -> bool:
         return all((self._url, self._category_name, self.group_name))

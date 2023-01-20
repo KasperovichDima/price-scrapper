@@ -12,7 +12,7 @@ class UserType(Enum):
 
 
 class ElType(Enum):
-    """Levels of catalog folders."""
+    """Levels of catalog folders. NOTE: Order matters! Do not change!"""
 
     CATEGORY = auto()
     SUBCATEGORY = auto()

@@ -2,7 +2,6 @@
 TreeBuilder class for creating catalog tree.
 LAST RESULT: 11.36
 TODO: -Take home_url from base
-      -Change file name
       -Refactoring
 """
 import asyncio
@@ -24,8 +23,7 @@ from . import constants as c
 from .factory import BaseFactory, ProductFactory
 from .factory_creator import FactoryCreator
 from .tavria_typing import ObjectParents
-from .utils import aiohttp_session_maker
-from .utils import tasks_are_finished
+from . import utils as u
 
 
 class TavriaParser:
@@ -54,12 +52,24 @@ class TavriaParser:
         await self.__refresh_products()
         print('Products refreshed...')
 
+    ####NEW#######
+    async def new_refresh_catalog(self, session: Session) -> None:
+        if MAIN_PARSER != 'Tavria':
+            return
+        self.__session = session
+        self.__factories = self.__factory_creator()
+        for type_ in ElType:
+            await self.__refresh_saved_objects(type_)
+
+        async def __refresh_saved_objects(self, type_) -> None:...
+
+    ####NEW#######
+
     async def __refresh_folders(self) -> None:
         await self.__refresh_saved_folders()
         for type_ in folder_types:
-            self.__grab_folders(type_)
+            self.__grab_folders(type_)  # get __objects_to_save
             self.__add_deprecated(type_)
-            self.__objects_to_save.difference_update(self.__saved_objects)
             await self.__save_new_folders()
             await self.__refresh_saved_folders()
             await self.__refresh_factory_table()
@@ -69,12 +79,6 @@ class TavriaParser:
             self.__session.commit()
             self.__deprecated.clear()
 
-    def __add_deprecated(self, type_) -> None:
-        deprecated = set((_ for _ in self.__saved_objects
-                          if _.el_type == type_))
-        deprecated.difference_update(self.__objects_to_save)
-        self.__deprecated.update(deprecated)
-
     async def __refresh_saved_folders(self) -> None:
         self.__saved_objects = set(await crud.get_folders(self.__session))
 
@@ -82,24 +86,19 @@ class TavriaParser:
         for factory in self.__factories[type_]:
             self.__objects_to_save.update(factory.get_objects())
 
+    def __add_deprecated(self, type_) -> None:
+        deprecated = set((_ for _ in self.__saved_objects
+                          if _.el_type == type_))
+        deprecated.difference_update(self.__objects_to_save)
+        self.__deprecated.update(deprecated)
+
     async def __save_new_folders(self) -> None:
+        self.__objects_to_save.difference_update(self.__saved_objects)
         if not self.__objects_to_save:
             return
         await crud.add_instances(self.__objects_to_save,
                                  self.__session)
         self.__objects_to_save.clear()
-
-    def __mark_depricated(self) -> None:
-        if to_mark := [_ for _ in self.__deprecated if not _.deprecated]:
-            for _ in to_mark:
-                _.deprecated = True
-
-    def __unmark_deprecated(self) -> None:
-        self.__saved_objects.difference_update(self.__deprecated)
-        if to_unmark := [_ for _ in self.__saved_objects
-                         if _.deprecated]:
-            for _ in to_unmark:
-                _.deprecated = False
 
     async def __refresh_factory_table(self) -> None:
         """
@@ -114,6 +113,18 @@ class TavriaParser:
             for _ in self.__saved_objects
         }
         BaseFactory.refresh_parent_table(table)
+
+    def __mark_depricated(self) -> None:
+        if to_mark := [_ for _ in self.__deprecated if not _.deprecated]:
+            for _ in to_mark:
+                _.deprecated = True
+
+    def __unmark_deprecated(self) -> None:
+        self.__saved_objects.difference_update(self.__deprecated)
+        if to_unmark := [_ for _ in self.__saved_objects
+                         if _.deprecated]:
+            for _ in to_unmark:
+                _.deprecated = False
 
     async def __refresh_products(self) -> None:
         """TODO: Refactoring"""
@@ -137,11 +148,11 @@ class TavriaParser:
         self.__session.commit()
 
     async def __process_next_batch(self):
-        async with aiohttp_session_maker() as session:
+        async with u.aiohttp_session_maker() as session:
             tasks = (self.__single_factory_task(factory, session)
                      for factory in self.__next_batch)
             await asyncio.gather(*tasks)
-            tasks_are_finished()
+            u.tasks_are_finished()
 
     @property
     def __next_batch(self) -> Iterable[BaseFactory]:

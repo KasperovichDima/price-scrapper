@@ -1,9 +1,8 @@
 """Parser tests."""
-import asyncio
-
 import crud
 
-from parsers.tavria import TavriaParser
+from parsers.tavria import TavriaFolderParser
+from parsers.tavria import TavriaProductParser
 
 import pytest
 
@@ -19,11 +18,9 @@ class TestTavriaParser:
 
     @pytest.mark.asyncio
     async def test_parser_all_cases(self, fake_session, fake_parser_db):
-        await asyncio.sleep(0.1)
-
-        factory_creator = c.FactoryCreator_test(self.fake_home_url)
-
-        await TavriaParser(factory_creator).refresh_catalog(fake_session)
+        factories = c.FactoryCreator_test(self.fake_home_url)()
+        await TavriaFolderParser(factories, fake_session)()
+        await TavriaProductParser(factories, fake_session)()
         result_folders = await crud.get_folders(fake_session)
         result_products = await crud.get_products(fake_session)
         result_actual_folder_names = set(_.name for _ in result_folders
