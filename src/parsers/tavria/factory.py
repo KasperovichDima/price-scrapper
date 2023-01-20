@@ -28,7 +28,7 @@ class BaseFactory:
 
     _creating_type: ElType
     _creating_class: type[BaseCatalogElement] = Folder
-    _parents_to_id_table: Mapping[ObjectParents, int]
+    parent_table: Mapping[ObjectParents, int]
 
     def __init__(self, **kwargs) -> None:
         self._validate_init_data()
@@ -47,12 +47,6 @@ class BaseFactory:
                                      parent_id=self._parent_id,
                                      el_type=self._creating_type)
                 for name in self._object_names)
-
-    @classmethod
-    def refresh_parent_table(cls, table: Mapping[ObjectParents, int]) -> None:
-        """Set new parent to id table as a class variable."""
-
-        cls._parents_to_id_table = table
 
     def _validate_init_data(self) -> None:
         """Validates init data. Raises EmptyFactoryDataError
@@ -95,7 +89,7 @@ class SubcategoryFactory(BaseFactory):
     def _parent_id(self) -> int:
         parents = ObjectParents(grand_parent_name=None,
                                 parent_name=self._category_name)
-        return self._parents_to_id_table[parents]
+        return self.parent_table[parents]
 
 
 class GroupFactory(BaseFactory):
@@ -118,7 +112,7 @@ class GroupFactory(BaseFactory):
         gp_name = self._category_name if self._subcategory_name else None
         p_name = self._subcategory_name if self._subcategory_name\
             else self._category_name
-        return self._parents_to_id_table[ObjectParents(gp_name, p_name)]
+        return self.parent_table[ObjectParents(gp_name, p_name)]
 
 
 class ProductFactory(BaseFactory):
@@ -214,7 +208,7 @@ class ProductFactory(BaseFactory):
             if self._subcategory_name else self._category_name
         parents = ObjectParents(grand_parent_name=grand_parent_name,
                                 parent_name=self.group_name)
-        return self._parents_to_id_table[parents]
+        return self.parent_table[parents]
 
     def __bool__(self) -> bool:
         return all((self._url, self._category_name, self.group_name))
