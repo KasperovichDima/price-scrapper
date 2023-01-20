@@ -32,10 +32,10 @@ class BaseFactory:
 
     def __init__(self, **kwargs) -> None:
         self._validate_init_data()
-        self._object_names: set[str] = set()
+        self._object_names: list[str] = []
 
     def add_name(self, name: str) -> None:
-        self._object_names.add(name)
+        self._object_names.append(name)
 
     def get_objects(self, *args) -> BaseFactoryReturnType:
         """
@@ -151,7 +151,7 @@ class ProductFactory(BaseFactory):
         a_tags: ResultSet[Tag] = bs(self._html, 'lxml').find_all('a')
         correct_names = (self.__get_product_name(_)
                          for _ in a_tags if self.__get_product_name(_))
-        self._object_names.update(correct_names)  # type: ignore
+        self._object_names.extend(correct_names)  # type: ignore
 
     @staticmethod
     @lru_cache(1)

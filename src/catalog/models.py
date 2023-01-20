@@ -35,6 +35,7 @@ class Product(BaseCatalogElement):
 
     __tablename__ = "product"
 
+    # site_id = Column(Integer, index=True, nullable=False, unique=True)
     name = Column(String(150), index=True, nullable=False, unique=True)
     parent_id = Column(Integer, ForeignKey('folder.id', ondelete='CASCADE'),
                        nullable=False)
