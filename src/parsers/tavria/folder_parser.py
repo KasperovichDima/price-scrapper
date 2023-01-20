@@ -2,7 +2,7 @@ from catalog.models import Folder
 
 from project_typing import ElType
 
-from .tavria_base_catalog_parser import TavriaBaseCatalogParser
+from .base_catalog_parser import TavriaBaseCatalogParser
 
 
 class TavriaFolderParser(TavriaBaseCatalogParser):
