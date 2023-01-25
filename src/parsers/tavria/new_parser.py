@@ -37,7 +37,6 @@ class TavriaParser:
             for factory in self.factories[type_]:
                 await factory(object_box=self.object_box)
             await self.object_box.save_all()
-            print(f'refreshing after {type_}')  # TODO: Del
             await ParentTable.refresh_table(self.db_session)
 
     async def _refresh_products(self) -> None:

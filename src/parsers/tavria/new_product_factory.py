@@ -19,13 +19,6 @@ class ProductFactory(BaseFactory):
         self._url = url
         super().__init__(**kwds)
 
-    def _validate_init_data(self) -> None:
-        if all((self._category_name,
-                self._group_name,
-                self._url)):
-            return
-        super()._validate_init_data()
-
     async def __call__(self, aio_session: aiohttp.ClientSession, object_box) -> None:
         self._aio_session = aio_session
         self._object_box = object_box
@@ -43,8 +36,7 @@ class ProductFactory(BaseFactory):
         self._object_names.extend(tag_names)  # type: ignore
 
     async def get_page_html(self) -> None:
-        assert self._url  # TODO: remove
-        async with self._aio_session.get(self._url) as response:
+        async with self._aio_session.get(self._url) as response:  # type: ignore
             if response.status != 200:
                 raise HTTPException(503, f'Error while parsing {self._url}')
                 #  TODO: add log and email developer here
@@ -67,7 +59,6 @@ class ProductFactory(BaseFactory):
         """TODO: try to Remove paginator := self.paginator."""
         if not (paginator := self.paginator):
             return 0
-        # for tag in reversed(paginator):
         for tag in paginator[::-1]:
             try:
                 assert tag.attrs['aria-label'] == 'Next'
@@ -79,7 +70,7 @@ class ProductFactory(BaseFactory):
     def paginator(self) -> ResultSet:
         return bs(self._html, 'lxml')\
             .find('div', {'class': 'catalog__pagination'}).find_all('a')
-    
+
     async def get_paginated_content(self):
         tasks = (self.page_task(_) for _ in self._paginated_urls)
         await asyncio.gather(*tasks)

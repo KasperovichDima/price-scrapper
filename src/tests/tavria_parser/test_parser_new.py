@@ -9,7 +9,6 @@ from . import classes_new as c
 from . import reference as r
 
 
-
 # @pytest.mark.skip(reason="testing new parser.")
 class TestTavriaParser:
     """Test class for tavria parser."""

@@ -2,16 +2,14 @@
 from collections import defaultdict, deque
 from typing import Iterable
 
-from catalog.utils import get_class_by_type
-
 from bs4.element import Tag
+from parsers.tavria.new_product_factory import ProductFactory
 
 from project_typing import ElType
 
 from . import new_utils as u
-from .new_folder_factory import FolderFactory
-from .new_product_factory import ProductFactory
 from .new_base_factory import BaseFactory
+from .new_folder_factory import FolderFactory
 
 
 class FactoryCreator:
@@ -29,7 +27,8 @@ class FactoryCreator:
 
     def __init__(self, home_url: str) -> None:
         self.__tags = u.get_catalog_tags(home_url)
-        self._current_factories[ElType.CATEGORY] = FolderFactory(ElType.CATEGORY)
+        self._current_factories[ElType.CATEGORY]\
+            = FolderFactory(ElType.CATEGORY)
 
     def __call__(self) -> defaultdict[ElType, deque[BaseFactory]]:
         self.__create_factories()
@@ -85,14 +84,17 @@ class FactoryCreator:
             return False
 
     def _create_factory(self, type_: ElType):
-        create_cls = get_class_by_type(type_)
-        self._current_factories[type_] = create_cls(
+        schema = u.get_schema_for(type_)
+        init_payload = schema(
             el_type=type_,
-            url=u.get_url(self._current_tag),
             category_name=self._current_names[ElType.CATEGORY],
             subcategory_name=self._current_names[ElType.SUBCATEGORY],
-            group_name=self._current_names[ElType.GROUP]
+            group_name=self._current_names[ElType.GROUP],
+            url=u.get_url(self._current_tag)
         )
+        create_cls = ProductFactory if type_ is ElType.PRODUCT\
+            else FolderFactory
+        self._current_factories[type_] = create_cls(**init_payload.dict())
 
     def __close_last_factories(self) -> None:
         for _ in ElType:

@@ -9,7 +9,11 @@ import aiohttp
 from bs4 import BeautifulSoup as bs
 from bs4.element import Tag
 
+from parsers import schemas as s
+
 from project_typing import ElType
+
+from pydantic import BaseModel
 
 from . import constants as c
 
@@ -70,3 +74,19 @@ def aiohttp_session_maker() -> aiohttp.ClientSession:
 def tasks_are_finished() -> None:
     """Just raise TimeoutError, which will be normally captured."""
     raise asyncio.exceptions.TimeoutError
+
+
+def create_schema_getter():
+    schemas = {
+        ElType.CATEGORY: s.CategoryFactoryIn,
+        ElType.SUBCATEGORY: s.SubCategoryFactoryIn,
+        ElType.GROUP: s.GroupFactoryIn,
+        ElType.PRODUCT: s.ProductFactoryIn
+    }
+
+    def get_schema(type_: ElType) -> type[BaseModel]:
+        return schemas[type_]
+    return get_schema
+
+
+get_schema_for = create_schema_getter()

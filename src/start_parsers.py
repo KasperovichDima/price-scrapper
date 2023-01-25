@@ -9,6 +9,8 @@ from database import SessionLocal
 from database import TestSession
 from database import test_engine
 
+from parsers.tavria import NewFactoryCreator
+from parsers.tavria import TavriaParser
 from parsers.tavria import FactoryCreator
 from parsers.tavria import TavriaFolderParser
 from parsers.tavria import TavriaProductParser
@@ -18,7 +20,7 @@ from tests.constants import TAVRIA_TEST_URL  # noqa: F401
 session_maker = SessionLocal
 
 test_mode = False
-test_mode = True
+# test_mode = True
 if test_mode:
     target_metadata = Base.metadata  # type: ignore
     target_metadata.create_all(test_engine)
@@ -27,9 +29,8 @@ if test_mode:
 
 async def run_parser(session):
     now = time.perf_counter()
-    factories = FactoryCreator(TAVRIA_URL)()
-    await TavriaFolderParser(factories, session)()
-    await TavriaProductParser(factories, session)()
+    factories = NewFactoryCreator(TAVRIA_URL)()
+    await TavriaParser(factories, session).refresh_catalog()
     print(time.perf_counter() - now)
 
 

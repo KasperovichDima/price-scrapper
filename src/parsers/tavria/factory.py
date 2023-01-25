@@ -19,7 +19,6 @@ from project_typing import ElType
 
 from .tavria_typing import BaseFactoryReturnType
 from .tavria_typing import ObjectParents
-from ..exceptions import WrongFactoryConfigurationError
 
 
 class BaseFactory:
@@ -51,7 +50,7 @@ class BaseFactory:
     def _validate_init_data(self) -> None:
         """Validates init data. Raises EmptyFactoryDataError
         if required data miss or is empty."""
-        raise WrongFactoryConfigurationError('Some of init data args are empty.')
+        raise TypeError('Some of init data args are empty.')
 
     @cached_property
     def _parent_id(self) -> int | None: ...

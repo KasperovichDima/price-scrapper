@@ -1,10 +1,10 @@
 """Test mocks and changes to allow testing."""
 from typing import Callable
 
+from parsers.tavria import FolderFactory
 from parsers.tavria import NewFactoryCreator
 from parsers.tavria import ProductFactory
-from parsers.tavria import FolderFactory
-from parsers.tavria import utils as u
+from parsers.tavria import new_utils as u
 
 from project_typing import ElType
 
@@ -37,16 +37,18 @@ class ProductFactory_test(ProductFactory):
         assert self._url
         self._html = html_for(self._url)
 
+
 class FactoryCreator_test(NewFactoryCreator):
 
     def _create_factory(self, type_: ElType):
-        """TODO: Remove this shit in group_name!!!"""
-        create_cls = ProductFactory_test\
-            if type_ is ElType.PRODUCT else FolderFactory
-        self._current_factories[type_] = create_cls(
+        schema = u.get_schema_for(type_)
+        init_payload = schema(
             el_type=type_,
-            url=u.get_url(self._current_tag),
             category_name=self._current_names[ElType.CATEGORY],
             subcategory_name=self._current_names[ElType.SUBCATEGORY],
-            group_name=self._current_names[ElType.GROUP] if type_ is not ElType.GROUP else None
+            group_name=self._current_names[ElType.GROUP],
+            url=u.get_url(self._current_tag)
         )
+        create_cls = ProductFactory_test if type_ is ElType.PRODUCT\
+            else FolderFactory
+        self._current_factories[type_] = create_cls(**init_payload.dict())

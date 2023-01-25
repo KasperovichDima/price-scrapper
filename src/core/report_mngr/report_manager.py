@@ -34,16 +34,16 @@ class ReportManager:
         return self.__requests[user]
 
     async def add_request_data(self, user: User,
-                         in_data: RequestInScheme,
-                         session: Session) -> RequestOutScheme:
+                               in_data: RequestInScheme,
+                               session: Session) -> RequestOutScheme:
 
         request = self.get_request(user)
         request.add_objects(await get_request_objects(in_data, session))
         return request.out_data
 
     async def remove_request_data(self, user: User,
-                            in_data: RequestInScheme,
-                            session: Session) -> RequestOutScheme:
+                                  in_data: RequestInScheme,
+                                  session: Session) -> RequestOutScheme:
 
         request = self.get_request(user)
         request.remove_objects(await get_request_objects(in_data, session))

@@ -108,7 +108,7 @@ async def delete_user(email: str, session: Session) -> None:
     """Delete user, specified by email. Raises
     user_not_exists_exeption if email not in database."""
     if not (user := await get_user(email, session)):
-        raise c_ex.user_not_exists_exeption
+        raise c_ex.instance_not_exists_exeption
     session.delete(user)
     session.commit()
 
