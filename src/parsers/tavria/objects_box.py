@@ -50,6 +50,7 @@ class ObjectsBox:
             self.cur_type = obj_.el_type
 
     async def save_all(self) -> None:
+        """TODO: Objects must be saved on every parent id change."""
         await crud.add_instances(self.new_objects, self.db_session)
         self.change_deprecated_status()
         self.clear_all()
