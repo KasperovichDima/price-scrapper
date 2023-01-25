@@ -1,7 +1,7 @@
 """Tavria parser utils."""
 import asyncio
 from functools import lru_cache
-from typing import Callable, Iterable
+from typing import Iterable
 from urllib import request
 
 import aiohttp
@@ -12,7 +12,6 @@ from bs4.element import Tag
 from project_typing import ElType
 
 from . import constants as c
-from . import factory as f
 
 
 @lru_cache(1)
@@ -45,13 +44,6 @@ def get_url(tag: Tag) -> str | None:
         return url
     except (KeyError, AssertionError, AttributeError):
         return None
-
-
-def get_site_id(raw_url: str) -> int | None:
-    """Get site identificator .../{id}/."""
-    url = raw_url.removesuffix('/')
-    id_slice = slice(url.rfind('/') + 1, None)
-    return int(url[id_slice])
 
 
 def get_tag_type(tag: Tag) -> ElType | None:

@@ -19,7 +19,7 @@ from project_typing import ElType
 
 from .tavria_typing import BaseFactoryReturnType
 from .tavria_typing import ObjectParents
-from ..exceptions import EmptyFactoryDataError
+from ..exceptions import WrongFactoryConfigurationError
 
 
 class BaseFactory:
@@ -51,7 +51,7 @@ class BaseFactory:
     def _validate_init_data(self) -> None:
         """Validates init data. Raises EmptyFactoryDataError
         if required data miss or is empty."""
-        raise EmptyFactoryDataError('Some of init data args are empty.')
+        raise WrongFactoryConfigurationError('Some of init data args are empty.')
 
     @cached_property
     def _parent_id(self) -> int | None: ...
@@ -87,8 +87,8 @@ class SubcategoryFactory(BaseFactory):
 
     @cached_property
     def _parent_id(self) -> int:
-        parents = ObjectParents(grand_parent_name=None,
-                                parent_name=self._category_name)
+        parents = ObjectParents(gp_name=None,
+                                p_name=self._category_name)
         return self.parent_table[parents]
 
 
@@ -206,8 +206,8 @@ class ProductFactory(BaseFactory):
     def _parent_id(self) -> int:
         grand_parent_name = self._subcategory_name\
             if self._subcategory_name else self._category_name
-        parents = ObjectParents(grand_parent_name=grand_parent_name,
-                                parent_name=self.group_name)
+        parents = ObjectParents(gp_name=grand_parent_name,
+                                p_name=self.group_name)
         return self.parent_table[parents]
 
     def __bool__(self) -> bool:

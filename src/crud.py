@@ -10,7 +10,7 @@ from catalog.schemas import FolderContent
 
 import crud_exceptions as c_ex
 
-from project_typing import db_type
+from project_typing import ElType, db_type
 
 from retailer.models import Retailer
 
@@ -70,12 +70,15 @@ async def get_products(
 
 
 async def get_folders(session: Session,
-                      ids: Iterable[int] | None = None) -> list[Folder]:
+                      ids: Iterable[int] | None = None,
+                      el_types: Iterable[ElType] | None = None,
+                      ) -> list[Folder]:
     """
-    Get folder objects by folder ids. If no
+    Get folder objects by specified parameters. If no
     ids are specified - all folders wil be returned.
     """
-    return await get_elements(Folder, session, id=ids)
+    return await get_elements(Folder, session,
+                              id=ids, el_type=el_types)
 
 
 async def get_retailers(ids: list[int],

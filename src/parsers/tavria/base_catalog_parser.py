@@ -52,8 +52,8 @@ class TavriaBaseCatalogParser(ABC):
         """
         id_to_name_table = {_.id: _.name for _ in self._db_objects}
         table = {ObjectParents(
-            grand_parent_name=id_to_name_table[_.parent_id]
-            if _.parent_id else None, parent_name=_.name): _.id
+            gp_name=id_to_name_table[_.parent_id]
+            if _.parent_id else None, p_name=_.name): _.id
             for _ in self._db_objects
         }
         BaseFactory.parent_table = table

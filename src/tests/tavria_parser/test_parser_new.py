@@ -9,6 +9,8 @@ from . import classes_new as c
 from . import reference as r
 
 
+
+# @pytest.mark.skip(reason="testing new parser.")
 class TestTavriaParser:
     """Test class for tavria parser."""
 
@@ -18,10 +20,7 @@ class TestTavriaParser:
     @pytest.mark.asyncio
     async def test_parser_all_cases(self, fake_session, fake_parser_db):
         factories = c.FactoryCreator_test(self.fake_home_url)()
-        await TavriaParser(factories, fake_session).refresh_folders()
-        await TavriaParser(factories, fake_session).refresh_products()
-        # await TavriaFolderParser(factories, fake_session)()
-        # await TavriaProductParser(factories, fake_session)()
+        await TavriaParser(factories, fake_session).refresh_catalog()
         result_folders = await crud.get_folders(fake_session)
         result_products = await crud.get_products(fake_session)
         result_actual_folder_names = set(_.name for _ in result_folders

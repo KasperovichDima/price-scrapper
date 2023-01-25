@@ -2,12 +2,16 @@
 from collections import defaultdict, deque
 from typing import Iterable
 
+from catalog.utils import get_class_by_type
+
 from bs4.element import Tag
 
 from project_typing import ElType
 
 from . import new_utils as u
-from .new_factory import Factory
+from .new_folder_factory import FolderFactory
+from .new_product_factory import ProductFactory
+from .new_base_factory import BaseFactory
 
 
 class FactoryCreator:
@@ -19,15 +23,15 @@ class FactoryCreator:
     __tags: Iterable[Tag]
     _current_tag: Tag
     _current_names = dict.fromkeys(ElType)
-    _current_factories: dict[ElType, Factory] = {}
-    __factories: defaultdict[ElType, deque[Factory]]\
+    _current_factories: dict[ElType, BaseFactory] = {}
+    __factories: defaultdict[ElType, deque[BaseFactory]]\
         = defaultdict(deque)
 
     def __init__(self, home_url: str) -> None:
         self.__tags = u.get_catalog_tags(home_url)
-        self._current_factories[ElType.CATEGORY] = Factory(ElType.CATEGORY)
+        self._current_factories[ElType.CATEGORY] = FolderFactory(ElType.CATEGORY)
 
-    def __call__(self) -> defaultdict[ElType, deque[Factory]]:
+    def __call__(self) -> defaultdict[ElType, deque[BaseFactory]]:
         self.__create_factories()
         self.__close_last_factories()
         return self.__factories
@@ -36,10 +40,9 @@ class FactoryCreator:
         """Prepare catalog factories from site information."""
 
         for tag in self.__tags:
-            if not self.__tag_can_be_processed(tag_type := u.get_tag_type(tag)):  # noqa: E501
-                continue
-            self._current_tag = tag
-            self.__process_tag(tag_type)  # type: ignore
+            if self.__tag_can_be_processed(tag_type := u.get_tag_type(tag)):  # noqa: E501
+                self._current_tag = tag
+                self.__process_tag(tag_type)  # type: ignore
 
     def __tag_can_be_processed(self, tag_type: ElType | None = None) -> bool:
         return tag_type in self._current_factories
@@ -82,7 +85,8 @@ class FactoryCreator:
             return False
 
     def _create_factory(self, type_: ElType):
-        self._current_factories[type_] = Factory(
+        create_cls = get_class_by_type(type_)
+        self._current_factories[type_] = create_cls(
             el_type=type_,
             url=u.get_url(self._current_tag),
             category_name=self._current_names[ElType.CATEGORY],

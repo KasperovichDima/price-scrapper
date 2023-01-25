@@ -2,7 +2,8 @@
 from typing import Callable
 
 from parsers.tavria import NewFactoryCreator
-from parsers.tavria import Factory
+from parsers.tavria import ProductFactory
+from parsers.tavria import FolderFactory
 from parsers.tavria import utils as u
 
 from project_typing import ElType
@@ -30,35 +31,22 @@ def __create_html_getter() -> Callable[[str], str]:
 html_for = __create_html_getter()
 
 
-class ProductFactory_test(Factory):
+class ProductFactory_test(ProductFactory):
 
     async def get_page_html(self) -> None:
         assert self._url
         self._html = html_for(self._url)
 
-# def __create_class_getter() -> Callable[[ElType], type[f.BaseFactory]]:
-#     types: dict[ElType, type[f.BaseFactory]] = {
-#         ElType.CATEGORY: f.CategoryFactory,
-#         ElType.SUBCATEGORY: f.SubcategoryFactory,
-#         ElType.GROUP: f.GroupFactory,
-#         ElType.PRODUCT: ProductFactory_test
-#     }
-
-#     def get_class(type_: ElType) -> type[f.BaseFactory]:
-#         return types[type_]
-#     return get_class
-
-
-# class_for = __create_class_getter()
-
-
 class FactoryCreator_test(NewFactoryCreator):
 
     def _create_factory(self, type_: ElType):
-        self._current_factories[type_] = Factory(
+        """TODO: Remove this shit in group_name!!!"""
+        create_cls = ProductFactory_test\
+            if type_ is ElType.PRODUCT else FolderFactory
+        self._current_factories[type_] = create_cls(
             el_type=type_,
             url=u.get_url(self._current_tag),
             category_name=self._current_names[ElType.CATEGORY],
             subcategory_name=self._current_names[ElType.SUBCATEGORY],
-            group_name=self._current_names[ElType.GROUP]
+            group_name=self._current_names[ElType.GROUP] if type_ is not ElType.GROUP else None
         )

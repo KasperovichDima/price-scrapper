@@ -14,6 +14,7 @@ from bs4 import BeautifulSoup as bs
 from bs4 import ResultSet
 from bs4.element import Tag
 from fastapi import HTTPException
+from .parent_table import ParentTable
 
 class Factory:
 
@@ -22,7 +23,7 @@ class Factory:
     _db_session: Session
 
     _new_objects: list[BaseWithID]
-    __parent_content: list[BaseWithID]
+    _parent_content: list[BaseWithID]
 
     _html: str
 
@@ -45,7 +46,8 @@ class Factory:
 
     async def __call__(self, **kwargs) -> None:
         self._db_session = kwargs['db_session']
-        await self._refresh_parent_table()
+        await self.get_parent_content()
+        # await self._refresh_parent_table()
         # 1. take data from page by url
         if 'aio_session' in kwargs:
             self._aio_session = kwargs['aio_session']
@@ -62,15 +64,13 @@ class Factory:
     def add_name(self, name: str) -> None:
         self._object_names.append(name)
 
-    async def _refresh_parent_table(self) -> None:
-        if self._el_type is ElType.PRODUCT:
-            return
-        if not (id_to_name_table := {_.id: _.name for _ in await self._parent_content}):
-            return
-        self.parent_table = {ObjectParents(
-            grand_parent_name=id_to_name_table[_.parent_id]
-            if _.parent_id else None, parent_name=_.name): _.id
-            for _ in await self._parent_content}
+    async def get_parent_content(self) -> None:
+        if self _el_type
+        self. _parent_content = await crud.get_elements(
+            self._create_class,
+            self._db_session,
+            el_type=[self._el_type]
+        )
 
     async def _get_page_data(self) -> None:
         """Get page data using aio_session if _url is specified."""
@@ -167,23 +167,23 @@ class Factory:
     def _parent_id(self) -> int | None:
         if not self._parents:
             return None
-        return self.parent_table[self._parents]
+        return ParentTable.__parent_table[self._parents]
 
     @cached_property
     def _parents(self) -> ObjectParents:   
         """TODO: rename grand_parent_name to gp_name, parent_name to p_name"""
         if self._group_name:
             gp_name = self._subcategory_name if self._subcategory_name else self._category_name
-            return ObjectParents(grand_parent_name=gp_name, parent_name=self._group_name)
+            return ObjectParents(gp_name=gp_name, p_name=self._group_name)
         else:
             p_name = self._subcategory_name if self._subcategory_name else self._category_name
             gp_name = self._category_name if self._subcategory_name else None
-            return ObjectParents(grand_parent_name=gp_name, parent_name=p_name)
+            return ObjectParents(gp_name=gp_name, p_name=p_name)
 
     async def _save_objects(self) -> None:
         await crud.add_instances(self._new_objects, self._db_session)
         if self._el_type is not ElType.PRODUCT:
-            self.__parent_content.extend(self._new_objects)  # TODO: Not safe!
+            # self.__parent_content.extend(self._new_objects)  # TODO: Not safe!
 
     def __repr__(self) -> str:
         return (f'{self._el_type.name}: '

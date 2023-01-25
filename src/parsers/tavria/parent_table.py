@@ -11,13 +11,21 @@ class ParentTable:
     In this table you can find id of parent
     using parent and/or grandparent names."""
 
-    parent_table: dict[ObjectParents, int]
+    __parent_table: dict[ObjectParents, int]
 
     @classmethod
     async def refresh_table(cls, db_session: Session) -> None:
+        """Refresh table after saving new data to db."""
+        print('refreshing table...')  # TODO: Delete
         folders = await crud.get_folders(db_session)
+        print(f'new table contains: {folders}')
         id_to_name_table = {_.id: _.name for _ in folders}
-        cls.parent_table = {ObjectParents(
-            grand_parent_name=id_to_name_table[_.parent_id]
-            if _.parent_id else None, parent_name=_.name): _.id
+        cls.__parent_table = {ObjectParents(
+            gp_name=id_to_name_table[_.parent_id]
+            if _.parent_id else None, p_name=_.name): _.id
             for _ in folders}
+        pass
+
+    @classmethod
+    def get_table(cls) -> dict[ObjectParents, int]:
+        return cls.__parent_table

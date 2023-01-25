@@ -47,13 +47,6 @@ def get_url(tag: Tag) -> str | None:
         return None
 
 
-def get_site_id(raw_url: str) -> int | None:
-    """Get site identificator .../{id}/."""
-    url = raw_url.removesuffix('/')
-    id_slice = slice(url.rfind('/') + 1, None)
-    return int(url[id_slice])
-
-
 def get_tag_type(tag: Tag) -> ElType | None:
     if tag.name == 'a' and 'catalog' in tag.get('href'):
         return ElType.GROUP

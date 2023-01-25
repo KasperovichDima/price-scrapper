@@ -1,6 +1,5 @@
 """Base parser exceptions."""
 
 
-class EmptyFactoryDataError(BaseException):
-    """Raises upon attemt to create
-    catalog factory with empty init data."""
+class WrongFactoryConfigurationError(BaseException):
+    """Raises upon attemt to create factory with improper init data."""

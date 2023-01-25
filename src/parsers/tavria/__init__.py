@@ -10,4 +10,6 @@ from .product_parser import TavriaProductParser       # noqa: F401
 
 from .new_parser import TavriaParser                  # noqa: F401
 from .new_factory_creator import FactoryCreator as NewFactoryCreator      # noqa: F401
-from .new_factory import Factory
+from .new_folder_factory import FolderFactory
+from .new_product_factory import ProductFactory
+# from .new_factory import Factory
