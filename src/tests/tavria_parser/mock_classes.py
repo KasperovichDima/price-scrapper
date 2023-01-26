@@ -2,9 +2,9 @@
 from typing import Callable
 
 from parsers.tavria import FolderFactory
-from parsers.tavria import NewFactoryCreator
+from parsers.tavria import FactoryCreator
 from parsers.tavria import ProductFactory
-from parsers.tavria import new_utils as u
+from parsers.tavria import utils as u
 
 from project_typing import ElType
 
@@ -38,7 +38,7 @@ class ProductFactory_test(ProductFactory):
         self._html = html_for(self._url)
 
 
-class FactoryCreator_test(NewFactoryCreator):
+class FactoryCreator_test(FactoryCreator):
 
     def _create_factory(self, type_: ElType):
         schema = u.get_schema_for(type_)

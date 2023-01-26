@@ -1,13 +1,18 @@
 import asyncio
 from functools import cached_property, lru_cache
 from typing import Generator
+
 import aiohttp
+
 from bs4 import BeautifulSoup as bs
 from bs4 import ResultSet
 from bs4.element import Tag
+
 from fastapi import HTTPException
 
-from .new_base_factory import BaseFactory
+from parsers.exceptions import UnexpectedParserError
+
+from .base_factory import BaseFactory
 
 
 class ProductFactory(BaseFactory):
@@ -19,7 +24,8 @@ class ProductFactory(BaseFactory):
         self._url = url
         super().__init__(**kwds)
 
-    async def __call__(self, aio_session: aiohttp.ClientSession, object_box) -> None:
+    async def __call__(self, aio_session: aiohttp.ClientSession,
+                       object_box) -> None:
         self._aio_session = aio_session
         self._object_box = object_box
         await self._get_page_data()
@@ -36,7 +42,7 @@ class ProductFactory(BaseFactory):
         self._object_names.extend(tag_names)  # type: ignore
 
     async def get_page_html(self) -> None:
-        async with self._aio_session.get(self._url) as response:  # type: ignore
+        async with self._aio_session.get(self._url) as response:  # type: ignore  # noqa: E501
             if response.status != 200:
                 raise HTTPException(503, f'Error while parsing {self._url}')
                 #  TODO: add log and email developer here
@@ -49,7 +55,7 @@ class ProductFactory(BaseFactory):
         return tag.text.strip()\
             if 'product' in tag.get('href', '')\
             and not tag.text.isspace() else None
-    
+
     @property
     def __page_is_paginated(self) -> bool:
         return bool(self.paginator_size)
@@ -65,6 +71,7 @@ class ProductFactory(BaseFactory):
                 return int(tag.get('href').split('=')[-1])
             except (AssertionError, KeyError):
                 continue
+        raise UnexpectedParserError
 
     @cached_property
     def paginator(self) -> ResultSet:

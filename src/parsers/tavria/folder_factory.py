@@ -1,4 +1,4 @@
-from .new_base_factory import BaseFactory
+from .base_factory import BaseFactory
 
 
 class FolderFactory(BaseFactory):

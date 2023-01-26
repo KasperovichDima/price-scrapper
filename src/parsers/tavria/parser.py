@@ -8,11 +8,11 @@ from project_typing import ElType
 
 from sqlalchemy.orm import Session
 
-from .new_base_factory import BaseFactory
-from .parent_table import ParentTable
-from .objects_box import ObjectsBox
-from . import new_utils as u
 from . import constants as c
+from . import utils as u
+from .base_factory import BaseFactory
+from .objects_box import ObjectsBox
+from .parent_table import ParentTable
 
 
 class TavriaParser:

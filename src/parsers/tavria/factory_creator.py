@@ -3,12 +3,13 @@ from collections import defaultdict, deque
 from typing import Iterable
 
 from bs4.element import Tag
+from parsers.tavria.product_factory import ProductFactory
 
 from project_typing import ElType
 
 from . import utils as u
-from .factory import BaseFactory
-from .factory import CategoryFactory
+from .base_factory import BaseFactory
+from .folder_factory import FolderFactory
 
 
 class FactoryCreator:
@@ -26,22 +27,21 @@ class FactoryCreator:
 
     def __init__(self, home_url: str) -> None:
         self.__tags = u.get_catalog_tags(home_url)
-        self._current_factories[ElType.CATEGORY] = CategoryFactory()
+        self._current_factories[ElType.CATEGORY]\
+            = FolderFactory(ElType.CATEGORY)
 
     def __call__(self) -> defaultdict[ElType, deque[BaseFactory]]:
         self.__create_factories()
         self.__close_last_factories()
-
         return self.__factories
 
     def __create_factories(self) -> None:
         """Prepare catalog factories from site information."""
 
         for tag in self.__tags:
-            if not self.__tag_can_be_processed(tag_type := u.get_tag_type(tag)):  # noqa: E501
-                continue
-            self._current_tag = tag
-            self.__process_tag(tag_type)  # type: ignore
+            if self.__tag_can_be_processed(tag_type := u.get_tag_type(tag)):  # noqa: E501
+                self._current_tag = tag
+                self.__process_tag(tag_type)  # type: ignore
 
     def __tag_can_be_processed(self, tag_type: ElType | None = None) -> bool:
         return tag_type in self._current_factories
@@ -84,12 +84,17 @@ class FactoryCreator:
             return False
 
     def _create_factory(self, type_: ElType):
-        self._current_factories[type_] = u.factory_class_for(type_)(
-            url=u.get_url(self._current_tag),
+        schema = u.get_schema_for(type_)
+        init_payload = schema(
+            el_type=type_,
             category_name=self._current_names[ElType.CATEGORY],
             subcategory_name=self._current_names[ElType.SUBCATEGORY],
-            group_name=self._current_names[ElType.GROUP]
+            group_name=self._current_names[ElType.GROUP],
+            url=u.get_url(self._current_tag)
         )
+        create_cls = ProductFactory if type_ is ElType.PRODUCT\
+            else FolderFactory
+        self._current_factories[type_] = create_cls(**init_payload.dict())
 
     def __close_last_factories(self) -> None:
         for _ in ElType:

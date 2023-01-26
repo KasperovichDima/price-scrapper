@@ -1,7 +1,7 @@
 """Tavria parser utils."""
 import asyncio
 from functools import lru_cache
-from typing import Callable, Iterable
+from typing import Iterable
 from urllib import request
 
 import aiohttp
@@ -9,10 +9,13 @@ import aiohttp
 from bs4 import BeautifulSoup as bs
 from bs4.element import Tag
 
+from parsers import schemas as s
+
 from project_typing import ElType
 
+from pydantic import BaseModel
+
 from . import constants as c
-from . import factory as f
 
 
 @lru_cache(1)
@@ -73,17 +76,17 @@ def tasks_are_finished() -> None:
     raise asyncio.exceptions.TimeoutError
 
 
-def __create_factory_class_getter() -> Callable[[ElType], type[f.BaseFactory]]:
-    types: dict[ElType, type[f.BaseFactory]] = {
-        ElType.CATEGORY: f.CategoryFactory,
-        ElType.SUBCATEGORY: f.SubcategoryFactory,
-        ElType.GROUP: f.GroupFactory,
-        ElType.PRODUCT: f.ProductFactory
+def create_schema_getter():
+    schemas = {
+        ElType.CATEGORY: s.CategoryFactoryIn,
+        ElType.SUBCATEGORY: s.SubCategoryFactoryIn,
+        ElType.GROUP: s.GroupFactoryIn,
+        ElType.PRODUCT: s.ProductFactoryIn
     }
 
-    def get_class(type_: ElType) -> type[f.BaseFactory]:
-        return types[type_]
-    return get_class
+    def get_schema(type_: ElType) -> type[BaseModel]:
+        return schemas[type_]
+    return get_schema
 
 
-factory_class_for = __create_factory_class_getter()
+get_schema_for = create_schema_getter()
