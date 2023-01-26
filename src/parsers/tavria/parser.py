@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from . import constants as c
 from . import utils as u
-from .base_factory import BaseFactory
+from .factory import BaseFactory
 from .objects_box import ObjectsBox
 from .parent_table import ParentTable
 

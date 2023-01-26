@@ -3,13 +3,11 @@ from collections import defaultdict, deque
 from typing import Iterable
 
 from bs4.element import Tag
-from parsers.tavria.product_factory import ProductFactory
 
 from project_typing import ElType
 
 from . import utils as u
-from .base_factory import BaseFactory
-from .folder_factory import FolderFactory
+from .factory import BaseFactory, FolderFactory, ProductFactory
 
 
 class FactoryCreator:
