@@ -7,17 +7,15 @@ import pytest
 
 from . import mock_classes as c
 from . import reference as r
+from .constants import TAVRIA_TEST_URL
 
 
 class TestTavriaParser:
     """Test class for tavria parser."""
 
-    fake_home_url = 'file:///home/kasper/Documents/projects/monitoring'\
-                    '/src/tests/tavria_parser/html/tavria_home.html'
-
     @pytest.mark.asyncio
     async def test_parser_all_cases(self, fake_session, fake_parser_db):
-        factories = c.FactoryCreator_test(self.fake_home_url)()
+        factories = c.FactoryCreator_test(TAVRIA_TEST_URL)()
         await TavriaParser(factories, fake_session).refresh_catalog()
         result_folders = await crud.get_folders(fake_session)
         result_products = await crud.get_products(fake_session)

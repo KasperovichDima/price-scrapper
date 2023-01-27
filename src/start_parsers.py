@@ -15,7 +15,7 @@ from parsers.tavria import FactoryCreator
 from parsers.tavria import TavriaFolderParser
 from parsers.tavria import TavriaProductParser
 
-from tests.constants import TAVRIA_TEST_URL  # noqa: F401
+from test.constants import TAVRIA_TEST_URL  # noqa: F401
 
 session_maker = SessionLocal
 

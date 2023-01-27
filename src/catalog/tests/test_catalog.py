@@ -7,8 +7,9 @@ import crud
 
 import pytest
 
+from conftest import client
+
 from . import references as r
-from ..conftest import client
 
 
 class TestCatalog:

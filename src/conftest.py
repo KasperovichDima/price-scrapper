@@ -1,4 +1,4 @@
-"""Base conftest."""
+"""Base conftest file."""
 import asyncio
 
 from authentication.models import User

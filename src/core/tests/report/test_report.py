@@ -1,9 +1,10 @@
 """Report tests."""
+from conftest import client
+
 from core.schemas import ReportHeaderScheme
+from core.tests import GET_REPORT_URL
 
 from .references import get_report_ok_ref
-from .. import constants as c
-from ..conftest import client
 
 
 class TestReport:
@@ -14,7 +15,7 @@ class TestReport:
                            fake_request_data, fake_prices):
         """Correct attempt to get report."""
 
-        response = client.post(c.GET_REPORT_URL, data=fake_header.json(),
+        response = client.post(GET_REPORT_URL, data=fake_header.json(),
                                headers=access_token)
         rsp_json = response.json()
 

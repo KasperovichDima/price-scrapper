@@ -1,8 +1,8 @@
 """Test mocks and changes to allow testing."""
 from typing import Callable
 
-from parsers.tavria import FolderFactory
 from parsers.tavria import FactoryCreator
+from parsers.tavria import FolderFactory
 from parsers.tavria import ProductFactory
 from parsers.tavria import utils as u
 
