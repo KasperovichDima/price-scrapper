@@ -6,6 +6,7 @@ from catalog.models import BaseCatalogElement, Folder, Product
 import crud
 
 from project_typing import ElType
+from project_typing import folder_types
 
 import pytest
 
@@ -56,5 +57,5 @@ def fake_parser_db(fake_session):
     ]
     asyncio.run(crud.add_instances(content, fake_session))
     yield content
-    folders = [_ for _ in content if _.el_type is not ElType.PRODUCT]
+    folders = [_ for _ in content if _.el_type in folder_types]
     asyncio.run(crud.delete_cls_instances(folders, fake_session))

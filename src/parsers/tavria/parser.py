@@ -5,6 +5,7 @@ from typing import MutableSequence
 from parsers.constants import MAIN_PARSER
 
 from project_typing import ElType
+from project_typing import folder_types
 
 from sqlalchemy.orm import Session
 
@@ -33,8 +34,8 @@ class TavriaParser:
         await self._refresh_products()
 
     async def _refresh_folders(self) -> None:
-        for type_ in (_ for _ in ElType if _ is not ElType.PRODUCT):
-            for factory in self.factories[type_]:
+        for _ in folder_types:
+            for factory in self.factories[_]:
                 await factory(object_box=self.object_box)
             await self.object_box.save_all()
             await ParentTable.refresh_table(self.db_session)
