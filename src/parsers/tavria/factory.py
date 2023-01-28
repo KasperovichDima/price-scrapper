@@ -78,6 +78,14 @@ class BaseFactory:
     def __bool__(self) -> bool:
         return bool(self._object_names)
 
+    def __hash__(self) -> int:
+        return hash((self._category_name,
+                     self._subcategory_name,
+                     self._group_name))
+
+    def __eq__(self, __o: object) -> bool:
+        return hash(self) == hash(__o)
+
 
 class FolderFactory(BaseFactory):
 

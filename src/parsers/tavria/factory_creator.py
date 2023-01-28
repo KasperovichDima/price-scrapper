@@ -5,6 +5,7 @@ from typing import Iterable
 from bs4.element import Tag
 
 from project_typing import ElType
+from project_typing import folder_types
 
 from . import utils as u
 from .factory import BaseFactory, FolderFactory, ProductFactory
@@ -16,27 +17,29 @@ class FactoryCreator:
     Parses tags, extracts data.
     Prapares data for objects creation.
     """
-    __tags: Iterable[Tag]
+    _tags: Iterable[Tag]
     _current_tag: Tag
-    _current_names = dict.fromkeys(ElType)
+    _current_names = dict.fromkeys(folder_types)
     _current_factories: dict[ElType, BaseFactory] = {}
-    __factories: defaultdict[ElType, deque[BaseFactory]]\
+    _factories: defaultdict[ElType, deque[BaseFactory]]\
         = defaultdict(deque)
 
     def __init__(self, home_url: str) -> None:
-        self.__tags = u.get_catalog_tags(home_url)
+        self._tags = u.get_catalog_tags(home_url)
         self._current_factories[ElType.CATEGORY]\
             = FolderFactory(ElType.CATEGORY)
 
     def __call__(self) -> defaultdict[ElType, deque[BaseFactory]]:
         self.__create_factories()
         self.__close_last_factories()
-        return self.__factories
+        assert len(self._factories[ElType.GROUP])\
+            == len(set(self._factories[ElType.GROUP]))
+        return self._factories
 
     def __create_factories(self) -> None:
         """Prepare catalog factories from site information."""
 
-        for tag in self.__tags:
+        for tag in self._tags:
             if self.__tag_can_be_processed(tag_type := u.get_tag_type(tag)):  # noqa: E501
                 self._current_tag = tag
                 self.__process_tag(tag_type)  # type: ignore
@@ -66,20 +69,31 @@ class FactoryCreator:
     def __change_current_name(self, type_: ElType) -> None:
         self._current_names[type_] = self._current_tag.text.strip()
 
-    def __recreate_factory(self, type_: ElType):
-        self.__close_factory(type_)
-        self._create_factory(type_)
+    def __recreate_factory(self, type_: ElType) -> None:
+        if self.__this_factory_not_exists(type_):
+            self.__close_factory(type_)
+            self._create_factory(type_)
+
+    def __this_factory_not_exists(self, type_: ElType) -> bool:
+        """Will return True if current names are
+        not equal to current factory parent names."""
+
+        try:
+            return not self.__check_factory(type_)
+        except KeyError:
+            return True
+
+    def __check_factory(self, type_: ElType) -> bool:
+        parent_names = tuple(self._current_names[_] if _ is not type_ else None
+                             for _ in folder_types)
+        return hash(parent_names) == hash(self._current_factories[type_])
 
     def __close_factory(self, type_: ElType) -> None:
-        if self.__factory_is_ready_to_close(type_):
-            self.__factories[type_].append(self._current_factories.pop(type_))
+        if self.__factory_is_ok(type_):
+            self._factories[type_].append(self._current_factories.pop(type_))
 
-    def __factory_is_ready_to_close(self, type_: ElType) -> bool:
-        try:
-            assert self._current_factories[type_]
-            return True
-        except (KeyError, AssertionError):
-            return False
+    def __factory_is_ok(self, type_: ElType) -> bool:
+        return bool(self._current_factories.get(type_, None))
 
     def _create_factory(self, type_: ElType):
         schema = u.get_schema_for(type_)

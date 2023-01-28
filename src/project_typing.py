@@ -20,4 +20,7 @@ class ElType(Enum):
     PRODUCT = auto()
 
 
+folder_types = [_ for _ in ElType if _ is not ElType.PRODUCT]
+
+
 db_type = TypeVar('db_type')
