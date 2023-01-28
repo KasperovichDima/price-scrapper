@@ -20,15 +20,15 @@ class ObjectsBox:
     """Takes care of new objects, their validating,
     saving, actualization and deactualization."""
 
-    __slots__ = ('_cur_type', '_now_deprecated', '_in_db_objects',
-                 '_objects_to_save', '_db_session')
+    __slots__ = ('_cur_type', '_cur_parent_id', '_now_deprecated',
+                 '_in_db_objects', '_objects_to_save', '_db_session')
 
     def __init__(self, db_session: Session) -> None:
         self._db_session = db_session
         self._cur_type: Column | None = None
-
-        self._now_deprecated: set[BaseCatalogElement] = set()
-        self._in_db_objects: set[BaseCatalogElement] = set()
+        self._cur_parent_id = int()  # just for int initialization
+        self._now_deprecated: set[BaseCatalogElement]
+        self._in_db_objects: set[BaseCatalogElement]
 
         self._objects_to_save: list[BaseCatalogElement] = []
 
@@ -40,48 +40,47 @@ class ObjectsBox:
         # TODO: We can switch _new_objects to
         #       set to avoid duplicated names problem.
 
-        box_is_ready = False
+        configured = False
         for obj_ in objects:
-            if not box_is_ready:
+            if not configured:
                 await self._reconfigure_box(obj_)
-                box_is_ready = True
+                configured = True
             self._in_db_objects.remove(obj_) if obj_ in self._in_db_objects\
                 else self._objects_to_save.append(obj_)
+        await self._save()
 
     async def _reconfigure_box(self, obj_: BaseCatalogElement) -> None:
         """Check new objects type and refresh self fields, if required."""
+
+        def reconfig_is_required(obj_: BaseCatalogElement) -> bool:
+            return self._cur_type is not obj_.el_type\
+                and self._cur_parent_id != obj_.parent_id
+
         async def refresh_db_objects():
             cls_ = get_class_by_type(obj_.el_type)
             type_ = None if cls_ is Product else [obj_.el_type]  # FIXME
-            objects = await crud.get_elements(cls_, self._db_session,
-                                              el_type=type_)
-            self._in_db_objects.update(objects)
+            p_id = [obj_.parent_id] if obj_.parent_id else None
+            self._in_db_objects = set(await crud.get_elements(
+                cls_=cls_, session=self._db_session,
+                el_type=type_, parent_id=p_id
+            ))
 
         def refresh_deprecated():
             self._now_deprecated = {_ for _ in self._in_db_objects
                                     if _.deprecated}
 
-        if self._cur_type is not obj_.el_type:
+        if reconfig_is_required(obj_):
             await refresh_db_objects()
             refresh_deprecated()
-            self._cur_type = obj_.el_type
+            self._cur_type, self._cur_parent_id = obj_.el_type, obj_.parent_id
 
-    async def save_all(self) -> None:
-        """Save new objects to databaseand actualize their status.
-        TODO: Objects must be saved on every parent id change."""
+    async def _save(self) -> None:
+        """Save new objects to databaseand actualize their status."""
         await crud.add_instances(self._objects_to_save, self._db_session)
-        self._actualize()
-        self._clear_all()
-
-    def _actualize(self) -> None:
+        self._objects_to_save.clear()
         to_deprecate = [_ for _ in self._in_db_objects if not _.deprecated]
         to_actualize = self._now_deprecated - self._in_db_objects
         if to_deprecate or to_actualize:
             for _ in list(itertools.chain(to_deprecate, to_actualize)):
                 _.deprecated = not _.deprecated
             self._db_session.commit()
-
-    def _clear_all(self) -> None:
-        self._now_deprecated.clear()
-        self._in_db_objects.clear()
-        self._objects_to_save.clear()
