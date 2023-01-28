@@ -7,7 +7,10 @@ from bs4.element import Tag
 from project_typing import ElType
 from project_typing import folder_types
 
+from sqlalchemy.orm import Session
+
 from . import utils as u
+from .object_box import ObjectBox
 from .factory import BaseFactory, FolderFactory, ProductFactory
 
 
@@ -25,13 +28,24 @@ class FactoryCreator:
         = defaultdict(deque)
 
     def __init__(self, home_url: str) -> None:
+        """TODO: Home url should be taken from retailer db object."""
         self._tags = u.get_catalog_tags(home_url)
+
+    def __call__(self, db_session: Session) -> defaultdict[ElType, deque[BaseFactory]]:
+        BaseFactory.object_box = ObjectBox(db_session)
         self._current_factories[ElType.CATEGORY]\
             = FolderFactory(ElType.CATEGORY)
-
-    def __call__(self) -> defaultdict[ElType, deque[BaseFactory]]:
         self.__create_factories()
         self.__close_last_factories()
+
+        s = set()
+        for _ in self._factories[ElType.GROUP]:
+            if _ not in s:
+                s.add(_)
+            else:
+                print(_)
+
+
         assert len(self._factories[ElType.GROUP])\
             == len(set(self._factories[ElType.GROUP]))
         return self._factories

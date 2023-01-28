@@ -1,6 +1,4 @@
 import asyncio
-from collections.abc import Mapping
-from typing import MutableSequence
 
 from parsers.constants import MAIN_PARSER
 
@@ -11,33 +9,31 @@ from sqlalchemy.orm import Session
 
 from . import constants as c
 from . import utils as u
+from .constants import TAVRIA_URL
 from .factory import BaseFactory
-from .objects_box import ObjectsBox
+from .factory_creator import FactoryCreator
 from .parent_table import ParentTable
 
 
 class TavriaParser:
 
+    _factory_creator = FactoryCreator(TAVRIA_URL)
     _factory_batch: set[BaseFactory]
 
-    def __init__(self,
-                 factories: Mapping[ElType, MutableSequence[BaseFactory]],
-                 db_session: Session) -> None:
-        self.factories = factories
+    def __init__(self, db_session: Session) -> None:
         self.db_session = db_session
-        self.object_box = ObjectsBox(db_session)
 
     async def refresh_catalog(self) -> None:
         if MAIN_PARSER != 'Tavria':
             return
+        self.factories = self._factory_creator(self.db_session)
         await self._refresh_folders()
         await self._refresh_products()
 
     async def _refresh_folders(self) -> None:
         for _ in folder_types:
             for factory in self.factories[_]:
-                await factory(object_box=self.object_box)
-            await self.object_box.save_all()
+                await factory()
             await ParentTable.refresh_table(self.db_session)
 
     async def _refresh_products(self) -> None:
@@ -47,7 +43,6 @@ class TavriaParser:
                 tasks = (self.single_factory_task(factory, aio_session)
                          for factory in self._factory_batch)
                 await self.__complete_tasks(tasks)
-        await self.object_box.save_all()
 
     def _get_next_batch(self) -> None:
         self._factory_batch = set(self.factories[ElType.PRODUCT].pop()
@@ -62,8 +57,7 @@ class TavriaParser:
 
     async def single_factory_task(self, factory: BaseFactory,
                                   aio_session) -> None:
-        await factory(object_box=self.object_box,
-                      aio_session=aio_session)
+        await factory(aio_session)
         self._factory_batch.remove(factory)
 
     async def __complete_tasks(self, tasks) -> None:

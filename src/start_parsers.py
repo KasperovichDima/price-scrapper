@@ -2,20 +2,16 @@
 import asyncio
 import time
 
-from core.constants import TAVRIA_URL  # noqa: F401
+from parsers.tavria import TAVRIA_URL  # noqa: F401
+from parsers.tavria import TAVRIA_TEST_URL  # noqa: F401
 
 from database import Base
 from database import SessionLocal
 from database import TestSession
 from database import test_engine
 
-from parsers.tavria import NewFactoryCreator
 from parsers.tavria import TavriaParser
-from parsers.tavria import FactoryCreator
-from parsers.tavria import TavriaFolderParser
-from parsers.tavria import TavriaProductParser
 
-from test.constants import TAVRIA_TEST_URL  # noqa: F401
 
 session_maker = SessionLocal
 
@@ -29,8 +25,7 @@ if test_mode:
 
 async def run_parser(session):
     now = time.perf_counter()
-    factories = NewFactoryCreator(TAVRIA_URL)()
-    await TavriaParser(factories, session).refresh_catalog()
+    await TavriaParser(session).refresh_catalog()
     print(time.perf_counter() - now)
 
 

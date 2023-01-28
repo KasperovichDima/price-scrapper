@@ -17,7 +17,7 @@ from parsers.exceptions import UnexpectedParserError
 
 from project_typing import ElType
 
-from .objects_box import ObjectsBox
+from .object_box import ObjectBox
 from .parent_table import ParentTable
 from .tavria_typing import ObjectParents
 
@@ -25,7 +25,7 @@ from .tavria_typing import ObjectParents
 class BaseFactory:
     """TODO: Correct params order."""
 
-    _object_box: ObjectsBox
+    object_box: ObjectBox
 
     def __init__(self,
                  el_type: ElType,
@@ -39,6 +39,7 @@ class BaseFactory:
         self._subcategory_name = subcategory_name
         self._group_name = group_name
         self._object_names: list[str] = []
+        assert self.object_box
 
     async def __call__(self, *args, **kwds) -> None:
         """TODO: Devide on 'pre', 'main_process', 'post'."""
@@ -50,7 +51,7 @@ class BaseFactory:
                             parent_id=self._parent_id,
                             el_type=self._el_type)
                        for name in self._object_names)
-        await self._object_box.add(new_objects)
+        await self.object_box.add(new_objects)
 
     @cached_property
     def _parent_id(self) -> int | None:
@@ -89,10 +90,6 @@ class BaseFactory:
 
 class FolderFactory(BaseFactory):
 
-    async def __call__(self, object_box, *args, **kwds) -> None:
-        self._object_box = object_box
-        await super().__call__(*args, **kwds)
-
     def add_name(self, name: str) -> None:
         """TODO: Fix interface."""
         self._object_names.append(name)
@@ -107,10 +104,8 @@ class ProductFactory(BaseFactory):
         self._url = url
         super().__init__(**kwds)
 
-    async def __call__(self, aio_session: aiohttp.ClientSession,
-                       object_box) -> None:
+    async def __call__(self, aio_session: aiohttp.ClientSession) -> None:
         self._aio_session = aio_session
-        self._object_box = object_box
         await self._get_page_data()
         if self.__page_is_paginated:
             await self.get_paginated_content()
