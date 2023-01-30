@@ -44,9 +44,18 @@ def fake_user_data():
         first_name='Dima',
         last_name='Kasperovich',
         email='dima@ukr.net',
-        is_active=True,
         password='dima1987',
-        type=UserType.USER
+    )
+
+
+@pytest.fixture(scope='session')
+def create_user_data():
+    """Fake data for user creation."""
+    return UserCreate(
+        first_name='Alexei',
+        last_name='Holubaev',
+        email='lesha@ukr.net',
+        password='lesha1986',
     )
 
 
@@ -55,6 +64,8 @@ def create_fake_user(fake_session: Session,
                      fake_user_data: UserCreate):
     """Creates and saves fake user to db. Deletes it after test."""
     user = User(**fake_user_data.dict())
+    user.is_active = True
+    user.type = UserType.USER
     asyncio.run(crud.add_instance(user, fake_session))
     yield user
 

@@ -1,15 +1,16 @@
 # PROBLEM TO SOLVE:
-*The monitoring system for online stores is manual, not automated and does not have a single standard for generating reports and storing them.*
+*The monitoring system for online stores is manual, not automated and does not have a single standard for generating reports.*
 
 
 # PROJECT REQUIREMENTS:
 
 ## **MAIN FUNCTIONALITY:**
 > ## 1. Defining monitoring parameters
-> 1. Select categories, subcategories, groups and subgroups
-> 2. Select internet-stores
-> 3. Select additional parameters, if they are
-> 4. Push "get report" button.
+> 1. Select categories, subcategories, groups or products.
+> 2. Apply filter for:
+> 3. Internet-stores.
+> 4. Additional parameters, if they are.
+> 5. Your report is ready.
 
 > ## 2. Collecting and processing data
 > 1. Save reference shop's catalog to database.
@@ -17,45 +18,7 @@
 > 3. Report by email if some new products appeared.
 > 
 > ## 3. Output data (report) in a json format
-{
-  "header": {
-    "name": "string",
-    "note": "string",
-    "time_created": "2023-01-09:10:41",
-    "user_name": "string"
-  },
-  "folders": [
-    {
-      "id": 0,
-      "name": "string",
-      "parent_id": 0,
-      "el_type": 1
-    }
-  ],
-  "products": [
-    {
-      "id": 0,
-      "name": "string",
-      "parent_id": 0,
-      "el_type": 1,
-      "prime_cost": 0
-    }
-  ],
-  "retailers": [
-    {
-      "id": 0,
-      "name": "string"
-    }
-  ],
-  "content": [
-    {
-      "product_id": 0,
-      "retailer_id": 0,
-      "retail_price": 0,
-      "promo_price": 0
-    }
-  ]
-}
+*need to be added...*
 > 
 
 ## **ADDITIONAL FUNCTIONALITY:**
@@ -64,15 +27,13 @@
  - categories
  - subcategories
  - groups
- - subgroups
  - products
  - internet-shop
- - reports
  - users
  
 ## 2. AUTHORIZATION AND AUTHENTIFICATION
 - register new user
- - edit profile
+- edit profile
 - login
 - logout
 - delete user
@@ -98,7 +59,7 @@
 9. Make migrations via **alembic upgrade heads**
 10. Fill .env file with correct data. Template is below.
 
-**.env:**
+**.env file content:**
 
 - SECRET_KEY=
 - ALGORITHM=

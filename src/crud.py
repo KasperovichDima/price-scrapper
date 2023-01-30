@@ -106,19 +106,19 @@ async def delete_cls_instances(instances: Sequence[BaseWithID],
 
 async def delete_user(email: str, session: Session) -> None:
     """Delete user, specified by email. Raises
-    user_not_exists_exeption if email not in database."""
+    user_not_exists_exception if email not in database."""
     if not (user := await get_user(email, session)):
-        raise c_ex.instance_not_exists_exeption
+        raise c_ex.instance_not_exists_exception
     session.delete(user)
     session.commit()
 
 
 async def delete_folder(id: int, session: Session) -> int:
     """Recursively deletes folder specified by id and child folders. Also
-    deletes products by CASCADE. Raises instance_not_exists_exeption if
+    deletes products by CASCADE. Raises instance_not_exists_exception if
     specified folder not exists."""
     if not (del_folders := await get_elements(Folder, session, id=(id,))):
-        raise c_ex.instance_not_exists_exeption
+        raise c_ex.instance_not_exists_exception
     parent_ids = [id]
     while childs := await get_elements(Folder, session,
                                        parent_id=parent_ids):

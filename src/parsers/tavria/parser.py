@@ -11,7 +11,8 @@ from . import constants as c
 from . import utils as u
 from .constants import TAVRIA_URL
 from .factory import BaseFactory
-from .factory_creator import FactoryCreator
+from .new_factory_creator import FactoryCreator
+# from .factory_creator import FactoryCreator
 from .parent_table import ParentTable
 
 

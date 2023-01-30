@@ -5,6 +5,8 @@ from project_typing import ElType
 
 from pydantic import BaseModel
 
+from . import extra_schemas as es
+
 
 class BaseCatScheme(BaseModel):
     """Base catalog instance scheme."""
@@ -33,3 +35,6 @@ class FolderContent(BaseModel):
 
     folders: list[FolderScheme] | None
     products: list[ProductScheme] | None
+
+    class Config:
+        schema_extra = es.folder_content

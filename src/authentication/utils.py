@@ -35,7 +35,6 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 
 async def authenticate_user(email: str, password: str, db):
-    """TODO: Change return to optional."""
     user = await crud.get_user(email, db)
     return user if user and verify_password(password, user.password)\
         else False

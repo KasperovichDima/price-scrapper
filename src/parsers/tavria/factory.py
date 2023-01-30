@@ -73,7 +73,9 @@ class BaseFactory:
             return ObjectParents(gp_name=gp_name, p_name=p_name)
 
     def __repr__(self) -> str:
-        return (f'{self._el_type.name}: '
+        parent_name = self._subcategory_name if self._subcategory_name\
+            else self._category_name
+        return (f'{parent_name}: '
                 f'{reprlib.repr(self._object_names)}')
 
     def __bool__(self) -> bool:
@@ -175,3 +177,7 @@ class ProductFactory(BaseFactory):
         return all((self._category_name,
                     self._group_name,
                     self._url))
+
+    def __repr__(self) -> str:
+        return (f'{self._group_name}: '
+                f'{reprlib.repr(self._object_names)}')

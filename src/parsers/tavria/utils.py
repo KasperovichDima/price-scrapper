@@ -16,6 +16,7 @@ from project_typing import ElType
 from pydantic import BaseModel
 
 from . import constants as c
+from .parsers_typing import Factories
 
 
 @lru_cache(1)
@@ -90,3 +91,8 @@ def create_schema_getter():
 
 
 get_schema_for = create_schema_getter()
+
+
+def factories_are_valid(factories: Factories) -> bool:
+    return len(factories[ElType.GROUP])\
+        == len(set(factories[ElType.GROUP]))

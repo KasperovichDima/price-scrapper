@@ -1,7 +1,8 @@
 """Test mocks and changes to allow testing."""
 from typing import Callable
 
-from parsers.tavria import FactoryCreator
+from parsers.tavria import BaseFactory
+from parsers.tavria.new_factory_creator import FactoryCreator as NFC
 from parsers.tavria import FolderFactory
 from parsers.tavria import ProductFactory
 from parsers.tavria import utils as u
@@ -38,17 +39,17 @@ class ProductFactory_test(ProductFactory):
         self._html = html_for(self._url)
 
 
-class FactoryCreator_test(FactoryCreator):
+class FactoryCreator_test(NFC):
 
-    def _create_factory(self, type_: ElType):
-        schema = u.get_schema_for(type_)
+    def create_factory(self) -> BaseFactory:
+        schema = u.get_schema_for(self._tag_type)
         init_payload = schema(
-            el_type=type_,
+            el_type=self._tag_type,
             category_name=self._current_names[ElType.CATEGORY],
             subcategory_name=self._current_names[ElType.SUBCATEGORY],
             group_name=self._current_names[ElType.GROUP],
-            url=u.get_url(self._current_tag)
+            url=u.get_url(self._tag)
         )
-        create_cls = ProductFactory_test if type_ is ElType.PRODUCT\
+        create_cls = ProductFactory_test if self._tag_type is ElType.PRODUCT\
             else FolderFactory
-        self._current_factories[type_] = create_cls(**init_payload.dict())
+        return create_cls(**init_payload.dict())

@@ -1,9 +1,9 @@
 """Authentication tests."""
 from authentication.schemas import UserCreate
 
-import pytest
-
 from conftest import client
+
+import pytest
 
 
 class TestCreateUser:
@@ -14,12 +14,12 @@ class TestCreateUser:
         return client.post('/auth/create_user', data=data.json())
 
     @pytest.mark.asyncio
-    async def test_create_user_ok(self, fake_user_data: UserCreate):
+    async def test_create_user_ok(self, create_user_data: UserCreate):
         """Attempt to create user with correct data."""
 
-        resp = self.get_response(fake_user_data)
+        resp = self.get_response(create_user_data)
         assert resp.status_code == 200\
-            and resp.json()['email'] == fake_user_data.email
+            and resp.json()['email'] == create_user_data.email
 
     @pytest.mark.asyncio
     async def test_create_duplicate_user(self, fake_user_data,

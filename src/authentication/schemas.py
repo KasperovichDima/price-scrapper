@@ -3,6 +3,8 @@ from project_typing import UserType
 
 from pydantic import BaseModel, EmailStr, Field
 
+from . import extra_schemas as es
+
 
 class UserBase(BaseModel):
     """UserBase validation schema."""
@@ -18,9 +20,10 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     """UserCreate validation schema."""
 
-    is_active: bool = Field(default=False)
     password: str = Field(max_length=50)
-    type: UserType = Field(default=UserType.USER)
+
+    class Config:
+        schema_extra = es.user_create
 
 
 class UserScheme(UserBase):
@@ -29,6 +32,9 @@ class UserScheme(UserBase):
     id: int = Field(gt=0)
     is_active: bool
     type: UserType
+
+    class Config:
+        schema_extra = es.user_scheme
 
 
 class TokenScheme(BaseModel):

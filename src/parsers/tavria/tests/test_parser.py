@@ -9,7 +9,6 @@ from . import mock_classes as c
 from . import reference as r
 from .constants import TAVRIA_TEST_URL
 
-
 class TestTavriaParser:
     """Test class for tavria parser."""
 
