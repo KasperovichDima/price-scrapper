@@ -26,12 +26,15 @@ class TavriaParser:
             return
         self._db_session = db_session
         self.factories = self._factory_creator(url, self._db_session)
+        print('\nRefreshing folders...')
         await self._refresh_folders()
+        print('\nRefreshing products...')
         await self._refresh_products()
 
     async def _refresh_folders(self) -> None:
         for type_ in folder_types:
             for factory in self.factories[type_]:
+                print('{} in progress...'.format(factory))
                 await factory()
             await ParentTable.refresh_table(self._db_session)
 
@@ -56,6 +59,7 @@ class TavriaParser:
 
     async def single_factory_task(self, factory: BaseFactory,
                                   aio_session) -> None:
+        print('{} in progress...'.format(factory))
         await factory(aio_session)
         self._factory_batch.remove(factory)
 
