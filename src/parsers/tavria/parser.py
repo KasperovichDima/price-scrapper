@@ -12,6 +12,7 @@ from . import utils as u
 from .factory import BaseFactory
 from .factory_creator import FactoryCreator
 from .parent_table import ParentTable
+from .parsers_typing import Factories
 
 
 class TavriaParser:
@@ -19,23 +20,27 @@ class TavriaParser:
     _db_session: Session
     _factory_batch: set[BaseFactory]
 
-    _factory_creator = FactoryCreator()
+    _factory_creator_class = FactoryCreator
 
     async def refresh_catalog(self, url: str, db_session: Session) -> None:
         if MAIN_PARSER != 'Tavria':
             return
         self._db_session = db_session
-        self.factories = self._factory_creator(url, self._db_session)
+        self.factories = self._get_factories(url)
         print('\nRefreshing folders...')
         await self._refresh_folders()
         print('\nRefreshing products...')
         await self._refresh_products()
 
-    async def _refresh_folders(self) -> None:
+    def _get_factories(self, url: str) -> Factories:
+        return self._factory_creator_class()(url, self._db_session)
+
+    async def _refresh_folders(self,) -> None:
         for type_ in folder_types:
             for factory in self.factories[type_]:
                 print('{} in progress...'.format(factory))
                 await factory()
+            self.factories[type_].clear()
             await ParentTable.refresh_table(self._db_session)
 
     async def _refresh_products(self) -> None:

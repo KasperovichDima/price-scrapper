@@ -1,7 +1,7 @@
 """Script to start parsing process."""
 import asyncio
-import cProfile
-import pstats
+import cProfile  # noqa: F401
+import pstats  # noqa: F401
 
 from database import Base
 from database import SessionLocal
@@ -33,9 +33,9 @@ def main():
 
 
 if __name__ == '__main__':
-    profiler = cProfile.Profile()
-    profiler.enable()
+    # profiler = cProfile.Profile()
+    # profiler.enable()
     main()
-    profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats('cumtime')
-    stats.print_stats()
+    # profiler.disable()
+    # stats = pstats.Stats(profiler).sort_stats('cumtime')
+    # stats.print_stats()
