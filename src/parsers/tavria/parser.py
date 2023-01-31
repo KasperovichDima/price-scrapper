@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from . import constants as c
 from . import utils as u
 from .factory import BaseFactory
-from .new_factory_creator import FactoryCreator
+from .factory_creator import FactoryCreator
 from .parent_table import ParentTable
 
 

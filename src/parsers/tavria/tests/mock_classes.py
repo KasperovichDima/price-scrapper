@@ -2,7 +2,7 @@
 from typing import Callable
 
 from parsers.tavria import BaseFactory
-from parsers.tavria.new_factory_creator import FactoryCreator as NFC
+from parsers.tavria import FactoryCreator
 from parsers.tavria import FolderFactory
 from parsers.tavria import ProductFactory
 from parsers.tavria import utils as u
@@ -39,7 +39,7 @@ class ProductFactory_test(ProductFactory):
         self._html = html_for(self._url)
 
 
-class FactoryCreator_test(NFC):
+class FactoryCreator_test(FactoryCreator):
 
     def create_factory(self) -> BaseFactory:
         schema = u.get_schema_for(self._tag_type)
