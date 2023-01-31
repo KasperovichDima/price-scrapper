@@ -11,8 +11,6 @@ from bs4.element import Tag
 
 from catalog.utils import get_class_by_type
 
-from fastapi import HTTPException
-
 from parsers.exceptions import UnexpectedParserError
 
 from project_typing import ElType
@@ -117,6 +115,7 @@ class ProductFactory(BaseFactory):
     async def _get_page_data(self) -> None:
         """Get page data using aio_session if _url is specified."""
         await self.get_page_html()
+        # TODO: if not self._html:
         a_tags: ResultSet[Tag] = bs(self._html, 'lxml').find_all('a')
         tag_names = (self.__get_tag_name(_)
                      for _ in a_tags if self.__get_tag_name(_))
