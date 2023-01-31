@@ -16,9 +16,7 @@ class ParentTable:
     @classmethod
     async def refresh_table(cls, db_session: Session) -> None:
         """Refresh table after saving new data to db."""
-        print('refreshing table...')  # TODO: Delete
         folders = await crud.get_folders(db_session)
-        print(f'new table contains: {folders}')
         id_to_name_table = {_.id: _.name for _ in folders}
         cls.__parent_table = {ObjectParents(
             gp_name=id_to_name_table[_.parent_id]

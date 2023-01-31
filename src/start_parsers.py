@@ -1,15 +1,15 @@
 """Script to start parsing process."""
 import asyncio
-import time
-
-from parsers.tavria import TAVRIA_URL  # noqa: F401
-from parsers.tavria import TAVRIA_TEST_URL  # noqa: F401
+import cProfile
+import pstats
 
 from database import Base
 from database import SessionLocal
 from database import TestSession
 from database import test_engine
 
+from parsers.tavria import TAVRIA_TEST_URL  # noqa: F401
+from parsers.tavria import TAVRIA_URL  # noqa: F401
 from parsers.tavria import TavriaParser
 
 
@@ -24,10 +24,18 @@ if test_mode:
 
 
 async def run_parser(session):
-    now = time.perf_counter()
-    await TavriaParser(session).refresh_catalog()
-    print(time.perf_counter() - now)
+    await TavriaParser().refresh_catalog(TAVRIA_URL, session)
 
 
-with session_maker() as session:
-    asyncio.run(run_parser(session))
+def main():
+    with session_maker() as session:
+        asyncio.run(run_parser(session))
+
+
+if __name__ == '__main__':
+    profiler = cProfile.Profile()
+    profiler.enable()
+    main()
+    profiler.disable()
+    stats = pstats.Stats(profiler).sort_stats('cumtime')
+    stats.print_stats()

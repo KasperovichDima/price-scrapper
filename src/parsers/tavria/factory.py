@@ -43,6 +43,7 @@ class BaseFactory:
 
     async def __call__(self, *args, **kwds) -> None:
         """TODO: Devide on 'pre', 'main_process', 'post'."""
+        
         await self._get_new_objects()
 
     async def _get_new_objects(self):
@@ -82,7 +83,8 @@ class BaseFactory:
         return bool(self._object_names)
 
     def __hash__(self) -> int:
-        return hash((self._category_name,
+        return hash((self._el_type,
+                     self._category_name,
                      self._subcategory_name,
                      self._group_name))
 

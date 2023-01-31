@@ -51,8 +51,16 @@ def get_url(tag: Tag) -> str | None:
         return None
 
 
+discount_checked = False
+
+
 def get_tag_type(tag: Tag) -> ElType | None:
     if tag.name == 'a' and 'catalog' in tag.get('href'):
+        global discount_checked
+        if not discount_checked:
+            if 'discount' in tag.get('href'):
+                discount_checked = True
+                return
         return ElType.GROUP
     elif (tag.name == 'span' and 'class' in tag.attrs
           and tag.attrs['class'][0] == 'top-sub-catalog-name')\

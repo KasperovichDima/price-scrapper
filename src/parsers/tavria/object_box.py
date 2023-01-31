@@ -39,7 +39,6 @@ class ObjectBox:
               they must have same type and parent id."""
         # TODO: We can switch _new_objects to
         #       set to avoid duplicated names problem.
-
         configured = False
         for obj_ in objects:
             if not configured:
@@ -47,7 +46,8 @@ class ObjectBox:
                 configured = True
             self._in_db_objects.remove(obj_) if obj_ in self._in_db_objects\
                 else self._objects_to_save.append(obj_)
-        await self._save()
+        if configured:
+            await self._save()
 
     async def _reconfigure_box(self, obj_: BaseCatalogElement) -> None:
         """Check new objects type and refresh self fields, if required."""
@@ -64,11 +64,6 @@ class ObjectBox:
                 cls_=cls_, session=self._db_session,
                 el_type=type_, parent_id=p_id
             ))
-            # objects = set(await crud.get_elements(
-            #     cls_=cls_, session=self._db_session,
-            #     el_type=type_, parent_id=p_id
-            # ))
-            # self._in_db_objects = objects
 
         def refresh_deprecated():
             self._now_deprecated = {_ for _ in self._in_db_objects
@@ -77,7 +72,8 @@ class ObjectBox:
         if reconfig_is_required(obj_):
             await refresh_db_objects()
             refresh_deprecated()
-            self._cur_type, self._cur_parent_id = obj_.el_type, obj_.parent_id  # type: ignore
+            self._cur_type = obj_.el_type
+            self._cur_parent_id = obj_.parent_id  # type: ignore
 
     async def _save(self) -> None:
         """Save new objects to databaseand actualize their status."""
@@ -85,6 +81,7 @@ class ObjectBox:
         self._objects_to_save.clear()
         to_deprecate = [_ for _ in self._in_db_objects if not _.deprecated]
         to_actualize = self._now_deprecated - self._in_db_objects
+
         if to_deprecate or to_actualize:
             for _ in list(itertools.chain(to_deprecate, to_actualize)):
                 _.deprecated = not _.deprecated

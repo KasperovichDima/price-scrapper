@@ -9,33 +9,31 @@ from sqlalchemy.orm import Session
 
 from . import constants as c
 from . import utils as u
-from .constants import TAVRIA_URL
 from .factory import BaseFactory
 from .new_factory_creator import FactoryCreator
-# from .factory_creator import FactoryCreator
 from .parent_table import ParentTable
 
 
 class TavriaParser:
 
-    _factory_creator = FactoryCreator(TAVRIA_URL)
+    _db_session: Session
     _factory_batch: set[BaseFactory]
 
-    def __init__(self, db_session: Session) -> None:
-        self.db_session = db_session
+    _factory_creator = FactoryCreator()
 
-    async def refresh_catalog(self) -> None:
+    async def refresh_catalog(self, url: str, db_session: Session) -> None:
         if MAIN_PARSER != 'Tavria':
             return
-        self.factories = self._factory_creator(self.db_session)
+        self._db_session = db_session
+        self.factories = self._factory_creator(url, self._db_session)
         await self._refresh_folders()
         await self._refresh_products()
 
     async def _refresh_folders(self) -> None:
-        for _ in folder_types:
-            for factory in self.factories[_]:
+        for type_ in folder_types:
+            for factory in self.factories[type_]:
                 await factory()
-            await ParentTable.refresh_table(self.db_session)
+            await ParentTable.refresh_table(self._db_session)
 
     async def _refresh_products(self) -> None:
         while self.factories[ElType.PRODUCT]:
