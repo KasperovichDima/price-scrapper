@@ -29,7 +29,7 @@ class FactoryCreator:
     def __call__(self, home_url: str, db_session: Session) -> Factories:
         BaseFactory.object_box = ObjectBox(db_session)
         for tag in u.get_catalog_tags(home_url):
-            self._tag_type = u.get_tag_type(tag)
+            self._tag_type = u.tag_type_for(tag)
             if not self._tag_type:
                 continue
             self._tag = tag

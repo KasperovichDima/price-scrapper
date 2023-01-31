@@ -51,25 +51,30 @@ def get_url(tag: Tag) -> str | None:
         return None
 
 
-discount_checked = False
+def get_type_checker():
+
+    discount_checked = False
+
+    def get_tag_type(tag: Tag) -> ElType | None:
+        if tag.name == 'a' and 'catalog' in tag.get('href'):
+            nonlocal discount_checked
+            if not discount_checked:
+                if 'discount' in tag.get('href'):
+                    discount_checked = True
+                    return None
+            return ElType.GROUP
+        elif (tag.name == 'span' and 'class' in tag.attrs
+            and tag.attrs['class'][0] == 'top-sub-catalog-name')\
+                or (tag.name == 'a' and tag.parent.name == 'h4'):
+            return ElType.SUBCATEGORY
+        elif tag.name == 'a' and tag.get('href') == '#':
+            return ElType.CATEGORY
+        else:
+            return None
+    return get_tag_type
 
 
-def get_tag_type(tag: Tag) -> ElType | None:
-    if tag.name == 'a' and 'catalog' in tag.get('href'):
-        global discount_checked
-        if not discount_checked:
-            if 'discount' in tag.get('href'):
-                discount_checked = True
-                return
-        return ElType.GROUP
-    elif (tag.name == 'span' and 'class' in tag.attrs
-          and tag.attrs['class'][0] == 'top-sub-catalog-name')\
-            or (tag.name == 'a' and tag.parent.name == 'h4'):
-        return ElType.SUBCATEGORY
-    elif tag.name == 'a' and tag.get('href') == '#':
-        return ElType.CATEGORY
-    else:
-        return None
+tag_type_for = get_type_checker()
 
 
 def aiohttp_session_maker() -> aiohttp.ClientSession:
