@@ -43,7 +43,6 @@ class BaseFactory:
 
     async def __call__(self, *args, **kwds) -> None:
         """TODO: Devide on 'pre', 'main_process', 'post'."""
-        
         await self._get_new_objects()
 
     async def _get_new_objects(self):
@@ -126,8 +125,9 @@ class ProductFactory(BaseFactory):
     async def get_page_html(self) -> None:
         async with self._aio_session.get(self._url) as response:  # type: ignore  # noqa: E501
             if response.status != 200:
-                raise HTTPException(503, f'Error while parsing {self._url}')
                 #  TODO: add log and email developer here
+                print(f'something went wrong while parsing {self._url}...')
+                return
             self._html = await response.text()
 
     @staticmethod
