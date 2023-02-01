@@ -88,6 +88,9 @@ class BaseFactory:
     def __eq__(self, __o: object) -> bool:
         return hash(self) == hash(__o)
 
+    def __add__(self, name: str) -> None:
+        self._object_names.append(name)
+
 
 class FolderFactory(BaseFactory):
 
