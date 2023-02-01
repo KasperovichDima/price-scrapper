@@ -92,11 +92,7 @@ class BaseFactory:
         self._object_names.append(name)
 
 
-class FolderFactory(BaseFactory):
-
-    def add_name(self, name: str) -> None:
-        """TODO: Fix interface."""
-        self._object_names.append(name)
+class FolderFactory(BaseFactory): ...
 
 
 class ProductFactory(BaseFactory):

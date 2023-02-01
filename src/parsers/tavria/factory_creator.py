@@ -34,7 +34,8 @@ class FactoryCreator:
                 continue
             self._tag = tag
             self._refresh_names()
-            self._get_factory().add_name(self._current_names[self._tag_type])
+            assert self._current_names[self._tag_type]
+            self._get_factory() + self._current_names[self._tag_type]  # type: ignore
             self._add_product_factory()
 
         factories = self._collect_factories_by_type()
