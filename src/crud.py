@@ -8,9 +8,11 @@ from base_models import BaseWithID
 from catalog.models import Folder, Product
 from catalog.schemas import FolderContent
 
+from core.models import PriceLine
+
 import crud_exceptions as c_ex
 
-from project_typing import ElType, db_type
+from project_typing import ElType, RetailerName, db_type
 
 from retailer.models import Retailer
 
@@ -33,7 +35,7 @@ async def add_instances(instances: Iterable[BaseWithID],
 
 async def get_user(email: str, session: Session) -> User | None:
     """Get user instance by email."""
-    return session.query(User).filter(User.email == email).first()
+    return session.query(User).filter(User.email == email).scalar()
 
 
 async def get_folder_content(id: int, session: Session) -> FolderContent:
@@ -94,10 +96,9 @@ async def delete_cls_instances(instances: Sequence[BaseWithID],
     NOTE: All objects must be the same class.
     Raises same_type_exception if not.
     """
-    try:
-        cls_ = type(instances[0])
-        assert all((isinstance(_, cls_) for _ in instances))
-    except AssertionError:
+
+    cls_ = type(instances[0])
+    if not all((isinstance(_, cls_) for _ in instances)):
         raise c_ex.same_type_exception
 
     session.execute(delete(cls_).where(cls_.id.in_((_.id for _ in instances))))
@@ -130,3 +131,24 @@ async def delete_folder(id: int, session: Session) -> int:
                                          parent_id=parent_ids))
     await delete_cls_instances(del_folders, session)
     return id
+
+
+async def get_price_lines(session: Session) -> list[PriceLine]:
+    return session.query(PriceLine).all()
+
+
+async def get_last_price_lines(product_ids: Iterable[int],
+                               reatiler_id: int,
+                               session: Session) -> list[PriceLine]:
+    """Get last price lines for products, specified by
+    product_ids, in retailer, specified by reatiler_id."""
+    return session.query(PriceLine).distinct(PriceLine.product_id).\
+        order_by(PriceLine.product_id, PriceLine.date_created.desc())\
+        .filter(PriceLine.retailer_id.in_((reatiler_id,)),
+                PriceLine.product_id.in_(product_ids)).all()
+
+
+async def get_ratailer(retailer_name: RetailerName,
+                       session: Session) -> Retailer:
+    """Get retailer by retailer name."""
+    return session.query(Retailer).filter_by(name=retailer_name.value).scalar()
