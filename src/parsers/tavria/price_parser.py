@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+from array import array
 from collections import deque
 from functools import cached_property
 from typing import Generator, Iterable, NamedTuple
@@ -53,18 +54,13 @@ class FactoryResults(NamedTuple):
 
 class Box:
 
-    # folder_id: int
+    """TODO: What if we will get new product name here?"""
 
     folder_to_id_table: dict[Parents, int] = {}  # TODO: naming
-    # group_id: int
     retailer_id: int
     last_price_lines: list[PriceLine]
     prod_name_to_id_table: dict[str, int]
-
-    # factory_class = PriceLine  # TODO: Make dynamic
-
     factory_results: FactoryResults
-
     saved_objects: list[PriceLine]  # TODO: Make dynamic
     group_products: list[Product]
 
@@ -72,25 +68,12 @@ class Box:
         self._db_session = db_session
 
     async def add(self, factory_results: FactoryResults) -> None:
-        # 1. get this group id (cached property)
-        # 2. get products of this group from db
-        # 3. get saved last prices of this group by prod_id
-        # 4. convert result products names to ids
-        # 5. remove eq from factory results
-        # 6. update records, where prices was changed
-        # 7. remove them from factory results
-        # 8. all left in factory results - are new records.
-        # 9. create new price lines for this products.
 
         self.factory_results = factory_results
-        # await self.create_folder_to_id_table()
         await self.get_group_products()
         await self.get_last_price_lines()
         self.create_prod_name_to_id_table()
         await self.save_new_records()
-        # self.update_changed_records()
-        # self.remove_updated_from_results()
-        # self.add_new_records()
         # self.clear()
 
     async def create_folder_to_id_table(self) -> None:
@@ -112,8 +95,9 @@ class Box:
 
     async def get_group_products(self) -> None:
         # TODO: Only active?
-        self.group_products = await crud.get_products(self._db_session,
-                                                      folder_ids=(self.folder_id,))
+        self.group_products = await crud.get_products(
+            self._db_session, folder_ids=(self.folder_id,)
+        )
 
     async def get_last_price_lines(self) -> None:
         prod_ids = (_.id for _ in self.group_products)
@@ -122,10 +106,14 @@ class Box:
         )
 
     def create_prod_name_to_id_table(self) -> None:
-        self.prod_name_to_id_table = {_.name: _.id for _ in self.group_products}
+        self.prod_name_to_id_table = {
+            _.name: _.id for _ in self.group_products
+        }
 
     async def save_new_records(self) -> None:
-        new_records = set(self.factory_results.get_records(self.prod_name_to_id_table))
+        new_records = set(
+            self.factory_results.get_records(self.prod_name_to_id_table)
+        )
         new_records.difference_update(self.last_price_lines)
         if new_records:
             to_save = (PriceLine.from_tuple(_) for _ in new_records)
@@ -142,11 +130,9 @@ class PriceFactory:
     def __init__(self, retailer_id: int, url: str) -> None:
         self.retailer_id = retailer_id
         self.url = url
-        #  Making dedicated results
-        # self.prices: Prices = deque()
         self.names: deque[str] = deque()
-        self.retail_prices: deque[float] = deque()  # TODO: Convert to array
-        self.promo_prices: deque[float | None] = deque()  # TODO: Convert to array
+        self.retail_prices: array[float] = array('f')
+        self.promo_prices: deque[float | None] = deque()
 
     async def __call__(self, aio_session: aiohttp.ClientSession) -> None:
         self._aio_session = aio_session
@@ -163,7 +149,9 @@ class PriceFactory:
             .find('div', {'class': "catalog-products"})
         self.product_tags = product_area\
             .find_all('div', {'class': "products__item"})
-        self.paginator = product_area.find('div', {'class': 'catalog__pagination'}).find_all('a')
+        self.paginator = product_area.find(
+            'div', {'class': 'catalog__pagination'}
+        ).find_all('a')
 
     async def _get_page_html(self) -> str | None:
         """TODO: This function should return html."""
@@ -184,11 +172,6 @@ class PriceFactory:
             s_name if c_name else None,
             tag.get('data-item_category')
         )
-        # self.parents = Parents(
-        #     category_name=c_name if c_name else s_name,
-        #     subcategory_name=s_name if c_name else None,
-        #     group_name=tag.get('data-item_category')
-        # )
 
     def _collect_prices(self) -> None:
         for tag in self.product_tags:
@@ -227,7 +210,7 @@ class PriceFactory:
     @property
     def _paginated_urls(self) -> Generator[str, None, None]:
         return (f'{self.url}?page={_}'
-            for _ in range(2, self._paginator_size + 1))
+                for _ in range(2, self._paginator_size + 1))
 
     def __repr__(self) -> str:
         return self.url
@@ -280,7 +263,8 @@ class PriceParser:
                 await self._complete_tasks(tasks)
 
     def get_factories(self) -> None:
-        self.factories = FactoryCreator()(self.retailer.home_url, self.retailer.id)
+        self.factories = FactoryCreator()(self.retailer.home_url,
+                                          self.retailer.id)
 
     def _get_next_batch(self) -> None:
         self._factory_batch = {self.factories.pop()

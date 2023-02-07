@@ -77,7 +77,7 @@ def get_type_checker():
                     return None
             return ElType.GROUP
         elif (tag.name == 'span' and 'class' in tag.attrs
-            and tag.attrs['class'][0] == 'top-sub-catalog-name')\
+              and tag.attrs['class'][0] == 'top-sub-catalog-name')\
                 or (tag.name == 'a' and tag.parent.name == 'h4'):
             return ElType.SUBCATEGORY
         elif tag.name == 'a' and tag.get('href') == '#':
