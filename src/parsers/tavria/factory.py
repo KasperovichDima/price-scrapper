@@ -11,8 +11,6 @@ from bs4.element import Tag
 
 from catalog.utils import get_class_by_type
 
-from parsers.exceptions import UnexpectedParserError
-
 from project_typing import ElType
 
 from .object_box import ObjectBox
@@ -92,7 +90,8 @@ class BaseFactory:
         self._object_names.append(name)
 
 
-class FolderFactory(BaseFactory): ...
+class FolderFactory(BaseFactory):
+    ...
 
 
 class ProductFactory(BaseFactory):
@@ -107,20 +106,20 @@ class ProductFactory(BaseFactory):
     async def __call__(self, aio_session: aiohttp.ClientSession) -> None:
         self._aio_session = aio_session
         await self._get_page_data()
-        if self.__page_is_paginated:
-            await self.get_paginated_content()
+        if self._page_is_paginated:
+            await self._get_paginated_content()
         await super().__call__()
 
     async def _get_page_data(self) -> None:
         """Get page data using aio_session if _url is specified."""
-        await self.get_page_html()
+        await self._get_page_html()
         # TODO: if not self._html:
         a_tags: ResultSet[Tag] = bs(self._html, 'lxml').find_all('a')
-        tag_names = (self.__get_tag_name(_)
-                     for _ in a_tags if self.__get_tag_name(_))
+        tag_names = (self._get_tag_name(_)
+                     for _ in a_tags if self._get_tag_name(_))
         self._object_names.extend(tag_names)  # type: ignore
 
-    async def get_page_html(self) -> None:
+    async def _get_page_html(self) -> None:
         async with self._aio_session.get(self._url) as response:  # type: ignore  # noqa: E501
             if response.status != 200:
                 #  TODO: add log and email developer here
@@ -130,39 +129,33 @@ class ProductFactory(BaseFactory):
 
     @staticmethod
     @lru_cache(1)
-    def __get_tag_name(tag: Tag) -> str | None:
+    def _get_tag_name(tag: Tag) -> str | None:
         """Returns a name from tag, if tag contains it."""
         return tag.text.strip()\
             if 'product' in tag.get('href', '')\
             and not tag.text.isspace() else None
 
     @property
-    def __page_is_paginated(self) -> bool:
-        return bool(self.paginator_size)
+    def _page_is_paginated(self) -> bool:
+        return bool(self._paginator_size)
 
     @cached_property
-    def paginator_size(self) -> int:  # type: ignore
-        """TODO: try to Remove paginator := self.paginator."""
-        if not (paginator := self.paginator):
-            return 0
-        for tag in paginator[::-1]:
-            try:
-                assert tag.attrs['aria-label'] == 'Next'
+    def _paginator_size(self) -> int:  # type: ignore
+        for tag in self._paginator[::-1]:
+            if tag.attrs.get('aria-label') == 'Next':
                 return int(tag.get('href').split('=')[-1])
-            except (AssertionError, KeyError):
-                continue
-        raise UnexpectedParserError
+        return 0
 
     @cached_property
-    def paginator(self) -> ResultSet:
+    def _paginator(self) -> ResultSet[Tag]:
         return bs(self._html, 'lxml')\
             .find('div', {'class': 'catalog__pagination'}).find_all('a')
 
-    async def get_paginated_content(self):
-        tasks = (self.page_task(_) for _ in self._paginated_urls)
+    async def _get_paginated_content(self):
+        tasks = (self._page_task(_) for _ in self._paginated_urls)
         await asyncio.gather(*tasks)
 
-    async def page_task(self, url: str) -> None:
+    async def _page_task(self, url: str) -> None:
         """TODO: Try to remove it."""
         self._url = url
         await self._get_page_data()
@@ -170,7 +163,7 @@ class ProductFactory(BaseFactory):
     @property
     def _paginated_urls(self) -> Generator[str, None, None]:
         return (f'{self._url}?page={_}'
-                for _ in range(2, self.paginator_size + 1))
+                for _ in range(2, self._paginator_size + 1))
 
     def __bool__(self) -> bool:
         """TODO: Ref! Duplicates with init validation."""

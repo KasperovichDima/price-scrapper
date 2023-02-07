@@ -52,8 +52,8 @@ class TavriaParser:
                 await self.__complete_tasks(tasks)
 
     def _get_next_batch(self) -> None:
-        self._factory_batch = set(self.factories[ElType.PRODUCT].pop()
-                                  for _ in range(self.batch_size))
+        self._factory_batch = {self.factories[ElType.PRODUCT].pop()
+                               for _ in range(self.batch_size)}
 
     @property
     def batch_size(self) -> int:
@@ -64,7 +64,7 @@ class TavriaParser:
 
     async def single_factory_task(self, factory: BaseFactory,
                                   aio_session) -> None:
-        print('{} in progress...'.format(factory))
+        print(f'{factory} in progress...')
         await factory(aio_session)
         self._factory_batch.remove(factory)
 

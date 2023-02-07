@@ -1,5 +1,6 @@
 """Custom datatypes for the project."""
 from __future__ import annotations
+
 from enum import Enum, auto
 from typing import TypeVar
 
@@ -36,7 +37,6 @@ class RetailerName(Enum):
 
     def __lt__(self, other: RetailerName) -> bool:
         return self.value < other.value
-
 
 
 PriceRecord = tuple[int, int, float, float | None]
