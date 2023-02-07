@@ -22,13 +22,13 @@ class FactoryCreator:
     _factories: defaultdict[int, BaseFactory]
 
     def __init__(self) -> None:
-        """TODO: Home url should be taken from retailer db object."""
         self._tag_type: ElType = ElType.CATEGORY
         self._factories = defaultdict(self.create_factory)
 
     def __call__(self, home_url: str, db_session: Session) -> Factories:
+        """TODO: Home url should be taken from retailer db object."""
         BaseFactory.object_box = ObjectBox(db_session)
-        for tag in u.get_catalog_tags(home_url):
+        for tag in u.get_catalog(home_url):
             self._tag_type = u.tag_type_for(tag)
             if not self._tag_type:
                 continue

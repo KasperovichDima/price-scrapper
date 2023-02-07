@@ -7,6 +7,7 @@ from urllib import request
 import aiohttp
 
 from bs4 import BeautifulSoup as bs
+from bs4 import ResultSet
 from bs4.element import Tag
 
 from parsers import schemas as s
@@ -34,25 +35,37 @@ def group_is_outstanding(tag: Tag) -> bool:
         return False
 
 
-def get_catalog_tags(url: str) -> Iterable[Tag]:
-    """Parses home page and returns parsed tags of catalog menu."""
+def get_catalog(url: str) -> ResultSet[Tag]:
+    """
+    Parses home page and returns parsed tags of catalog menu.
+    TODO: Refactoring! Duplicating!
+    """
     response = request.urlopen(url)
     return bs(response, 'lxml').find(
         'aside', {'class': 'col-md-3 sidebar__container'}
     ).find_all()
 
 
+def get_group_tags(url: str) -> Iterable[Tag]:
+    """
+    Returns only group tags from catalog menu.
+    TODO: Refactoring! Duplicating!
+    """
+    response = request.urlopen(url)
+    catalog = bs(response, 'lxml').find(
+        'aside', {'class': 'col-md-3 sidebar__container'}
+    )
+    return (_ for _ in catalog.find_all('a') if 'catalog' in _.get('href'))
+
+
 def get_url(tag: Tag) -> str | None:
-    try:
-        url = tag.get('href').strip()
-        assert 'catalog' in url
+    if 'catalog' in (url := tag.get('href', '').strip()):
         return url
-    except (KeyError, AssertionError, AttributeError):
-        return None
+    return None
 
 
 def get_type_checker():
-
+    """TODO: Could be unsafe if call it one more time!"""
     discount_checked = False
 
     def get_tag_type(tag: Tag) -> ElType | None:
