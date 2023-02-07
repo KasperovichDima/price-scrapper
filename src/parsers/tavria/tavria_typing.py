@@ -1,6 +1,5 @@
 """Tavria parser typing."""
-from typing import NamedTuple
-from typing import Generator
+from typing import Generator, NamedTuple
 
 from catalog.models import BaseCatalogElement
 
@@ -14,3 +13,5 @@ class ObjectParents(NamedTuple):
 
 
 BaseFactoryReturnType = Generator[BaseCatalogElement, None, None]
+
+Parents = tuple[str, str | None, str]
