@@ -16,7 +16,7 @@ def __create_html_getter() -> Callable[[str], str]:
     html = dict(
         catalog_buckwheat=g.catalog_buckwheat,
         catalog_corn=g.catalog_corn,
-        catalog_empty=g.catalog_empty,
+        catalog_chips=g.catalog_chips,
         catalog_fast_food=g.catalog_fast_food,
         catalog_protein=g.catalog_protein,
         catalog_rice=g.catalog_rice,
@@ -34,7 +34,7 @@ html_for = __create_html_getter()
 
 class ProductFactory_test(ProductFactory):
 
-    async def get_page_html(self) -> None:
+    async def _get_page_html(self) -> None:
         assert self._url
         self._html = html_for(self._url)
 
