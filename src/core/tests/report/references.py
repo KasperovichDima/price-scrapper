@@ -21,8 +21,8 @@ get_report_ok_ref = {
         {'id': 3, 'name': 'Vodka Finlandia 0,7', 'parent_id': 1, 'el_type': 4, 'prime_cost': 115.96}        # noqa: E501
     ],
     'retailers': [
-        {'id': 2, 'name': 'Silpo'},
-        {'id': 1, 'name': 'Tavria'}
+        {'id': 2, 'name': 'SILPO'},
+        {'id': 1, 'name': 'TAVRIA'}
     ],
     'content': [
         {'product_id': 1, 'retailer_id': 1, 'retail_price': 50.0, 'promo_price': 40.0},  # noqa: E501

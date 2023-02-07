@@ -15,8 +15,8 @@ add_request_ok_ref = {
         {'id': 3, 'name': 'Vodka Finlandia 0,7', 'parent_id': 1, 'el_type': 4}
     ],
     'retailers': [
-        {'id': 2, 'name': 'Silpo'},
-        {'id': 1, 'name': 'Tavria'}
+        {'id': 2, 'name': 'SILPO'},
+        {'id': 1, 'name': 'TAVRIA'}
     ]
 }
 
@@ -31,6 +31,6 @@ remove_items_ok_ref = {
         {'id': 2, 'name': 'Vine Cartuli Vazi 0,7', 'parent_id': 1, 'el_type': 4},  # noqa: E501
     ],
     'retailers': [
-        {'id': 2, 'name': 'Silpo'},
+        {'id': 2, 'name': 'SILPO'},
     ]
 }

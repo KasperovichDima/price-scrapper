@@ -1,4 +1,5 @@
 """Custom datatypes for the project."""
+from __future__ import annotations
 from enum import Enum, auto
 from typing import TypeVar
 
@@ -24,3 +25,18 @@ folder_types = [_ for _ in ElType if _ is not ElType.PRODUCT]
 
 
 db_type = TypeVar('db_type')
+
+
+class RetailerName(Enum):
+    """Available retailers"""
+
+    TAVRIA = 'TAVRIA'
+    SILPO = 'SILPO'
+    EPICENTR = 'EPICENTR'
+
+    def __lt__(self, other: RetailerName) -> bool:
+        return self.value < other.value
+
+
+
+PriceRecord = tuple[int, int, float, float | None]

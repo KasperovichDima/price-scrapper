@@ -1,12 +1,17 @@
 """Retailer models."""
-from base_models import BaseWithRepr
+from base_models import BaseWithID
 
-from sqlalchemy import Column, String
+from project_typing import RetailerName
+
+from sqlalchemy import Column, Enum, String
 
 
-class Retailer(BaseWithRepr):  # type: ignore
+class Retailer(BaseWithID):  # type: ignore
     """Retailer class."""
     __tablename__ = "retailer"
 
-    name = Column(String(50), index=True)
-    home_url = Column(String(100))
+    name = Column(Enum(RetailerName), nullable=False)
+    home_url = Column(String(100), nullable=False)
+
+    def __repr__(self) -> str:
+        return self.name.value

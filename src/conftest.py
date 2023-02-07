@@ -20,7 +20,7 @@ from fastapi.testclient import TestClient
 
 from main import app
 
-from project_typing import ElType, UserType
+from project_typing import ElType, UserType, RetailerName
 
 import pytest
 
@@ -116,9 +116,9 @@ def fake_db_content(fake_session):
             Product(name='Spred 200gr', parent_id=3, prime_cost=27.80),
         ],
         [
-            Retailer(name='Tavria', home_url='https://www.tavriav.ua/'),
-            Retailer(name='Silpo', home_url='https://shop.silpo.ua/'),
-            Retailer(name='Epicentr', home_url='https://epicentrk.ua/shop/'),
+            Retailer(name=RetailerName.TAVRIA, home_url='https://www.tavriav.ua/'),
+            Retailer(name=RetailerName.SILPO, home_url='https://shop.silpo.ua/'),
+            Retailer(name=RetailerName.EPICENTR, home_url='https://epicentrk.ua/shop/'),
         ],
     )
 
