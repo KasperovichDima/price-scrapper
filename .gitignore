@@ -2,6 +2,7 @@
 *.db
 settings.json
 just_a_file.py
+terminal
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
