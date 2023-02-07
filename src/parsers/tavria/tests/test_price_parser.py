@@ -13,7 +13,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from . import reference as r
-from ..price_parser import PriceParser_test
+from .mock_classes import PriceParser_test
 
 
 async def fake_last_price_lines(product_ids: Iterable[int],
@@ -47,8 +47,7 @@ class TestTavriaPriceParser:
                for _ in results}
         ref = {(_.retailer_id,
                 _.product_id,
-                decimal.Decimal(str(_.retail_price))
-                if _.retail_price else None,
+                decimal.Decimal(str(_.retail_price)),
                 decimal.Decimal(str(_.promo_price))
                 if _.promo_price else None)
                for _ in r.ref_price_lines}

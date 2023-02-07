@@ -2,14 +2,18 @@
 from typing import Callable
 
 from parsers.tavria import BaseFactory
-from parsers.tavria import FactoryCreator
+from parsers.tavria import FactoryCreator as CatalogFactoryCreator
 from parsers.tavria import FolderFactory
 from parsers.tavria import ProductFactory
 from parsers.tavria import utils as u
+from parsers.tavria.price_parser import FactoryCreator as PriceFactoryCreator
+from parsers.tavria.price_parser import PriceFactory
+from parsers.tavria.price_parser import PriceParser
 
 from project_typing import ElType
 
 from .html import groups as g
+from .html import groups_v2 as g2
 
 
 def __create_html_getter() -> Callable[[str], str]:
@@ -39,7 +43,7 @@ class ProductFactory_test(ProductFactory):
         self._html = html_for(self._url)
 
 
-class FactoryCreator_test(FactoryCreator):
+class CatalogFactoryCreator_test(CatalogFactoryCreator):
 
     def create_factory(self) -> BaseFactory:
         schema = u.get_schema_for(self._tag_type)
@@ -53,3 +57,41 @@ class FactoryCreator_test(FactoryCreator):
         create_cls = ProductFactory_test if self._tag_type is ElType.PRODUCT\
             else FolderFactory
         return create_cls(**init_payload.dict())
+
+
+mocked_pages: dict[str, str] = dict(
+    catalog_buckwheat=g2.catalog_buckwheat,
+    catalog_corn=g2.catalog_corn,
+    catalog_rice=g2.catalog_rice,
+    catalog_protein=g2.catalog_protein,
+    catalog_fast_food=g2.catalog_fast_food,
+    catalog_chips=g2.catalog_chips,
+)
+mocked_pages['catalog_rice?page=2'] = g2.catalog_rice_2
+mocked_pages['catalog_rice?page=3'] = g2.catalog_rice_3
+
+
+class PriceFactory_test(PriceFactory):
+    """Mock class for testing with changed _get_page_html method"""
+
+    async def _get_page_html(self) -> str | None:
+        return mocked_pages[self.url]
+
+
+class PriceFactoryCreator_test(PriceFactoryCreator):
+    """Mock class for testing with changed create_factory method."""
+
+    def create_factory(self, tag) -> None:
+        """Should use PriceFactory_test class instead of PriceFactory."""
+        self._factories.append(
+            PriceFactory_test(self.retailer_id, u.get_url(tag))
+        )
+
+
+class PriceParser_test(PriceParser):
+    """Mock class for testing with changed get_factories method."""
+
+    def get_factories(self) -> None:
+        """Should use FactoryCreator_test class instead of FactoryCreator."""
+        self.factories = PriceFactoryCreator_test()(self.retailer.home_url,
+                                                    self.retailer.id)

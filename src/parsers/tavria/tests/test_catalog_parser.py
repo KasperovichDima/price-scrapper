@@ -15,7 +15,7 @@ class TestTavriaCatalogParser:
 
     @pytest.mark.asyncio
     async def test_parser_all_cases(self, fake_session, fake_catalog_db):
-        TavriaParser._factory_creator_class = c.FactoryCreator_test
+        TavriaParser._factory_creator_class = c.CatalogFactoryCreator_test
 
         await TavriaParser().refresh_catalog(TAVRIA_TEST_URL, fake_session)
         result_folders = await crud.get_folders(fake_session)

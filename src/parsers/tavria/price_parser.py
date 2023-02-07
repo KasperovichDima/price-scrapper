@@ -10,7 +10,7 @@ from typing import Generator, Iterable, NamedTuple
 import aiohttp
 
 from bs4 import BeautifulSoup as bs
-from bs4 import ResultSet, Tag 
+from bs4 import ResultSet, Tag
 
 from catalog.models import Product
 
@@ -290,40 +290,3 @@ class PriceParser:
         except asyncio.exceptions.TimeoutError:
             if self._factory_batch:
                 self.factories.extend(self._factory_batch)
-
-
-from .tests.html import groups_v2 as g
-
-mocked_pages: dict[str, str] = dict(
-    catalog_buckwheat=g.catalog_buckwheat,
-    catalog_corn=g.catalog_corn,
-    catalog_rice=g.catalog_rice,
-    catalog_protein=g.catalog_protein,
-    catalog_fast_food=g.catalog_fast_food,
-    catalog_chips=g.catalog_chips,
-)
-mocked_pages['catalog_rice?page=2'] = g.catalog_rice_2
-mocked_pages['catalog_rice?page=3'] = g.catalog_rice_3
-
-
-class PriceFactory_test(PriceFactory):
-    """Mock class for testing with changed _get_page_html method"""
-
-    async def _get_page_html(self) -> str | None:
-        return mocked_pages[self.url]
-
-
-class FactoryCreator_test(FactoryCreator):
-    """Mock class for testing with changed create_factory method."""
-
-    def create_factory(self, tag) -> None:
-        """Should use PriceFactory_test class instead of PriceFactory."""
-        self._factories.append(PriceFactory_test(self.retailer_id, u.get_url(tag)))
-
-
-class PriceParser_test(PriceParser):
-    """Mock class for testing with changed get_factories method."""
-
-    def get_factories(self) -> None:
-        """Should use FactoryCreator_test class instead of FactoryCreator."""
-        self.factories = FactoryCreator_test()(self.retailer.home_url, self.retailer.id)
