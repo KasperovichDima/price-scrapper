@@ -1,5 +1,6 @@
 catalog_buckwheat = """
-<a href="/product/6195/">Крупа Українська Зірка Гречана 1 кг</a>
+<div id="6195" data-name="Крупа Українська Зірка Гречана 1 кг" data-price="65.90" data-item_category="Гречана крупа" data-item_category2="Крупи" data-item_category3="Бакалія" data-item_category4="" data-brand="" data-item_list_name="Каталог" data-item_list_id="2" data-index="1" data-quantity="1" class="products__item">
+    <a href="/product/6195/">Крупа Українська Зірка Гречана 1 кг</a>
 <a href="/product/6196/">Крупа Хуторок Гречана 800 г</a>
 <a href="/product/6200/">Крупа Сквирянка Гречана 800 г</a>
 <a href="/product/6203/">Крупа Сквирянка Гречана 800 г непропарена</a>
@@ -21,7 +22,12 @@ catalog_corn = """
 <div class="catalog__pagination"> </div>
 """
 
-catalog_empty = """<div class="catalog__pagination"></div>"""
+catalog_chips = """
+<a href="/product/9431/">Чіпси '7' 70 г зі смаком сметани та зелені (кор.)</a>
+<a href="/product/9508/">Чіпси Люкс 71 г бекон</a>
+<a href="/product/9510/">Чіпси Люкс 133 г сир</a>
+<div class="catalog__pagination"></div>
+"""
 
 catalog_fast_food = """
 <a href="/product/9223/">Локшина Роллтон яєчна 75 г стак. зі смаком Курки по-домашньому</a>
