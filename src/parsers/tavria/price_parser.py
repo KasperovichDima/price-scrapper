@@ -299,7 +299,7 @@ class PriceParser:
         self._factory_batch = {self._factories.pop()
                                for _ in range(self._batch_size)}
 
-    @cached_property
+    @property
     def _batch_size(self) -> int:
         return c.TAVRIA_FACTORIES_PER_SESSION\
             if c.TAVRIA_FACTORIES_PER_SESSION\
