@@ -20,11 +20,12 @@ from fastapi.testclient import TestClient
 
 from main import app
 
-from project_typing import ElType, RetailerName, UserType
+from project_typing import ElType, UserType
 
 import pytest
 
 from retailer.models import Retailer
+from retailer.retailer_typing import RetailerName
 
 from sqlalchemy.orm import Session
 

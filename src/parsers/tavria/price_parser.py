@@ -27,9 +27,10 @@ import crud
 
 from parsers import exceptions as e
 
-from project_typing import PriceRecord, RetailerName
+from project_typing import PriceRecord
 
 from retailer.models import Retailer
+from retailer.retailer_typing import RetailerName
 
 from sqlalchemy.orm import Session
 

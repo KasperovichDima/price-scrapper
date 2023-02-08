@@ -6,9 +6,9 @@ from core.models import PriceLine
 
 import crud
 
-from project_typing import RetailerName  # TODO: Move to retailer!
-
 import pytest
+
+from retailer.retailer_typing import RetailerName
 
 from sqlalchemy.orm import Session
 

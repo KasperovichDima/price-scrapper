@@ -1,7 +1,7 @@
 """Retaqiler validation schemas."""
-from project_typing import RetailerName
-
 from pydantic import BaseModel
+
+from .retailer_typing import RetailerName
 
 
 class RetailerScheme(BaseModel):

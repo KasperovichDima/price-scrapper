@@ -9,11 +9,11 @@ from core.models import PriceLine
 import crud
 
 from project_typing import ElType
-from project_typing import RetailerName
 
 import pytest
 
 from retailer.models import Retailer
+from retailer.retailer_typing import RetailerName
 
 from . import constants as c
 

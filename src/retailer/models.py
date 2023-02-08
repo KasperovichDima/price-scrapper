@@ -1,9 +1,9 @@
 """Retailer models."""
 from base_models import BaseWithID
 
-from project_typing import RetailerName
-
 from sqlalchemy import Column, Enum, String
+
+from .retailer_typing import RetailerName
 
 
 class Retailer(BaseWithID):  # type: ignore

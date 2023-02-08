@@ -12,9 +12,10 @@ from core.models import PriceLine
 
 import crud_exceptions as c_ex
 
-from project_typing import ElType, RetailerName, db_type
+from project_typing import ElType, db_type
 
 from retailer.models import Retailer
+from retailer.retailer_typing import RetailerName
 
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
