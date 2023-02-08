@@ -51,24 +51,19 @@ async def get_parent_id_table(db_session: Session) -> dict[Parents, int]:
     return parents_to_id
 
 
+NameRetailPromo = tuple[str, float, float | None]
+
+
 class FactoryResults(BaseModel):
     """Represents Price factory work
     results with get_records method."""
 
     retailer_id: int
     parents: Parents
-    product_names: deque[str] = deque()
-    retail_prices: deque[float] = deque()
-    promo_prices: deque[float | None] = deque()
+    records: deque[NameRetailPromo] = deque()
 
-    def add_name(self, name: str) -> None:
-        self.product_names.append(name)
-
-    def add_retail_price(self, r_price: float) -> None:
-        self.retail_prices.append(r_price)
-
-    def add_promo_price(self, p_price: float | None) -> None:
-        self.promo_prices.append(p_price)
+    def add_record(self, record: NameRetailPromo) -> None:
+        self.records.append(record)
 
     def get_records(self, prod_name_to_id_table: dict[str, int]
                     ) -> zip[PriceRecord]:
@@ -78,10 +73,10 @@ class FactoryResults(BaseModel):
         """
 
         return zip(
-            (prod_name_to_id_table[name] for name in self.product_names),
-            (self.retailer_id for _ in self.product_names),
-            self.retail_prices,
-            self.promo_prices,
+            (prod_name_to_id_table[rec[0]] for rec in self.records),
+            (self.retailer_id for _ in self.records),
+            (rec[1] for rec in self.records),
+            (rec[2] for rec in self.records),
             strict=True
         )
 
@@ -192,9 +187,11 @@ class PriceFactory:
 
     def _collect_prices(self) -> None:
         for tag in self.product_tags:
-            self.results.add_name(tag.get('data-name'))
-            self.results.add_retail_price(float(tag.get('data-price')))
-            self.results.add_promo_price(self.get_promo_price(tag))
+            self.results.add_record(
+                (tag.get('data-name'),
+                 float(tag.get('data-price')),
+                 self.get_promo_price(tag))
+            )
 
     @staticmethod
     def get_promo_price(tag: Tag) -> float | None:  # type: ignore
