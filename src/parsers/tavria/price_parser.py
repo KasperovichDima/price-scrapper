@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import asyncio
-from array import array
 from collections import deque
-from functools import cached_property
-from typing import Generator, Iterable, NamedTuple
+from functools import cache, cached_property
+from typing import Generator, Iterable
 
 import aiohttp
 
@@ -21,6 +20,8 @@ import crud
 from project_typing import ElType, RetailerName
 from project_typing import PriceRecord
 
+from pydantic import BaseModel
+
 from sqlalchemy.orm import Session
 
 from . import constants as c
@@ -28,24 +29,41 @@ from . import utils as u
 from .tavria_typing import Parents
 
 
-class FactoryResults(NamedTuple):
-    """TODO: Convert to pydantic?"""
+async def get_parent_id_table(db_session: Session) -> dict[Parents, int]:
+    folders = await crud.get_folders(db_session)
+    id_to_folder = {_.id: _ for _ in folders}
+    parents_to_id: dict[Parents, int] = {}
+    for group in (_ for _ in folders if _.el_type is ElType.GROUP):
+        p_folder = id_to_folder[group.parent_id]
+        gp_folder = id_to_folder.get(p_folder.parent_id)
+        c_name = gp_folder.name if gp_folder else p_folder.name
+        s_name = p_folder.name if gp_folder else None
+        g_name = group.name
+        parents = (c_name, s_name, g_name)
+        parents_to_id[parents] = group.id
+    return parents_to_id
+
+
+class FactoryResults(BaseModel):
+    """Represents Price factory work
+    results with get_records method."""
+
     retailer_id: int
     parents: Parents
-    names: Iterable[str]
-    retail_prices: Iterable[float]
-    promo_prices: Iterable[float | None]
+    product_names: deque[str]
+    retail_prices: deque[float]
+    promo_prices: deque[float | None]
 
-    def get_records(
-        self, prod_name_to_id_table: dict[str, int]
-    ) -> Iterable[PriceRecord]:
+    def get_records(self, prod_name_to_id_table: dict[str, int]
+                    ) -> zip[PriceRecord]:
         """
         Returns tuples:
         (product_id, retailer_id, retail_price, promo_price)
         """
+
         return zip(
-            (prod_name_to_id_table[name] for name in self.names),
-            (self.retailer_id for _ in self.names),
+            (prod_name_to_id_table[name] for name in self.product_names),
+            (self.retailer_id for _ in self.product_names),
             self.retail_prices,
             self.promo_prices,
             strict=True
@@ -53,71 +71,52 @@ class FactoryResults(NamedTuple):
 
 
 class Box:
+    """TODO: Choose correct name. What if we will get new product name here?"""
 
-    """TODO: What if we will get new product name here?"""
+    _group_products: list[Product]
 
-    folder_to_id_table: dict[Parents, int] = {}  # TODO: naming
-    retailer_id: int
-    last_price_lines: list[PriceLine]
-    prod_name_to_id_table: dict[str, int]
-    factory_results: FactoryResults
-    saved_objects: list[PriceLine]  # TODO: Make dynamic
-    group_products: list[Product]
-
-    def __init__(self, db_session: Session) -> None:
+    def __init__(self, db_session: Session,
+                 parents_to_id: dict[Parents, int]) -> None:
         self._db_session = db_session
+        self._parents_to_id = parents_to_id
 
     async def add(self, factory_results: FactoryResults) -> None:
+        """Add factory results to box. Data will be processed and saved."""
+        self._factory_results = factory_results
+        await self._get_group_products()
+        await self._save_new_records()
 
-        self.factory_results = factory_results
-        await self.get_group_products()
-        await self.get_last_price_lines()
-        self.create_prod_name_to_id_table()
-        await self.save_new_records()
-        # self.clear()
-
-    async def create_folder_to_id_table(self) -> None:
-        folders = await crud.get_folders(self._db_session)
-        id_to_folder = {_.id: _ for _ in folders}
-        groups = (_ for _ in folders if _.el_type is ElType.GROUP)
-        for group in groups:
-            p_folder = id_to_folder[group.parent_id]
-            gp_folder = id_to_folder.get(p_folder.parent_id)
-            c_name = gp_folder.name if gp_folder else p_folder.name
-            s_name = p_folder.name if gp_folder else None
-            g_name = group.name
-            parents = (c_name, s_name, g_name)
-            self.folder_to_id_table[parents] = group.id
+    async def _get_group_products(self) -> None:
+        self._group_products = await crud.get_products(
+            self._db_session, folder_ids=(self._folder_id,)
+        )
 
     @property
-    def folder_id(self) -> int:
-        return self.folder_to_id_table[self.factory_results.parents]
+    def _folder_id(self) -> int:
+        return self._parents_to_id[self._factory_results.parents]
 
-    async def get_group_products(self) -> None:
-        # TODO: Only active?
-        self.group_products = await crud.get_products(
-            self._db_session, folder_ids=(self.folder_id,)
+    async def _save_new_records(self) -> None:
+        if new_records := await self._get_unique_records():
+            await crud.add_instances(new_records, self._db_session)
+
+    async def _get_unique_records(self) -> Generator[PriceLine, None, None] | None:
+        records = set(
+            self._factory_results.get_records(self._prod_name_to_id)
         )
+        records.difference_update(await self._last_price_lines)
+        return (PriceLine.from_tuple(rec) for rec in records)\
+            if records else None
 
-    async def get_last_price_lines(self) -> None:
-        prod_ids = (_.id for _ in self.group_products)
-        self.last_price_lines = await crud.get_last_price_lines(
-            prod_ids, self.factory_results.retailer_id, self._db_session
+    @property
+    def _prod_name_to_id(self) -> dict[str, int]:
+        return {_.name: _.id for _ in self._group_products}
+
+    @property
+    async def _last_price_lines(self) -> list[PriceLine]:
+        prod_ids = (_.id for _ in self._group_products)
+        return await crud.get_last_price_lines(
+            prod_ids, self._factory_results.retailer_id, self._db_session
         )
-
-    def create_prod_name_to_id_table(self) -> None:
-        self.prod_name_to_id_table = {
-            _.name: _.id for _ in self.group_products
-        }
-
-    async def save_new_records(self) -> None:
-        new_records = set(
-            self.factory_results.get_records(self.prod_name_to_id_table)
-        )
-        new_records.difference_update(self.last_price_lines)
-        if new_records:
-            to_save = (PriceLine.from_tuple(_) for _ in new_records)
-            await crud.add_instances(to_save, self._db_session)
 
 
 class PriceFactory:
@@ -131,7 +130,7 @@ class PriceFactory:
         self.retailer_id = retailer_id
         self.url = url
         self.names: deque[str] = deque()
-        self.retail_prices: array[float] = array('f')
+        self.retail_prices: deque[float] = deque()
         self.promo_prices: deque[float | None] = deque()
 
     async def __call__(self, aio_session: aiohttp.ClientSession) -> None:
@@ -216,8 +215,13 @@ class PriceFactory:
         return self.url
 
     def collect_results(self) -> FactoryResults:
-        return FactoryResults(self.retailer_id, self.parents, self.names,
-                              self.retail_prices, self.promo_prices)
+        return FactoryResults(
+            retailer_id=self.retailer_id,
+            parents=self.parents,
+            product_names=self.names,
+            retail_prices=self.retail_prices,
+            promo_prices=self.promo_prices
+        )
 
 
 class FactoryCreator:
@@ -252,8 +256,8 @@ class PriceParser:
     async def refresh_prices(self, retailer_name: RetailerName,
                              db_session: Session) -> None:
         self.retailer = await crud.get_ratailer(retailer_name, db_session)
-        PriceFactory.box = Box(db_session)
-        await PriceFactory.box.create_folder_to_id_table()  # looks ugly...
+        PriceFactory.box = Box(db_session, await get_parent_id_table(db_session))
+        # await PriceFactory.box.create_folder_to_id_table()  # looks ugly...
         self.get_factories()
         while self.factories:
             self._get_next_batch()  # TODO: Convert to property
