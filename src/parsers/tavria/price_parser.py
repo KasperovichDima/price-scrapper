@@ -264,7 +264,7 @@ class FactoryCreator:
         return self._factories
 
     def create_factory(self, tag) -> None:
-        if url :=  u.get_url(tag):
+        if url := u.get_url(tag):
             self._factories.append(PriceFactory(url, self.retailer.id))
 
     def remove_discount_page(self) -> None:
@@ -282,7 +282,8 @@ class PriceParser:
     async def refresh_prices(self, retailer_name: RetailerName,
                              db_session: Session) -> None:
         self._retailer = await crud.get_ratailer(retailer_name, db_session)
-        PriceFactory._box = Box(db_session, await u.get_parent_id_table(db_session))
+        PriceFactory._box = Box(db_session,
+                                await u.get_parent_id_table(db_session))
         self._get_factories()
         while self._factories:
             self._get_next_batch()
@@ -306,7 +307,7 @@ class PriceParser:
             else len(self._factories)
 
     async def _single_factory_task(self, factory: PriceFactory,
-                                  aio_session) -> None:
+                                   aio_session) -> None:
         print(f'{factory} in progress...')
         await factory(aio_session)
         self._factory_batch.remove(factory)
