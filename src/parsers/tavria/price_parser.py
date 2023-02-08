@@ -1,10 +1,11 @@
 """
 Tavria price parser.
 TODO:
-1. Classes refactoring
-2. naming refactoring
+1. Classes refactoring [x]
+2. naming refactoring [x]
 3. flake 8
 4. All TODOs
+5. Add protocols
 """
 from __future__ import annotations
 
@@ -24,36 +25,17 @@ from core.models import PriceLine
 
 import crud
 
-from project_typing import ElType, RetailerName
-from project_typing import PriceRecord
+from project_typing import PriceRecord, RetailerName
 
 from pydantic import BaseModel
 
-from sqlalchemy.orm import Session
-
 from retailer.models import Retailer
+
+from sqlalchemy.orm import Session
 
 from . import constants as c
 from . import utils as u
-from .tavria_typing import Parents
-
-
-async def get_parent_id_table(db_session: Session) -> dict[Parents, int]:
-    folders = await crud.get_folders(db_session)
-    id_to_folder = {_.id: _ for _ in folders}
-    parents_to_id: dict[Parents, int] = {}
-    for group in (_ for _ in folders if _.el_type is ElType.GROUP):
-        p_folder = id_to_folder[group.parent_id]
-        gp_folder = id_to_folder.get(p_folder.parent_id)
-        c_name = gp_folder.name if gp_folder else p_folder.name
-        s_name = p_folder.name if gp_folder else None
-        g_name = group.name
-        parents = (c_name, s_name, g_name)
-        parents_to_id[parents] = group.id
-    return parents_to_id
-
-
-NameRetailPromo = tuple[str, float, float | None]
+from .tavria_typing import NameRetailPromo, Parents
 
 
 class FactoryResults(BaseModel):
@@ -282,10 +264,10 @@ class PriceParser:
     async def refresh_prices(self, retailer_name: RetailerName,
                              db_session: Session) -> None:
         self._retailer = await crud.get_ratailer(retailer_name, db_session)
-        PriceFactory._box = Box(db_session, await get_parent_id_table(db_session))
+        PriceFactory._box = Box(db_session, await u.get_parent_id_table(db_session))
         self._get_factories()
         while self._factories:
-            self._get_next_batch()  # TODO: Convert to property
+            self._get_next_batch()
             async with u.aiohttp_session_maker() as aio_session:
                 tasks = (self._single_factory_task(factory, aio_session)
                          for factory in self._factory_batch)

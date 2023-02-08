@@ -10,14 +10,18 @@ from bs4 import BeautifulSoup as bs
 from bs4 import ResultSet
 from bs4.element import Tag
 
+import crud
+
 from parsers import schemas as s
 
 from project_typing import ElType
 
 from pydantic import BaseModel
 
+from sqlalchemy.orm import Session
+
 from . import constants as c
-from .parsers_typing import Factories
+from .tavria_typing import Parents
 
 
 @lru_cache(1)
@@ -119,6 +123,21 @@ def create_schema_getter():
 get_schema_for = create_schema_getter()
 
 
-def factories_are_valid(factories: Factories) -> bool:
+def factories_are_valid(factories) -> bool:
     return len(factories[ElType.GROUP])\
         == len(set(factories[ElType.GROUP]))
+
+
+async def get_parent_id_table(db_session: Session) -> dict[Parents, int]:
+    folders = await crud.get_folders(db_session)
+    id_to_folder = {_.id: _ for _ in folders}
+    parents_to_id: dict[Parents, int] = {}
+    for group in (_ for _ in folders if _.el_type is ElType.GROUP):
+        p_folder = id_to_folder[group.parent_id]
+        gp_folder = id_to_folder.get(p_folder.parent_id)
+        c_name = gp_folder.name if gp_folder else p_folder.name
+        s_name = p_folder.name if gp_folder else None
+        g_name = group.name
+        parents = (c_name, s_name, g_name)
+        parents_to_id[parents] = group.id
+    return parents_to_id

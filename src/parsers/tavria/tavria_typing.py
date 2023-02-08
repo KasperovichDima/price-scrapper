@@ -15,3 +15,5 @@ class ObjectParents(NamedTuple):
 BaseFactoryReturnType = Generator[BaseCatalogElement, None, None]
 
 Parents = tuple[str, str | None, str]
+
+NameRetailPromo = tuple[str, float, float | None]

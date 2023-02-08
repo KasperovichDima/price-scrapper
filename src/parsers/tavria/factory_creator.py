@@ -9,7 +9,10 @@ from sqlalchemy.orm import Session
 from . import utils as u
 from .factory import BaseFactory, FolderFactory, ProductFactory
 from .object_box import ObjectBox
-from .parsers_typing import Factories
+
+
+#  TODO: Remove after refactoring
+Factories = defaultdict[ElType, deque[BaseFactory]]
 
 
 class FactoryCreator:

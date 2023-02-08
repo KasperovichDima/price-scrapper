@@ -10,9 +10,8 @@ from sqlalchemy.orm import Session
 from . import constants as c
 from . import utils as u
 from .factory import BaseFactory
-from .factory_creator import FactoryCreator
+from .factory_creator import Factories, FactoryCreator
 from .parent_table import ParentTable
-from .parsers_typing import Factories
 
 
 class TavriaParser:
