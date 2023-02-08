@@ -84,7 +84,7 @@ class PriceFactoryCreator_test(PriceFactoryCreator):
     def create_factory(self, tag) -> None:
         """Should use PriceFactory_test class instead of PriceFactory."""
         self._factories.append(
-            PriceFactory_test(u.get_url(tag), self.retailer_id)
+            PriceFactory_test(u.get_url(tag), self.retailer.id)
         )
 
 
@@ -93,5 +93,4 @@ class PriceParser_test(PriceParser):
 
     def _get_factories(self) -> None:
         """Should use FactoryCreator_test class instead of FactoryCreator."""
-        self._factories = PriceFactoryCreator_test()(self._retailer.home_url,
-                                                     self._retailer.id)
+        self._factories = PriceFactoryCreator_test()(self._retailer)

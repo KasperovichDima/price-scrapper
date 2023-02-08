@@ -252,20 +252,20 @@ class FactoryCreator:
     _factories: deque[PriceFactory] = deque()
     retailer_id: int
 
-    def __call__(self, home_url: str, retailer_id: int) -> deque[PriceFactory]:
+    def __call__(self, retailer: Retailer) -> deque[PriceFactory]:
         """
         TODO: Home url should be taken from retailer db object.
               Refactoring needed!
         """
-        self.retailer_id = retailer_id  # FIXME
-        for tag in u.get_group_tags(home_url):
+        self.retailer = retailer
+        for tag in u.get_group_tags(retailer.home_url):
             self.create_factory(tag)
         self.remove_discount_page()
         return self._factories
 
     def create_factory(self, tag) -> None:
         if url :=  u.get_url(tag):
-            self._factories.append(PriceFactory(url, self.retailer_id))
+            self._factories.append(PriceFactory(url, self.retailer.id))
 
     def remove_discount_page(self) -> None:
         if 'discount' in str(self._factories[0]):
@@ -292,8 +292,7 @@ class PriceParser:
                 await self._complete_tasks(tasks)
 
     def _get_factories(self) -> None:
-        self._factories = FactoryCreator()(self._retailer.home_url,  # type: ignore
-                                           self._retailer.id)  # type: ignore
+        self._factories = FactoryCreator()(self._retailer)
 
     def _get_next_batch(self) -> None:
         self._factory_batch = {self._factories.pop()
