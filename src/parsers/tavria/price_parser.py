@@ -1,10 +1,17 @@
-"""Tavria price parser."""
+"""
+Tavria price parser.
+TODO:
+1. Classes refactoring
+2. naming refactoring
+3. flake 8
+4. All TODOs
+"""
 from __future__ import annotations
 
 import asyncio
 from collections import deque
-from functools import cache, cached_property
-from typing import Generator, Iterable
+from functools import cached_property
+from typing import Generator
 
 import aiohttp
 
@@ -50,9 +57,18 @@ class FactoryResults(BaseModel):
 
     retailer_id: int
     parents: Parents
-    product_names: deque[str]
-    retail_prices: deque[float]
-    promo_prices: deque[float | None]
+    product_names: deque[str] = deque()
+    retail_prices: deque[float] = deque()
+    promo_prices: deque[float | None] = deque()
+
+    def add_name(self, name: str) -> None:
+        self.product_names.append(name)
+
+    def add_retail_price(self, r_price: float) -> None:
+        self.retail_prices.append(r_price)
+
+    def add_promo_price(self, p_price: float | None) -> None:
+        self.promo_prices.append(p_price)
 
     def get_records(self, prod_name_to_id_table: dict[str, int]
                     ) -> zip[PriceRecord]:
@@ -122,27 +138,24 @@ class Box:
 class PriceFactory:
 
     product_tags: ResultSet[Tag]
-    parents: Parents
     paginator: ResultSet[Tag]
     box: Box
+    results: FactoryResults
 
     def __init__(self, retailer_id: int, url: str) -> None:
         self.retailer_id = retailer_id
         self.url = url
-        self.names: deque[str] = deque()
-        self.retail_prices: deque[float] = deque()
-        self.promo_prices: deque[float | None] = deque()
 
     async def __call__(self, aio_session: aiohttp.ClientSession) -> None:
         self._aio_session = aio_session
         await self._get_page_tags()
-        self._set_parents()
+        self.prepare_results()
         self._collect_prices()
         await self._get_paginated_content()
-        await self.box.add(self.collect_results())
+        await self.box.add(self.results)
 
     async def _get_page_tags(self) -> None:
-        """Get page data using aio_session if _url is specified."""
+        """Get page data using aio_session for self.url."""
         # TODO: if not self._html:
         product_area = bs(await self._get_page_html(), 'lxml')\
             .find('div', {'class': "catalog-products"})
@@ -153,35 +166,40 @@ class PriceFactory:
         ).find_all('a')
 
     async def _get_page_html(self) -> str | None:
-        """TODO: This function should return html."""
-
-        async with self._aio_session.get(self.url) as rsp:  # type: ignore
+        async with self._aio_session.get(self.url) as rsp:
             if rsp.status != 200:
                 #  TODO: add log and email developer here
                 print(f'something went wrong while parsing {self.url}...')
                 return None
             return await rsp.text()
 
-    def _set_parents(self) -> None:
-        tag = self.product_tags[0]
-        c_name = tag.get('data-item_category3')
-        s_name = tag.get('data-item_category2')
-        self.parents = (
+    def prepare_results(self) -> None:
+        self.results = FactoryResults(
+            retailer_id=self.retailer_id,
+            parents=self.parents,
+        )
+
+    @property
+    def parents(self) -> Parents:
+        first_tag = self.product_tags[0]
+        c_name = first_tag.get('data-item_category3')
+        s_name = first_tag.get('data-item_category2')
+        return (
             c_name if c_name else s_name,
             s_name if c_name else None,
-            tag.get('data-item_category')
+            first_tag.get('data-item_category')
         )
 
     def _collect_prices(self) -> None:
         for tag in self.product_tags:
-            self.names.append(tag.get('data-name'))
-            self.retail_prices.append(float(tag.get('data-price')))
-            self.promo_prices.append(self.get_discount_price(tag))
+            self.results.add_name(tag.get('data-name'))
+            self.results.add_retail_price(float(tag.get('data-price')))
+            self.results.add_promo_price(self.get_promo_price(tag))
 
     @staticmethod
-    def get_discount_price(tag: Tag) -> float | None:  # type: ignore
-        if discount := tag.find('span', {'class': 'price__discount'}):
-            return float(discount.text.strip().removesuffix(' ₴'))
+    def get_promo_price(tag: Tag) -> float | None:  # type: ignore
+        if promo := tag.find('span', {'class': 'price__discount'}):
+            return float(promo.text.strip().removesuffix(' ₴'))
 
     @property
     def _page_is_paginated(self) -> bool:
@@ -197,7 +215,7 @@ class PriceFactory:
     async def _get_paginated_content(self):
         if not self._page_is_paginated:
             return
-        tasks = (self._page_task(_) for _ in self._paginated_urls)
+        tasks = (self._page_task(url) for url in self._paginated_urls)
         await asyncio.gather(*tasks)
 
     async def _page_task(self, url: str) -> None:
@@ -213,15 +231,6 @@ class PriceFactory:
 
     def __repr__(self) -> str:
         return self.url
-
-    def collect_results(self) -> FactoryResults:
-        return FactoryResults(
-            retailer_id=self.retailer_id,
-            parents=self.parents,
-            product_names=self.names,
-            retail_prices=self.retail_prices,
-            promo_prices=self.promo_prices
-        )
 
 
 class FactoryCreator:
