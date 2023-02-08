@@ -6,9 +6,7 @@ from parsers.tavria import FactoryCreator as CatalogFactoryCreator
 from parsers.tavria import FolderFactory
 from parsers.tavria import ProductFactory
 from parsers.tavria import utils as u
-from parsers.tavria.price_parser import FactoryCreator as PriceFactoryCreator
 from parsers.tavria.price_parser import PriceFactory
-from parsers.tavria.price_parser import PriceParser
 
 from project_typing import ElType
 
@@ -76,21 +74,3 @@ class PriceFactory_test(PriceFactory):
 
     async def _get_page_html(self) -> str | None:
         return mocked_pages[self._url]
-
-
-class PriceFactoryCreator_test(PriceFactoryCreator):
-    """Mock class for testing with changed create_factory method."""
-
-    def create_factory(self, tag) -> None:
-        """Should use PriceFactory_test class instead of PriceFactory."""
-        self._factories.append(
-            PriceFactory_test(u.get_url(tag), self.retailer.id)
-        )
-
-
-class PriceParser_test(PriceParser):
-    """Mock class for testing with changed get_factories method."""
-
-    def _get_factories(self) -> None:
-        """Should use FactoryCreator_test class instead of FactoryCreator."""
-        self._factories = PriceFactoryCreator_test()(self._retailer)

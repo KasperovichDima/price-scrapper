@@ -12,7 +12,7 @@ from __future__ import annotations
 import asyncio
 from collections import deque
 from functools import cached_property
-from typing import Generator
+from typing import Generator, Iterable
 
 import aiohttp
 
@@ -25,7 +25,7 @@ from core.models import PriceLine
 
 import crud
 
-from parsers.exceptions import UnexpectedParserError
+from parsers import exceptions as e
 
 from project_typing import PriceRecord, RetailerName
 
@@ -77,14 +77,21 @@ class Box:
     """TODO: Choose correct name. What if we will get new product name here?"""
 
     _group_products: list[Product]
+    _db_session: Session
+    _parents_to_id: dict[Parents, int]
 
-    def __init__(self, db_session: Session,
-                 parents_to_id: dict[Parents, int]) -> None:
+    __initialized = False
+
+    async def initialize(self, db_session: Session) -> None:
         self._db_session = db_session
-        self._parents_to_id = parents_to_id
+        self._parents_to_id = await u.get_parent_id_table(db_session)
+        self.__initialized = True
 
     async def add(self, factory_results: FactoryResults) -> None:
         """Add factory results to box. Data will be processed and saved."""
+        if not self.__initialized:
+            raise e.NotInitializedError('Box is not initialized. It seems, you '
+                                        'forgot to await initialize method first.')
         self._factory_results = factory_results
         await self._get_group_products()
         await self._save_new_records()
@@ -102,7 +109,7 @@ class Box:
         if new_records := await self._get_unique_records():
             await crud.add_instances(new_records, self._db_session)
 
-    async def _get_unique_records(self) -> Generator[PriceLine] | None:
+    async def _get_unique_records(self) -> Iterable[PriceLine] | None:
         records = set(
             self._factory_results.get_price_records(self._prod_name_to_id)
         )
@@ -122,14 +129,15 @@ class Box:
         )
 
 
+box = Box()
+
+
 class PriceFactory:
 
     """Factory collects price records from page and pages's
     paginated content and transfer them to the box."""
 
     _product_tags: ResultSet[Tag]
-    _paginator: ResultSet[Tag]
-    _box: Box
     _results: FactoryResults
 
     def __init__(self, url: str, retailer_id: int) -> None:
@@ -144,12 +152,12 @@ class PriceFactory:
         self._aio_session = aio_session
         try:
             await self._get_page_tags()
-        except UnexpectedParserError:
+        except e.UnexpectedParserError:
             return
         self._collect_prices()
         self._results.set_parents(self.parents)
         await self._get_paginated_content()
-        await self._box.add(self._results)
+        await box.add(self._results)
 
     async def _get_page_tags(self) -> None:
         await self._get_product_area()
@@ -163,7 +171,7 @@ class PriceFactory:
         async with self._aio_session.get(self._url) as rsp:
             if rsp.status != 200:
                 #  TODO: add log and email developer here
-                raise UnexpectedParserError(
+                raise e.UnexpectedParserError(
                     f'something went wrong while parsing {self._url}...'
                 )
             return await rsp.text()
@@ -224,7 +232,7 @@ class PriceFactory:
         self._url = url
         try:
             await self._get_page_tags()
-        except UnexpectedParserError:
+        except e.UnexpectedParserError:
             return
         self._collect_prices()
 
@@ -252,6 +260,9 @@ class FactoryCreator:
     _factories: deque[PriceFactory] = deque()
     retailer_id: int
 
+    def __init__(self, factory_cls) -> None:
+        self._factory_cls = factory_cls
+
     def __call__(self, retailer: Retailer) -> deque[PriceFactory]:
         """
         TODO: Home url should be taken from retailer db object.
@@ -265,7 +276,7 @@ class FactoryCreator:
 
     def create_factory(self, tag) -> None:
         if url := u.get_url(tag):
-            self._factories.append(PriceFactory(url, self.retailer.id))
+            self._factories.append(self._factory_cls(url, self.retailer.id))
 
     def remove_discount_page(self) -> None:
         if 'discount' in str(self._factories[0]):
@@ -277,14 +288,15 @@ class PriceParser:
     """Parser for collecting prices from specified retailer's web page."""
 
     _factories: deque[PriceFactory]
-    _retailer: Retailer
+
+    def __init__(self, f_creator_cls, factory_cls) -> None:
+        self._f_creator_cls = f_creator_cls
+        self._factory_cls = factory_cls
 
     async def refresh_prices(self, retailer_name: RetailerName,
                              db_session: Session) -> None:
-        self._retailer = await crud.get_ratailer(retailer_name, db_session)
-        PriceFactory._box = Box(db_session,
-                                await u.get_parent_id_table(db_session))
-        self._get_factories()
+
+        await self._get_factories(retailer_name, db_session)
         while self._factories:
             self._get_next_batch()
             async with u.aiohttp_session_maker() as aio_session:
@@ -292,8 +304,10 @@ class PriceParser:
                          for factory in self._factory_batch)
                 await self._complete_tasks(tasks)
 
-    def _get_factories(self) -> None:
-        self._factories = FactoryCreator()(self._retailer)
+    async def _get_factories(self, retailer_name: RetailerName, db_session: Session) -> None:
+        retailer = await crud.get_ratailer(retailer_name, db_session)
+        factory_creator = self._f_creator_cls(self._factory_cls)
+        self._factories = factory_creator(retailer)
 
     def _get_next_batch(self) -> None:
         self._factory_batch = {self._factories.pop()

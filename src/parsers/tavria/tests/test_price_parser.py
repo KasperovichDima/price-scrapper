@@ -6,14 +6,17 @@ from core.models import PriceLine
 
 import crud
 
-from project_typing import RetailerName
+from project_typing import RetailerName  # TODO: Move to retailer!
 
 import pytest
 
 from sqlalchemy.orm import Session
 
 from . import reference as r
-from .mock_classes import PriceParser_test
+from .mock_classes import PriceFactory_test
+from ..price_parser import FactoryCreator
+from ..price_parser import PriceParser
+from ..price_parser import box
 
 
 async def fake_last_price_lines(product_ids: Iterable[int],
@@ -36,8 +39,10 @@ class TestTavriaPriceParser:
     async def test_price_parser(self, fake_session, fake_price_lines):
         # "Distinct on" simulation
         crud.get_last_price_lines = fake_last_price_lines
-        await PriceParser_test().refresh_prices(RetailerName.TAVRIA,
-                                                fake_session)
+
+        await box.initialize(fake_session)
+        parser = PriceParser(FactoryCreator, PriceFactory_test)
+        await parser.refresh_prices(RetailerName.TAVRIA, fake_session)
 
         products = await crud.get_products(fake_session)
         prod_ids = [_.id for _ in products]
