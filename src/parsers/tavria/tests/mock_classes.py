@@ -75,7 +75,7 @@ class PriceFactory_test(PriceFactory):
     """Mock class for testing with changed _get_page_html method"""
 
     async def _get_page_html(self) -> str | None:
-        return mocked_pages[self.url]
+        return mocked_pages[self._url]
 
 
 class PriceFactoryCreator_test(PriceFactoryCreator):
@@ -91,7 +91,7 @@ class PriceFactoryCreator_test(PriceFactoryCreator):
 class PriceParser_test(PriceParser):
     """Mock class for testing with changed get_factories method."""
 
-    def get_factories(self) -> None:
+    def _get_factories(self) -> None:
         """Should use FactoryCreator_test class instead of FactoryCreator."""
-        self.factories = PriceFactoryCreator_test()(self.retailer.home_url,
-                                                    self.retailer.id)
+        self._factories = PriceFactoryCreator_test()(self._retailer.home_url,
+                                                    self._retailer.id)

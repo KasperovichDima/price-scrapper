@@ -31,6 +31,8 @@ from pydantic import BaseModel
 
 from sqlalchemy.orm import Session
 
+from retailer.models import Retailer
+
 from . import constants as c
 from . import utils as u
 from .tavria_typing import Parents
@@ -132,51 +134,56 @@ class Box:
 
 class PriceFactory:
 
-    product_tags: ResultSet[Tag]
-    paginator: ResultSet[Tag]
-    box: Box
-    results: FactoryResults
+    """Factory collects price records from page and pages's
+    paginated content and transfer them to the box."""
+
+    _product_tags: ResultSet[Tag]
+    _paginator: ResultSet[Tag]
+    _box: Box
+    _results: FactoryResults
 
     def __init__(self, retailer_id: int, url: str) -> None:
-        self.retailer_id = retailer_id
-        self.url = url
+        self._retailer_id = retailer_id
+        self._main_url = self._url = url
 
     async def __call__(self, aio_session: aiohttp.ClientSession) -> None:
+        """Run factory to add factory's results to box."""
+
         self._aio_session = aio_session
         await self._get_page_tags()
-        self.prepare_results()
+        self._prepare_results()
         self._collect_prices()
         await self._get_paginated_content()
-        await self.box.add(self.results)
+        await self._box.add(self._results)
 
     async def _get_page_tags(self) -> None:
         """Get page data using aio_session for self.url."""
         # TODO: if not self._html:
         product_area = bs(await self._get_page_html(), 'lxml')\
             .find('div', {'class': "catalog-products"})
-        self.product_tags = product_area\
+        self._product_tags = product_area\
             .find_all('div', {'class': "products__item"})
-        self.paginator = product_area.find(
+        self._paginator = product_area.find(
             'div', {'class': 'catalog__pagination'}
         ).find_all('a')
 
     async def _get_page_html(self) -> str | None:
-        async with self._aio_session.get(self.url) as rsp:
+        async with self._aio_session.get(self._url) as rsp:
             if rsp.status != 200:
                 #  TODO: add log and email developer here
-                print(f'something went wrong while parsing {self.url}...')
+                print(f'something went wrong while parsing {self._url}...')
                 return None
             return await rsp.text()
 
-    def prepare_results(self) -> None:
-        self.results = FactoryResults(
-            retailer_id=self.retailer_id,
+    def _prepare_results(self) -> None:
+        self._results = FactoryResults(
+            retailer_id=self._retailer_id,
             parents=self.parents,
         )
 
     @property
     def parents(self) -> Parents:
-        first_tag = self.product_tags[0]
+        first_tag = self._product_tags[0]
         c_name = first_tag.get('data-item_category3')
         s_name = first_tag.get('data-item_category2')
         return (
@@ -186,8 +193,8 @@ class PriceFactory:
         )
 
     def _collect_prices(self) -> None:
-        for tag in self.product_tags:
-            self.results.add_record(
+        for tag in self._product_tags:
+            self._results.add_record(
                 (tag.get('data-name'),
                  float(tag.get('data-price')),
                  self.get_promo_price(tag))
@@ -204,7 +211,7 @@ class PriceFactory:
 
     @cached_property
     def _paginator_size(self) -> int:  # type: ignore
-        for tag in self.paginator[::-1]:
+        for tag in self._paginator[::-1]:
             if tag.attrs.get('aria-label') == 'Next':
                 return int(tag.get('href').split('=')[-1])
         return 0
@@ -217,17 +224,23 @@ class PriceFactory:
 
     async def _page_task(self, url: str) -> None:
         """TODO: Try to remove it."""
-        self.url = url
+        self._url = url
         await self._get_page_tags()
         self._collect_prices()
 
     @property
     def _paginated_urls(self) -> Generator[str, None, None]:
-        return (f'{self.url}?page={_}'
+        return (f'{self._url}?page={_}'
                 for _ in range(2, self._paginator_size + 1))
 
     def __repr__(self) -> str:
-        return self.url
+        return self._url
+
+    def __hash__(self) -> int:
+        return hash(self._main_url)
+
+    def __eq__(self, __o: object) -> bool:
+        return self._main_url == __o._main_url
 
 
 class FactoryCreator:
@@ -244,50 +257,56 @@ class FactoryCreator:
         TODO: Home url should be taken from retailer db object.
               Refactoring needed!
         """
-        self.retailer_id = retailer_id
+        self.retailer_id = retailer_id  # FIXME
         for tag in u.get_group_tags(home_url):
             self.create_factory(tag)
-        if 'discount' in str(self._factories[0]):
-            self._factories.popleft()
+        self.remove_discount_page()
         return self._factories
 
     def create_factory(self, tag) -> None:
-        self._factories.append(PriceFactory(self.retailer_id, u.get_url(tag)))
+        if url :=  u.get_url(tag):
+            self._factories.append(PriceFactory(self.retailer_id, url))
+
+    def remove_discount_page(self) -> None:
+        if 'discount' in str(self._factories[0]):
+            self._factories.popleft()
 
 
 class PriceParser:
 
-    factories: deque[PriceFactory]
+    """Parser for collecting prices from specified retailer's web page."""
+
+    _factories: deque[PriceFactory]
+    _retailer: Retailer
 
     async def refresh_prices(self, retailer_name: RetailerName,
                              db_session: Session) -> None:
-        self.retailer = await crud.get_ratailer(retailer_name, db_session)
-        PriceFactory.box = Box(db_session, await get_parent_id_table(db_session))
-        # await PriceFactory.box.create_folder_to_id_table()  # looks ugly...
-        self.get_factories()
-        while self.factories:
+        self._retailer = await crud.get_ratailer(retailer_name, db_session)
+        PriceFactory._box = Box(db_session, await get_parent_id_table(db_session))
+        self._get_factories()
+        while self._factories:
             self._get_next_batch()  # TODO: Convert to property
             async with u.aiohttp_session_maker() as aio_session:
-                tasks = (self.single_factory_task(factory, aio_session)
+                tasks = (self._single_factory_task(factory, aio_session)
                          for factory in self._factory_batch)
                 await self._complete_tasks(tasks)
 
-    def get_factories(self) -> None:
-        self.factories = FactoryCreator()(self.retailer.home_url,
-                                          self.retailer.id)
+    def _get_factories(self) -> None:
+        self._factories = FactoryCreator()(self._retailer.home_url,  # type: ignore
+                                           self._retailer.id)  # type: ignore
 
     def _get_next_batch(self) -> None:
-        self._factory_batch = {self.factories.pop()
-                               for _ in range(self.batch_size)}
+        self._factory_batch = {self._factories.pop()
+                               for _ in range(self._batch_size)}
 
-    @property
-    def batch_size(self) -> int:
+    @cached_property
+    def _batch_size(self) -> int:
         return c.TAVRIA_FACTORIES_PER_SESSION\
             if c.TAVRIA_FACTORIES_PER_SESSION\
-            <= len(self.factories)\
-            else len(self.factories)
+            <= len(self._factories)\
+            else len(self._factories)
 
-    async def single_factory_task(self, factory: PriceFactory,
+    async def _single_factory_task(self, factory: PriceFactory,
                                   aio_session) -> None:
         print(f'{factory} in progress...')
         await factory(aio_session)
@@ -299,4 +318,4 @@ class PriceParser:
             u.tasks_are_finished()
         except asyncio.exceptions.TimeoutError:
             if self._factory_batch:
-                self.factories.extend(self._factory_batch)
+                self._factories.extend(self._factory_batch)
