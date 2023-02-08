@@ -25,9 +25,9 @@ from core.models import PriceLine
 
 import crud
 
-from project_typing import PriceRecord, RetailerName
+from parsers.exceptions import UnexpectedParserError
 
-from pydantic import BaseModel
+from project_typing import PriceRecord, RetailerName
 
 from retailer.models import Retailer
 
@@ -38,29 +38,37 @@ from . import utils as u
 from .tavria_typing import NameRetailPromo, Parents
 
 
-class FactoryResults(BaseModel):
+class FactoryResults:
     """Represents Price factory work
     results with get_records method."""
 
-    retailer_id: int
-    parents: Parents
-    records: deque[NameRetailPromo] = deque()
+    def __init__(self, retailer_id: int) -> None:
+        self._retailer_id = retailer_id
+        self._parents: Parents | None = None
+        self._records: deque[NameRetailPromo] = deque()
+
+    @property
+    def retailer_id(self) -> int:
+        return self._retailer_id
+
+    def set_parents(self, parents: Parents) -> None:
+        self._parents = parents
 
     def add_record(self, record: NameRetailPromo) -> None:
-        self.records.append(record)
+        self._records.append(record)
 
-    def get_records(self, prod_name_to_id_table: dict[str, int]
-                    ) -> zip[PriceRecord]:
+    def get_price_records(self, prod_name_to_id_table: dict[str, int]
+                          ) -> zip[PriceRecord]:
         """
         Returns tuples:
         (product_id, retailer_id, retail_price, promo_price)
         """
 
         return zip(
-            (prod_name_to_id_table[rec[0]] for rec in self.records),
-            (self.retailer_id for _ in self.records),
-            (rec[1] for rec in self.records),
-            (rec[2] for rec in self.records),
+            (prod_name_to_id_table[rec[0]] for rec in self._records),
+            (self._retailer_id for _ in self._records),
+            (rec[1] for rec in self._records),
+            (rec[2] for rec in self._records),
             strict=True
         )
 
@@ -88,15 +96,15 @@ class Box:
 
     @property
     def _folder_id(self) -> int:
-        return self._parents_to_id[self._factory_results.parents]
+        return self._parents_to_id[self._factory_results._parents]
 
     async def _save_new_records(self) -> None:
         if new_records := await self._get_unique_records():
             await crud.add_instances(new_records, self._db_session)
 
-    async def _get_unique_records(self) -> Generator[PriceLine, None, None] | None:
+    async def _get_unique_records(self) -> Generator[PriceLine] | None:
         records = set(
-            self._factory_results.get_records(self._prod_name_to_id)
+            self._factory_results.get_price_records(self._prod_name_to_id)
         )
         records.difference_update(await self._last_price_lines)
         return (PriceLine.from_tuple(rec) for rec in records)\
@@ -124,44 +132,45 @@ class PriceFactory:
     _box: Box
     _results: FactoryResults
 
-    def __init__(self, retailer_id: int, url: str) -> None:
-        self._retailer_id = retailer_id
+    def __init__(self, url: str, retailer_id: int) -> None:
         self._main_url = self._url = url
+        self._results = FactoryResults(
+            retailer_id=retailer_id,
+        )
 
     async def __call__(self, aio_session: aiohttp.ClientSession) -> None:
-        """Run factory to add factory's results to box."""
+        """Run factory to add it results to box."""
 
         self._aio_session = aio_session
-        await self._get_page_tags()
-        self._prepare_results()
+        try:
+            await self._get_page_tags()
+        except UnexpectedParserError:
+            return
         self._collect_prices()
+        self._results.set_parents(self.parents)
         await self._get_paginated_content()
         await self._box.add(self._results)
 
     async def _get_page_tags(self) -> None:
-        """Get page data using aio_session for self.url."""
-        # TODO: if not self._html:
-        product_area = bs(await self._get_page_html(), 'lxml')\
+        await self._get_product_area()
+        self._get_product_tags()
+
+    async def _get_product_area(self) -> None:
+        self._product_area = bs(await self._get_page_html(), 'lxml')\
             .find('div', {'class': "catalog-products"})
-        self._product_tags = product_area\
-            .find_all('div', {'class': "products__item"})
-        self._paginator = product_area.find(
-            'div', {'class': 'catalog__pagination'}
-        ).find_all('a')
 
     async def _get_page_html(self) -> str | None:
         async with self._aio_session.get(self._url) as rsp:
             if rsp.status != 200:
                 #  TODO: add log and email developer here
-                print(f'something went wrong while parsing {self._url}...')
-                return None
+                raise UnexpectedParserError(
+                    f'something went wrong while parsing {self._url}...'
+                )
             return await rsp.text()
 
-    def _prepare_results(self) -> None:
-        self._results = FactoryResults(
-            retailer_id=self._retailer_id,
-            parents=self.parents,
-        )
+    def _get_product_tags(self) -> None:
+        self._product_tags = self._product_area\
+            .find_all('div', {'class': "products__item"})
 
     @property
     def parents(self) -> Parents:
@@ -179,11 +188,11 @@ class PriceFactory:
             self._results.add_record(
                 (tag.get('data-name'),
                  float(tag.get('data-price')),
-                 self.get_promo_price(tag))
+                 self._get_promo_price(tag))
             )
 
     @staticmethod
-    def get_promo_price(tag: Tag) -> float | None:  # type: ignore
+    def _get_promo_price(tag: Tag) -> float | None:  # type: ignore
         if promo := tag.find('span', {'class': 'price__discount'}):
             return float(promo.text.strip().removesuffix(' ₴'))
 
@@ -198,6 +207,12 @@ class PriceFactory:
                 return int(tag.get('href').split('=')[-1])
         return 0
 
+    @property
+    def _paginator(self) -> ResultSet[Tag]:
+        return self._product_area.find(
+            'div', {'class': 'catalog__pagination'}
+        ).find_all('a')
+
     async def _get_paginated_content(self):
         if not self._page_is_paginated:
             return
@@ -207,7 +222,10 @@ class PriceFactory:
     async def _page_task(self, url: str) -> None:
         """TODO: Try to remove it."""
         self._url = url
-        await self._get_page_tags()
+        try:
+            await self._get_page_tags()
+        except UnexpectedParserError:
+            return
         self._collect_prices()
 
     @property
@@ -247,7 +265,7 @@ class FactoryCreator:
 
     def create_factory(self, tag) -> None:
         if url :=  u.get_url(tag):
-            self._factories.append(PriceFactory(self.retailer_id, url))
+            self._factories.append(PriceFactory(url, self.retailer_id))
 
     def remove_discount_page(self) -> None:
         if 'discount' in str(self._factories[0]):
