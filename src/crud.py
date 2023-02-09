@@ -1,11 +1,14 @@
-"""Database crud operations."""
+"""
+Database crud operations.
+TODO: Switch to async.
+"""
 from typing import Iterable, Sequence
 
 from authentication.models import User
 
 from base_models import BaseWithID
 
-from catalog.models import Folder, Product
+from catalog.models import BaseCatalogElement, Folder, Product
 from catalog.schemas import FolderContent
 
 from core.models import PriceLine
@@ -153,3 +156,11 @@ async def get_ratailer(retailer_name: RetailerName,
                        session: Session) -> Retailer:
     """Get retailer by retailer name."""
     return session.query(Retailer).filter_by(name=retailer_name.value).scalar()
+
+
+async def switch_deprecated(objects: Iterable[BaseCatalogElement],
+                            session: Session) -> None:
+    """Invert and save deprecated status."""
+    for obj in objects:
+        obj.deprecated = not obj.deprecated  # type: ignore
+    session.commit()

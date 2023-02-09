@@ -22,7 +22,7 @@ class BaseCatalogElement(BaseWithRepr):
 
 class Folder(BaseCatalogElement):
     """Product folder class."""
-
+    #  TODO: ondelete='CASCADE'?
     __tablename__ = 'folder'
 
     name = Column(String(100), index=True, nullable=False)

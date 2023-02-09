@@ -1,11 +1,6 @@
 """
 Tavria price parser.
-TODO:
-1. Classes refactoring [x]
-2. naming refactoring [x]
-3. flake 8
-4. All TODOs
-5. Add protocols
+TODO: Merge with other.
 """
 from __future__ import annotations
 
