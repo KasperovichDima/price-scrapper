@@ -1,5 +1,6 @@
 """Tavria parser utils."""
 import asyncio
+from collections import deque
 from functools import lru_cache
 from typing import Iterable
 from urllib import request
@@ -40,26 +41,16 @@ def group_is_outstanding(tag: Tag) -> bool:
 
 
 def get_catalog(url: str) -> ResultSet[Tag]:
-    """
-    Parses home page and returns parsed tags of catalog menu.
-    TODO: Refactoring! Duplicating!
-    """
+    """Parses home page and returns parsed tags of catalog menu."""
     response = request.urlopen(url)
     return bs(response, 'lxml').find(
         'aside', {'class': 'col-md-3 sidebar__container'}
-    ).find_all()
+    )
 
 
 def get_group_tags(url: str) -> Iterable[Tag]:
-    """
-    Returns only group tags from catalog menu.
-    TODO: Refactoring! Duplicating!
-    """
-    response = request.urlopen(url)
-    catalog = bs(response, 'lxml').find(
-        'aside', {'class': 'col-md-3 sidebar__container'}
-    )
-    return (_ for _ in catalog.find_all('a') if 'catalog' in _.get('href'))
+    """Returns only group tags from catalog menu."""
+    return (_ for _ in get_catalog(url).find_all('a') if 'catalog' in _.get('href'))
 
 
 def get_url(tag: Tag) -> str | None:
@@ -141,3 +132,8 @@ async def get_parent_id_table(db_session: Session) -> dict[Parents, int]:
         parents = (c_name, s_name, g_name)
         parents_to_id[parents] = group.id
     return parents_to_id
+
+
+def get_tags_queue() -> deque[tuple[str, ElType]]: ...
+
+

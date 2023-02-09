@@ -31,7 +31,7 @@ class FactoryCreator:
     def __call__(self, home_url: str, db_session: Session) -> Factories:
         """TODO: Home url should be taken from retailer db object."""
         BaseFactory.object_box = ObjectBox(db_session)
-        for tag in u.get_catalog(home_url):
+        for tag in u.get_catalog(home_url).find_all():
             self._tag_type = u.tag_type_for(tag)
             if not self._tag_type:
                 continue
