@@ -37,7 +37,7 @@ class TavriaParser:
     async def _refresh_folders(self,) -> None:
         for type_ in folder_types:
             for factory in self.factories[type_]:
-                print('{} in progress...'.format(factory))
+                print(f'{factory} in progress...')
                 await factory()
             self.factories[type_].clear()
             await ParentTable.refresh_table(self._db_session)

@@ -267,14 +267,12 @@ class FactoryCreator:
     def create(self, retailer: Retailer) -> deque[Factory_P]:
         self.retailer = retailer
         for tag in u.get_group_tags(retailer.home_url):  # type: ignore
-            self._create_factory(tag)
+            if url := u.get_url(tag):
+                factory = self._factory_cls(url, self.retailer.id)  # type: ignore
+                self._factories.append(factory)
+
         self._remove_discount_page()
         return self._factories
-
-    def _create_factory(self, tag) -> None:
-        if url := u.get_url(tag):
-            factory = self._factory_cls(url, self.retailer.id)  # type: ignore
-            self._factories.append(factory)
 
     def _remove_discount_page(self) -> None:
         if 'discount' in str(self._factories[0]):
