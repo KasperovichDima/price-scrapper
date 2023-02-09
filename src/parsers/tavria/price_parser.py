@@ -37,23 +37,19 @@ from sqlalchemy.orm import Session
 from . import constants as c
 from . import utils as u
 from .tavria_typing import NameRetailPromo, Parents
+from .tavria_typing import FactoryCreator_P, Factory_P
 
 
 class FactoryResults:
     """Represents Price factory work
     results with get_records method."""
 
+    __slots__ = ('retailer_id', 'parents', '_records')
+
     def __init__(self, retailer_id: int) -> None:
-        self._retailer_id = retailer_id
-        self._parents: Parents | None = None
+        self.retailer_id = retailer_id
+        self.parents: Parents | None = None
         self._records: deque[NameRetailPromo] = deque()
-
-    @property
-    def retailer_id(self) -> int:
-        return self._retailer_id
-
-    def set_parents(self, parents: Parents) -> None:
-        self._parents = parents
 
     def add_record(self, record: NameRetailPromo) -> None:
         self._records.append(record)
@@ -67,7 +63,7 @@ class FactoryResults:
 
         return zip(
             (prod_name_to_id_table[rec[0]] for rec in self._records),
-            (self._retailer_id for _ in self._records),
+            (self.retailer_id for _ in self._records),
             (rec[1] for rec in self._records),
             (rec[2] for rec in self._records),
             strict=True
@@ -108,7 +104,8 @@ class Box:
 
     @property
     def _folder_id(self) -> int:
-        return self._parents_to_id[self._factory_results._parents]
+        assert self._factory_results.parents
+        return self._parents_to_id[self._factory_results.parents]
 
     async def _save_new_records(self) -> None:
         if new_records := await self._get_unique_records():
@@ -145,13 +142,17 @@ class PriceFactory:
     _product_tags: ResultSet[Tag]
     _results: FactoryResults
 
+    __PARSER_ERROR_MSG = """
+    Something went wrong while parsing {}...
+    """
+
     def __init__(self, url: str, retailer_id: int) -> None:
         self._main_url = self._url = url
         self._results = FactoryResults(
             retailer_id=retailer_id,
         )
 
-    async def __call__(self, aio_session: aiohttp.ClientSession) -> None:
+    async def run(self, aio_session: aiohttp.ClientSession) -> None:
         """Run factory to add it results to box."""
 
         self._aio_session = aio_session
@@ -160,7 +161,7 @@ class PriceFactory:
         except e.UnexpectedParserError:
             return
         self._collect_prices()
-        self._results.set_parents(self.parents)
+        self._results.parents = self.parents
         await self._get_paginated_content()
         await box.add(self._results)
 
@@ -177,7 +178,7 @@ class PriceFactory:
             if rsp.status != 200:
                 #  TODO: add log and email developer here
                 raise e.UnexpectedParserError(
-                    f'something went wrong while parsing {self._url}...'
+                    self.__PARSER_ERROR_MSG.format(self._url)
                 )
             return await rsp.text()
 
@@ -253,7 +254,7 @@ class PriceFactory:
         return hash(self._main_url)
 
     def __eq__(self, __o: object) -> bool:
-        return self._main_url == __o._main_url
+        return self._main_url == __o._main_url  # type: ignore
 
 
 class FactoryCreator:
@@ -262,28 +263,25 @@ class FactoryCreator:
     Parses tags, extracts data.
     Prapares data for objects creation.
     """
-    _factories: deque[PriceFactory] = deque()
+    _factories: deque[Factory_P] = deque()
     retailer_id: int
 
-    def __init__(self, factory_cls) -> None:
+    def __init__(self, factory_cls: type[Factory_P]) -> None:
         self._factory_cls = factory_cls
 
-    def __call__(self, retailer: Retailer) -> deque[PriceFactory]:
-        """
-        TODO: Home url should be taken from retailer db object.
-              Refactoring needed!
-        """
+    def create(self, retailer: Retailer) -> deque[Factory_P]:
         self.retailer = retailer
-        for tag in u.get_group_tags(retailer.home_url):
-            self.create_factory(tag)
-        self.remove_discount_page()
+        for tag in u.get_group_tags(retailer.home_url):  # type: ignore
+            self._create_factory(tag)
+        self._remove_discount_page()
         return self._factories
 
-    def create_factory(self, tag) -> None:
+    def _create_factory(self, tag) -> None:
         if url := u.get_url(tag):
-            self._factories.append(self._factory_cls(url, self.retailer.id))
+            factory = self._factory_cls(url, self.retailer.id)  # type: ignore
+            self._factories.append(factory)
 
-    def remove_discount_page(self) -> None:
+    def _remove_discount_page(self) -> None:
         if 'discount' in str(self._factories[0]):
             self._factories.popleft()
 
@@ -292,9 +290,10 @@ class PriceParser:
 
     """Parser for collecting prices from specified retailer's web page."""
 
-    _factories: deque[PriceFactory]
+    _factories: deque[Factory_P]
 
-    def __init__(self, f_creator_cls, factory_cls) -> None:
+    def __init__(self, f_creator_cls: type[FactoryCreator_P],
+                 factory_cls: type[Factory_P]) -> None:
         self._f_creator_cls = f_creator_cls
         self._factory_cls = factory_cls
 
@@ -309,10 +308,11 @@ class PriceParser:
                          for factory in self._factory_batch)
                 await self._complete_tasks(tasks)
 
-    async def _get_factories(self, retailer_name: RetailerName, db_session: Session) -> None:
+    async def _get_factories(self, retailer_name: RetailerName,
+                             db_session: Session) -> None:
         retailer = await crud.get_ratailer(retailer_name, db_session)
         factory_creator = self._f_creator_cls(self._factory_cls)
-        self._factories = factory_creator(retailer)
+        self._factories = factory_creator.create(retailer)
 
     def _get_next_batch(self) -> None:
         self._factory_batch = {self._factories.pop()
@@ -325,10 +325,10 @@ class PriceParser:
             <= len(self._factories)\
             else len(self._factories)
 
-    async def _single_factory_task(self, factory: PriceFactory,
+    async def _single_factory_task(self, factory: Factory_P,
                                    aio_session) -> None:
         print(f'{factory} in progress...')
-        await factory(aio_session)
+        await factory.run(aio_session)
         self._factory_batch.remove(factory)
 
     async def _complete_tasks(self, tasks) -> None:
