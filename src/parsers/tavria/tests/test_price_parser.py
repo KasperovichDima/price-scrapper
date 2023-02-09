@@ -23,6 +23,7 @@ async def fake_last_price_lines(product_ids: Iterable[int],
                                 reatiler_id: int,
                                 session: Session) -> list[PriceLine]:
     """Distinct on is not supported by SQLite, so we need simulation here."""
+
     all_lines: list[PriceLine] = session.query(PriceLine)\
         .filter(PriceLine.retailer_id == reatiler_id,
                 PriceLine.product_id.in_(product_ids))\
