@@ -81,6 +81,11 @@ class Box:
     _db_session: Session
     _parents_to_id: dict[Parents, int]
 
+    __NOT_INIT_MSG = """
+    Box is not initialized. It seems, you 
+    forgot to await 'initialize' method first.
+    """
+
     __initialized = False
 
     async def initialize(self, db_session: Session) -> None:
@@ -91,8 +96,7 @@ class Box:
     async def add(self, factory_results: FactoryResults) -> None:
         """Add factory results to box. Data will be processed and saved."""
         if not self.__initialized:
-            raise e.NotInitializedError('Box is not initialized. It seems, you '
-                                        'forgot to await initialize method first.')
+            raise e.NotInitializedError(self.__NOT_INIT_MSG)
         self._factory_results = factory_results
         await self._get_group_products()
         await self._save_new_records()
