@@ -10,6 +10,7 @@ from retailer.models import Retailer
 
 
 class ObjectParents(NamedTuple):
+    # FIXME: Duplicating with parents
     gp_name: str | None = None
     p_name: str | None = None
 
