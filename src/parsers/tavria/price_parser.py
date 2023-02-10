@@ -275,6 +275,7 @@ class FactoryCreator:
         return self._factories
 
     def _remove_discount_page(self) -> None:
+        """FIXME: Duplicating in utils."""
         if 'discount' in str(self._factories[0]):
             self._factories.popleft()
 
