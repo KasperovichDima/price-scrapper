@@ -1,4 +1,5 @@
 """Product catalog models and get model function."""
+from __future__ import annotations
 from base_models import BaseWithRepr
 
 from project_typing import ElType
@@ -11,8 +12,8 @@ class BaseCatalogElement(BaseWithRepr):
 
     __abstract__ = True
 
-    name: Column
-    parent_id: Column
+    name: Column[String]
+    parent_id: Column[Integer]
     el_type: Column
     deprecated = Column(Boolean, default=False)
 
