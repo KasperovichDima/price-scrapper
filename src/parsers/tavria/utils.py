@@ -132,8 +132,3 @@ async def get_parent_id_table(db_session: Session) -> dict[Parents, int]:
         parents = (c_name, s_name, g_name)
         parents_to_id[parents] = group.id
     return parents_to_id
-
-
-def get_tags_queue() -> deque[tuple[str, ElType]]: ...
-
-
