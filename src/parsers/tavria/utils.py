@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup as bs
 from bs4 import ResultSet
 from bs4.element import Tag
 
+from catalog.models import Folder
+
 import crud
 
 from parsers import schemas as s
@@ -50,7 +52,8 @@ def get_catalog(url: str) -> ResultSet[Tag]:
 
 def get_group_tags(url: str) -> Iterable[Tag]:
     """Returns only group tags from catalog menu."""
-    return (_ for _ in get_catalog(url).find_all('a') if 'catalog' in _.get('href'))
+    return (_ for _ in get_catalog(url).find_all('a')
+            if 'catalog' in _.get('href'))
 
 
 def get_url(tag: Tag) -> str | None:
@@ -119,7 +122,7 @@ def factories_are_valid(factories) -> bool:
         == len(set(factories[ElType.GROUP]))
 
 
-async def get_parent_id_table(db_session: Session) -> dict[Parents, int]:
+async def get_groups_parent_to_id(db_session: Session) -> dict[Parents, int]:
     folders = await crud.get_folders(db_session)
     id_to_folder = {_.id: _ for _ in folders}
     parents_to_id: dict[Parents, int] = {}
@@ -132,3 +135,91 @@ async def get_parent_id_table(db_session: Session) -> dict[Parents, int]:
         parents = (c_name, s_name, g_name)
         parents_to_id[parents] = group.id
     return parents_to_id
+
+
+def get_catalog_folders() -> deque[tuple[str, str | None, str | None]]:
+    c_name = s_name = g_name = None
+    data: deque[tuple[str, str | None, str | None]] = deque()
+    for tag in get_catalog(c.TAVRIA_URL).find_all():
+        match tag_type_for(tag):
+            case ElType.GROUP:
+                g_name = tag.text.strip()
+                if group_is_outstanding(tag):
+                    s_name = None
+            case ElType.SUBCATEGORY:
+                s_name = tag.text.strip()
+                g_name = None
+            case ElType.CATEGORY:
+                c_name = tag.text.strip()
+                s_name = g_name = None
+            case _:
+                continue
+        data.append((c_name, s_name, g_name))
+    # removing disount
+    if data[0][2] == 'Акції':
+        data.popleft()
+    return data
+
+
+async def update_catalog(db_session: Session) -> None:
+    """
+    get id to folder table
+    get ids of folders with childs
+    collect folder ids to deprecate
+    collect folder ids to undeprecate
+    get map table to recognize page data with id and parent id
+
+    get page data
+    get list of folders to create
+    create new folders
+    invert depr/undepr
+    """
+    has_childs: set[int] = set()
+    deprecated_ids = set()
+    ids_to_deprecate: set[int] = set()
+    id_to_folder: dict[int, Folder] = {}
+    folders = await crud.get_folders(db_session)
+    for folder in folders:
+        has_childs.add(folder.parent_id)
+        deprecated_ids.add(folder.id) if folder.deprecated\
+            else ids_to_deprecate.add(folder.id)
+        id_to_folder[folder.id] = folder
+
+    path_to_id_parent_id: dict[tuple[str, str, str], tuple[int, int | None]] = {}
+    for folder in folders:
+        if not folder.parent_id:  # CATEGORY
+            path = (folder.name, None, None)
+            path_to_id_parent_id[path] = (folder.id, None)
+            continue
+        else:
+            if folder.id in has_childs:  # SUBCATEGORY
+                c_name = id_to_folder[folder.parent_id].name
+                path = (c_name, folder.name, None)
+                path_to_id_parent_id[path] = (folder.id, folder.parent_id)
+                continue
+            else:  # GROUP
+                g_parent = None
+                parent = id_to_folder[folder.parent_id]
+                if parent.parent_id:  # GROUP IS IN SUBGROUP
+                    g_parent = id_to_folder[parent.parent_id]
+                path = (
+                    g_parent.name if g_parent else parent.name,
+                    parent.name if g_parent else None,
+                    folder.name
+                )
+                path_to_id_parent_id[path] = (folder.id, folder.parent_id)
+
+    ids_to_actualize: deque[int] = deque()
+    for path in get_catalog_folders():
+        if path in path_to_id_parent_id:
+            path_id = path_to_id_parent_id[path][0]
+            ids_to_deprecate.remove(path_id)
+            if path_id in deprecated_ids:
+                deprecated_ids.remove(path_id)
+                ids_to_actualize.append(path_id)
+
+        else:  # If folder is new
+            match bool(path[0]), bool(path[1]), bool(path[2]):
+                case _, _, True:
+                    path = (path[:-1] + None)
+                    path[-1] = None

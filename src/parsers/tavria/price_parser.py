@@ -81,7 +81,7 @@ class Box:
 
     async def initialize(self, db_session: Session) -> None:
         self._db_session = db_session
-        self._parents_to_id = await u.get_parent_id_table(db_session)
+        self._parents_to_id = await u.get_groups_parent_to_id(db_session)
         self.__initialized = True
 
     async def add(self, factory_results: FactoryResults) -> None:
