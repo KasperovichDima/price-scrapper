@@ -1,5 +1,12 @@
-"""Product catalog models and get model function."""
+"""
+Product catalog models and get model function.
+TODO: Remove ElType. Just Folder and Product.
+      If Folder has no parents - it is Category.
+      If Folder has parent and childs - it is subcategory.
+      If Folder has no childrens - it is a grouop.
+"""
 from __future__ import annotations
+
 from base_models import BaseWithRepr
 
 from project_typing import ElType
