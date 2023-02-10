@@ -35,6 +35,10 @@ class TavriaParser:
         return self._factory_creator_class()(url, self._db_session)
 
     async def _refresh_folders(self,) -> None:
+
+        await u.update_catalog(self._db_session)
+        return
+
         for type_ in folder_types:
             for factory in self.factories[type_]:
                 print(f'{factory} in progress...')
