@@ -39,15 +39,15 @@ class FactoryResults:
     """Represents Price factory work
     results with get_records method."""
 
-    __slots__ = ('retailer_id', 'parents', '_records')
+    __slots__ = ('retailer_id', 'parents', 'records')
 
     def __init__(self, retailer_id: int) -> None:
         self.retailer_id = retailer_id
         self.parents: Parents | None = None
-        self._records: deque[NameRetailPromo] = deque()
+        self.records: deque[NameRetailPromo] = deque()
 
     def add_record(self, record: NameRetailPromo) -> None:
-        self._records.append(record)
+        self.records.append(record)
 
     def get_price_records(self, prod_name_to_id_table: dict[str, int]
                           ) -> zip[PriceRecord]:
@@ -57,16 +57,23 @@ class FactoryResults:
         """
 
         return zip(
-            (prod_name_to_id_table[rec[0]] for rec in self._records),
-            (self.retailer_id for _ in self._records),
-            (rec[1] for rec in self._records),
-            (rec[2] for rec in self._records),
+            (prod_name_to_id_table[rec[0]] for rec in self.records),
+            (self.retailer_id for _ in self.records),
+            (rec[1] for rec in self.records),
+            (rec[2] for rec in self.records),
             strict=True
         )
 
 
 class Box:
-    """TODO: Choose correct name. What if we will get new product name here?"""
+    """
+    1. Get in_base products
+    2. Get result product's names
+    3. Deprecate, undeprecate, create new
+
+    4. Get in_base price lines
+    5. Create inique lines
+    """
 
     _group_products: list[Product]
     _db_session: Session
@@ -80,6 +87,8 @@ class Box:
     __initialized = False
 
     async def initialize(self, db_session: Session) -> None:
+        """Initialize box with db_session, which is required for
+        it's work. Also parents_to_id table will be created."""
         self._db_session = db_session
         self._parents_to_id = await u.get_groups_parent_to_id(db_session)
         self.__initialized = True
@@ -88,21 +97,42 @@ class Box:
         """Add factory results to box. Data will be processed and saved."""
         if not self.__initialized:
             raise e.NotInitializedError(self.__NOT_INIT_MSG)
-        self._factory_results = factory_results
-        await self._get_group_products()
-        await self._save_new_records()
 
-    async def _get_group_products(self) -> None:
+        self._factory_results = factory_results
         self._group_products = await crud.get_products(
             self._db_session, folder_ids=(self._folder_id,)
         )
+        await self._refresh_products()
+        await self._refresh_price_lines()
 
     @property
     def _folder_id(self) -> int:
         assert self._factory_results.parents
         return self._parents_to_id[self._factory_results.parents]
 
-    async def _save_new_records(self) -> None:
+    async def _refresh_products(self) -> None:
+        # FIXME: Long method.
+        actual_prod_names = deprecated_prod_names = set()
+        for product in self._group_products:
+            if product.deprecated:
+                deprecated_prod_names.add(product.name)
+            else:
+                actual_prod_names.add(product.name)
+
+        new_names = {_[0] for _ in self._factory_results.records}
+        to_create_names = new_names - deprecated_prod_names - actual_prod_names
+        to_create_objects = (Product(name=_, parent_id=self._folder_id)
+                             for _ in to_create_names)
+        await crud.add_instances(to_create_objects, self._db_session)
+        # TODO: Remove redundant sets
+        to_deprecate = actual_prod_names - new_names
+        to_undeprecate = deprecated_prod_names & new_names
+        to_switch_depr_names = to_deprecate.union(to_undeprecate)
+        to_switch_depr_objects = (_ for _ in self._group_products
+                                   if _.name in to_switch_depr_names)
+        await crud.switch_deprecated(to_switch_depr_objects, self._db_session)
+
+    async def _refresh_price_lines(self) -> None:
         if new_records := await self._get_unique_records():
             await crud.add_instances(new_records, self._db_session)
 

@@ -20,7 +20,6 @@ class ElType(Enum):
     SUBCATEGORY = auto()
     GROUP = auto()
     PRODUCT = auto()
-    OUTSTANDING_GROUP = auto()
 
 
 folder_types = [_ for _ in ElType if _ is not ElType.PRODUCT]
