@@ -32,7 +32,9 @@ from sqlalchemy.orm import Session
 from . import constants as c
 from . import utils as u
 from .tavria_typing import NameRetailPromo, Parents
-from .tavria_typing import FactoryCreator_P, Factory_P
+from .tavria_typing import Catalog_P
+from .tavria_typing import FactoryCreator_P
+from .tavria_typing import Factory_P
 
 
 class FactoryResults:
@@ -289,14 +291,13 @@ class FactoryCreator:
     Prapares data for objects creation.
     """
     _factories: deque[Factory_P] = deque()
-    retailer_id: int
 
-    def __init__(self, factory_cls: type[Factory_P]) -> None:
+    def __init__(self, retailer: Retailer, factory_cls: type[Factory_P]) -> None:
+        self.retailer = retailer
         self._factory_cls = factory_cls
 
-    def create(self, retailer: Retailer) -> deque[Factory_P]:
-        self.retailer = retailer
-        for tag in u.get_group_tags(retailer.home_url):  # type: ignore
+    def create(self) -> deque[Factory_P]:
+        for tag in u.get_group_tags(self.retailer.home_url):  # type: ignore
             if url := u.get_url(tag):
                 factory = self._factory_cls(url, self.retailer.id)  # type: ignore
                 self._factories.append(factory)
@@ -316,15 +317,18 @@ class PriceParser:
 
     _factories: deque[Factory_P]
 
-    def __init__(self, f_creator_cls: type[FactoryCreator_P],
-                 factory_cls: type[Factory_P]) -> None:
-        self._f_creator_cls = f_creator_cls
-        self._factory_cls = factory_cls
+    def __init__(self, catalog: Catalog_P,
+                 f_creator: FactoryCreator_P) -> None:
+        self._catalog = catalog
+        self._f_creator = f_creator
 
-    async def refresh_products(self, retailer_name: RetailerName,
-                               db_session: Session) -> None:
+    async def update_catalog(self) -> None:
+        await self._catalog.update()
+        del self._catalog
 
-        await self._get_factories(retailer_name, db_session)
+    async def update_products(self) -> None:
+
+        await self._get_factories()
         while self._factories:
             self._get_next_batch()
             async with u.aiohttp_session_maker() as aio_session:
@@ -332,11 +336,9 @@ class PriceParser:
                          for factory in self._factory_batch)
                 await self._complete_tasks(tasks)
 
-    async def _get_factories(self, retailer_name: RetailerName,
-                             db_session: Session) -> None:
-        retailer = await crud.get_ratailer(retailer_name, db_session)
-        factory_creator = self._f_creator_cls(self._factory_cls)
-        self._factories = factory_creator.create(retailer)
+    async def _get_factories(self) -> None:
+        self._factories = self._f_creator.create()
+        del self._f_creator
 
     def _get_next_batch(self) -> None:
         self._factory_batch = {self._factories.pop()

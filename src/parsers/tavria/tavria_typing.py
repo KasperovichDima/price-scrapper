@@ -6,8 +6,6 @@ import aiohttp
 
 from catalog.models import BaseCatalogElement
 
-from retailer.models import Retailer
-
 
 class ObjectParents(NamedTuple):
     # FIXME: Duplicating with parents
@@ -40,8 +38,13 @@ class Factory_P(Protocol):
 class FactoryCreator_P(Protocol):
     """FactoryCreator protocol."""
 
-    def __init__(self, factory_cls: type[Factory_P]) -> None:
-        ...
-
-    def create(self, retailer: Retailer) -> deque[Factory_P]:
+    def create(self) -> deque[Factory_P]:
         """Create new factories. Retailer must be specified."""
+
+
+class Catalog_P(Protocol):
+    """Catalog updater protocol."""
+
+    async def update(self) -> None:
+        """Get actual data from the page
+        and update in db catalog structure.""" 

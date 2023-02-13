@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from catalog.models import Folder
 import crud
 from . import utils as u
-from project_typing import ElType, folder_types
+from project_typing import ElType
 
 
 Path = tuple[str, str | None, str | None]
@@ -13,7 +13,7 @@ IdParentID = namedtuple('IdParentID', ('id parent_id'))
 PathToIdParentID = dict[Path, IdParentID]
 
 
-class CatalogUpdater:
+class Catalog:
 
     _folders_in_db: list[Folder]  # TODO: Make property
 
@@ -25,10 +25,11 @@ class CatalogUpdater:
     _path_to_id_parent_id: PathToIdParentID = {}
     _pathes_to_create: defaultdict[ElType, deque[Path]] = defaultdict(deque)
 
-    def __init__(self, db_session: Session) -> None:
+    def __init__(self, url: str, db_session: Session) -> None:
+        self._url = url
         self._db_session = db_session
 
-    async def update_catalog(self) -> None:
+    async def update(self) -> None:
         self._folders_in_db = await crud.get_folders(self._db_session)
         self._get_db_folders_data()
         self._get_path_to_id_parent_id(self._folders_in_db)
@@ -64,7 +65,7 @@ class CatalogUpdater:
         return p_folder.name, gp_folder.name if gp_folder else None
 
     def _process_page_data(self) -> None:
-        for path in u.get_page_catalog_folders():
+        for path in u.get_page_catalog_folders(self._url):
             try:  # folder already exists
                 path_id = self._path_to_id_parent_id[path].id
                 self._check_id_for_deprecation(path_id)

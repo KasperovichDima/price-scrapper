@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from . import reference as r
 from .mock_classes import PriceFactory_test
+from ..catalog import Catalog
 from ..price_parser import FactoryCreator
 from ..price_parser import PriceParser
 from ..price_parser import box
@@ -37,13 +38,16 @@ class TestTavriaPriceParser:
     """Test class for tavria price parser."""
 
     @pytest.mark.asyncio
-    async def test_price_parser(self, fake_session, fake_price_lines):
+    async def test_product_parser(self, fake_session, fake_price_lines):
         # "Distinct on" simulation
         crud.get_last_price_lines = fake_last_price_lines
 
         await box.initialize(fake_session)
-        parser = PriceParser(FactoryCreator, PriceFactory_test)
-        await parser.refresh_products(RetailerName.TAVRIA, fake_session)
+        retailer = await crud.get_ratailer(RetailerName.TAVRIA, fake_session)
+        catalog = Catalog(retailer.home_url, fake_session)
+        f_creator = FactoryCreator(retailer, PriceFactory_test)
+        parser = PriceParser(catalog, f_creator)
+        await parser.update_products()
 
         products = await crud.get_products(fake_session)
         prod_ids = [_.id for _ in products]
@@ -57,4 +61,5 @@ class TestTavriaPriceParser:
                 decimal.Decimal(str(_.promo_price))
                 if _.promo_price else None)
                for _ in r.ref_price_lines}
+
         assert res == ref

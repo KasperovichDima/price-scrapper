@@ -1,7 +1,6 @@
 import asyncio
 
 from parsers.constants import MAIN_PARSER
-from parsers.tavria.catalog import CatalogUpdater
 
 from project_typing import ElType
 from project_typing import folder_types

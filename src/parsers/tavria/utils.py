@@ -4,15 +4,12 @@ from collections import deque
 from functools import lru_cache
 from typing import Iterable
 from urllib import request
-import itertools
 
 import aiohttp
 
 from bs4 import BeautifulSoup as bs
 from bs4 import ResultSet
 from bs4.element import Tag
-
-from catalog.models import Folder
 
 import crud
 
@@ -138,10 +135,10 @@ async def get_groups_parent_to_id(db_session: Session) -> dict[Parents, int]:
     return parents_to_id
 
 
-def get_page_catalog_folders() -> deque[tuple[str, str | None, str | None]]:
+def get_page_catalog_folders(url: str) -> deque[tuple[str, str | None, str | None]]:
     c_name = s_name = g_name = None
     data: deque[tuple[str, str | None, str | None]] = deque()
-    for tag in get_catalog(c.TAVRIA_URL).find_all():
+    for tag in get_catalog(url).find_all():
         match tag_type_for(tag):
             case ElType.GROUP:
                 g_name = tag.text.strip()
