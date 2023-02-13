@@ -1,7 +1,4 @@
-"""
-Tavria price parser.
-TODO: Merge with other.
-"""
+"""Tavria price parser."""
 from __future__ import annotations
 
 import asyncio
@@ -30,10 +27,10 @@ from sqlalchemy.orm import Session
 
 from . import constants as c
 from . import utils as u
-from .tavria_typing import NameRetailPromo, Parents
 from .tavria_typing import Catalog_P
 from .tavria_typing import FactoryCreator_P
 from .tavria_typing import Factory_P
+from .tavria_typing import NameRetailPromo, Parents
 
 
 class FactoryResults:
@@ -71,7 +68,6 @@ class Box:
     1. Get in_base products
     2. Get result product's names
     3. Deprecate, undeprecate, create new
-
     4. Get in_base price lines
     5. Create inique lines
     """
@@ -79,11 +75,6 @@ class Box:
     _group_products: list[Product]
     _db_session: Session
     _parents_to_id: dict[Parents, int]
-
-    __NOT_INIT_MSG = """
-    Box is not initialized. It seems, you 
-    forgot to await 'initialize' method first.
-    """
 
     __initialized = False
 
@@ -96,9 +87,7 @@ class Box:
 
     async def add(self, factory_results: FactoryResults) -> None:
         """Add factory results to box. Data will be processed and saved."""
-        if not self.__initialized:
-            raise e.NotInitializedError(self.__NOT_INIT_MSG)
-
+        assert self.__initialized
         self._factory_results = factory_results
         self._group_products = await crud.get_products(
             self._db_session, folder_ids=(self._folder_id,)
@@ -127,7 +116,7 @@ class Box:
             to_create_objects = (Product(name=name, parent_id=self._folder_id)
                                  for name in new_names)
             await crud.add_instances(to_create_objects, self._db_session)
-            created = await crud.get_products(self._db_session, 
+            created = await crud.get_products(self._db_session,
                                               prod_names=new_names,
                                               folder_ids=(self._folder_id,))
             self._group_products.extend(created)
@@ -137,7 +126,7 @@ class Box:
         to_undeprecate = deprecated_prod_names & page_names
         to_switch_depr_names = to_deprecate.union(to_undeprecate)
         to_switch_depr_objects = (_ for _ in self._group_products
-                                   if _.name in to_switch_depr_names)
+                                  if _.name in to_switch_depr_names)
         await crud.switch_deprecated(to_switch_depr_objects, self._db_session)
 
     async def _refresh_price_lines(self) -> None:
@@ -298,14 +287,15 @@ class FactoryCreator:
     """
     _factories: deque[Factory_P] = deque()
 
-    def __init__(self, retailer: Retailer, factory_cls: type[Factory_P]) -> None:
+    def __init__(self, retailer: Retailer,
+                 factory_cls: type[Factory_P]) -> None:
         self.retailer = retailer
         self._factory_cls = factory_cls
 
     def create(self) -> deque[Factory_P]:
         for tag in u.get_group_tags(self.retailer.home_url):  # type: ignore
             if url := u.get_url(tag):
-                factory = self._factory_cls(url, self.retailer.id)  # type: ignore
+                factory = self._factory_cls(url, self.retailer.id)  # type: ignore  # noqa: E501
                 self._factories.append(factory)
 
         self._remove_discount_page()
@@ -317,7 +307,7 @@ class FactoryCreator:
             self._factories.popleft()
 
 
-class PriceParser:
+class TavriaParser:
 
     """Parser for collecting prices from specified retailer's web page."""
 

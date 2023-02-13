@@ -16,7 +16,7 @@ from . import reference as r
 from .mock_classes import PriceFactory_test
 from ..catalog import Catalog
 from ..price_parser import FactoryCreator
-from ..price_parser import PriceParser
+from ..price_parser import TavriaParser
 from ..price_parser import box
 
 
@@ -38,11 +38,12 @@ class TestTavriaPriceParser:
     """Test class for tavria price parser."""
 
     @pytest.mark.asyncio
-    async def test_catalog_parser(self, fake_session, fake_catalog_db, fake_retailers):
+    async def test_catalog_parser(self, fake_session,
+                                  fake_catalog_db, fake_retailers):
         retailer = await crud.get_ratailer(RetailerName.TAVRIA, fake_session)
         catalog = Catalog(retailer.home_url, fake_session)
         f_creator = FactoryCreator(retailer, PriceFactory_test)
-        parser = PriceParser(catalog, f_creator)
+        parser = TavriaParser(catalog, f_creator)
         await parser.update_catalog()
 
         result_folders = await crud.get_folders(fake_session)
@@ -63,7 +64,7 @@ class TestTavriaPriceParser:
         retailer = await crud.get_ratailer(RetailerName.TAVRIA, fake_session)
         catalog = Catalog(retailer.home_url, fake_session)
         f_creator = FactoryCreator(retailer, PriceFactory_test)
-        parser = PriceParser(catalog, f_creator)
+        parser = TavriaParser(catalog, f_creator)
         await parser.update_products()
 
         result_products = await crud.get_products(fake_session)
@@ -75,7 +76,8 @@ class TestTavriaPriceParser:
         prod_ids = [_.id for _ in result_products]
         db_prices = set(await crud.get_last_price_lines(prod_ids, 1,
                                                         fake_session))
-        price_res = {(_.retailer_id, _.product_id, _.retail_price, _.promo_price)
+        price_res = {(_.retailer_id, _.product_id,
+                      _.retail_price, _.promo_price)
                      for _ in db_prices}
         price_ref = {(_.retailer_id,
                       _.product_id,
@@ -88,4 +90,3 @@ class TestTavriaPriceParser:
         assert result_actual_product_names == r.ref_actual_product_names
         assert result_deprecated_product_names\
             == r.ref_deprecated_product_names
-

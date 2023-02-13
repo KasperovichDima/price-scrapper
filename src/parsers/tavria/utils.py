@@ -1,7 +1,6 @@
 """Tavria parser utils."""
 import asyncio
 from collections import deque
-from functools import lru_cache
 from typing import Iterable
 from urllib import request
 
@@ -13,23 +12,12 @@ from bs4.element import Tag
 
 import crud
 
-from parsers import schemas as s
-
 from project_typing import ElType
-
-from pydantic import BaseModel
 
 from sqlalchemy.orm import Session
 
 from . import constants as c
 from .tavria_typing import Parents
-
-
-@lru_cache(1)
-def get_product_name(tag: Tag) -> str | None:
-    return tag.text.strip()\
-        if 'product' in tag.get('href', '')\
-        and not tag.text.isspace() else None
 
 
 def group_is_outstanding(tag: Tag) -> bool:
@@ -97,27 +85,6 @@ def aiohttp_session_maker() -> aiohttp.ClientSession:
 def tasks_are_finished() -> None:
     """Just raise TimeoutError, which will be normally captured."""
     raise asyncio.exceptions.TimeoutError
-
-
-def create_schema_getter():
-    schemas = {
-        ElType.CATEGORY: s.CategoryFactoryIn,
-        ElType.SUBCATEGORY: s.SubCategoryFactoryIn,
-        ElType.GROUP: s.GroupFactoryIn,
-        ElType.PRODUCT: s.ProductFactoryIn
-    }
-
-    def get_schema(type_: ElType) -> type[BaseModel]:
-        return schemas[type_]
-    return get_schema
-
-
-get_schema_for = create_schema_getter()
-
-
-def factories_are_valid(factories) -> bool:
-    return len(factories[ElType.GROUP])\
-        == len(set(factories[ElType.GROUP]))
 
 
 async def get_groups_parent_to_id(db_session: Session) -> dict[Parents, int]:

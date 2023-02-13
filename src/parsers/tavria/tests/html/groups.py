@@ -1,93 +1,261 @@
 catalog_buckwheat = """
-<div id="6195" data-name="Крупа Українська Зірка Гречана 1 кг" data-price="65.90" data-item_category="Гречана крупа" data-item_category2="Крупи" data-item_category3="Бакалія" data-item_category4="" data-brand="" data-item_list_name="Каталог" data-item_list_id="2" data-index="1" data-quantity="1" class="products__item">
-    <a href="/product/6195/">Крупа Українська Зірка Гречана 1 кг</a>
-<a href="/product/6196/">Крупа Хуторок Гречана 800 г</a>
-<a href="/product/6200/">Крупа Сквирянка Гречана 800 г</a>
-<a href="/product/6203/">Крупа Сквирянка Гречана 800 г непропарена</a>
-<a href="/product/6205/">Крупа Гречана ваг.</a>
-<a href="/product/6209/">Крупа Жменька Гречана 400 г Ядриця</a>
-<div class="catalog__pagination"> </div>
-"""
+<div class="catalog-products">
+    <div id="6195" data-name="Крупа Українська Зірка Гречана 1 кг" data-price="65.90"
+        data-item_category="Гречана крупа" data-item_category2="Крупи"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+        <span class="price__old">
+            65.90 ₴
+        </span>
+        <span class="price__discount">
+            58.9 ₴
+        </span>
+    </div>
 
-catalog_corn = """
-<a href="/product/6226/">Крупа Українська Зірка 800 г Кукурудзяна</a>
-<a href="/product/6229/">Крупа Терра Кукурудзяна 5х80 г</a>
-<a href="/product/6230/">Крупа Моя Країна Кукурудзяна 600 г</a>
-<a href="/product/6232/">Крупа Жменька Кукурудзяна 300 г картон</a>
-<a href="/product/6237/">Крупа Суббота Кукурудзяна 800 г</a>
+    <div id="6196" data-name="Крупа Хуторок Гречана 800 г" data-price="74.90"
+        data-item_category="Гречана крупа" data-item_category2="Крупи"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+    </div>
 
-<a href="/product/6237/">Крупа Суббота Кукурудзяна 800 г</a>
+    <div id="6200" data-name="Крупа Сквирянка Гречана 800 г" data-price="77.90"
+        data-item_category="Гречана крупа" data-item_category2="Крупи"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+    </div>
 
-<a href="/product/6251/">Крупа Жменька Кукурудзяна 800 г</a>
-<div class="catalog__pagination"> </div>
-"""
+    <div id="6203" data-name="Крупа Сквирянка Гречана 800 г непропарена" data-price="89.90"
+        data-item_category="Гречана крупа" data-item_category2="Крупи"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+    </div>
 
-catalog_chips = """
-<a href="/product/9431/">Чіпси '7' 70 г зі смаком сметани та зелені (кор.)</a>
-<a href="/product/9508/">Чіпси Люкс 71 г бекон</a>
-<a href="/product/9510/">Чіпси Люкс 133 г сир</a>
-<div class="catalog__pagination"></div>
-"""
+    <div class="catalog__pagination">
+    </div>
 
-catalog_fast_food = """
-<a href="/product/9223/">Локшина Роллтон яєчна 75 г стак. зі смаком Курки по-домашньому</a>
-<a href="/product/9229/">Пюре картопл. Эко 30 г Вершкове</a>
-<a href="/product/9254/">Каша Терра вівсяна з верш. 38 г з абрикосом</a>
-<a href="/product/9258/">Каша Терра 38 г вівсяна з яблуком та корицею</a>
-<a href="/product/9259/">Каша Овсяночка 450 г Асорті</a>
-<a href="/product/9260/">Каша Терра вівсяна 38 г з ананасом</a>
-<div class="catalog__pagination">
-    <nav aria-label="Page navigation">
-    <ul class="pagination">
-        <li class="page-item">
-            <a class="page-link" href="/catalog/97/?page=1" aria-label="Previous">
-            </a>
-        </li>
-        <li class="page-item current"><span class="page-link">1</span></li>
-        <li class="page-item"><a class="page-link" href="/catalog/97/?page=2">2</a></li>
-        <li class="page-item"><a class="page-link" href="/catalog/97/?page=3">3</a></li>
-        <li class="page-item">
-            <a class="page-link" href="/catalog/97/?page=3" aria-label="Next">
-            <span aria-hidden="true">
-            ...3
-            </span>
-            </a>
-        </li>
-        <li class="page-item">
-            <a class="page-link" href="/catalog/97/?page=3" aria-label="Next">
-            </a>
-        </li>
-    </ul>
-    </nav>
 </div>
 """
 
-catalog_fast_food_2 = """
-<a href="/product/9292/">Каша Вівсянушка 40 г з ананасом</a>
-<a href="/product/9296/">Каша Вівсянушка Подвійна насолода 47 г з бананом та полуницею</a>
-"""
+catalog_corn = """
+<div class="catalog-products">
+    <div id="6226" data-name="Крупа Українська Зірка 800 г Кукурудзяна" data-price="14.90"
+        data-item_category="Кукурудзяна крупа" data-item_category2="Крупи"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+    </div>
 
-catalog_fast_food_3 = """
-<a href="/product/9358/">Суп Тетя Соня 60 г пак. Курячий зірочки</a>
-<a href="/product/9359/">Суп Тетя Соня Гороховий 180 г брик. Харчо</a>
-"""
+    <div id="6227" data-name="Крупа Терра Кукурудзяна 5х80 г" data-price="39.80"
+        data-item_category="Кукурудзяна крупа" data-item_category2="Крупи"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+        <span class="price__old">
+            39.80 ₴
+        </span>
+        <span class="price__discount">
+            27.60 ₴
+        </span>
+    </div>
 
-catalog_protein = """
-<a href="/product/107780/">Батончик протеїновий Healthy Meal 40 г з фісташками глазур.</a>
-<a href="/product/107783/">Батончик протеїновий Vale 4Energy 40 г вишня</a>
-<a href="/product/107811/">Батончик протеїновий Vale 40 г полуниця</a>
-<a href="/product/112845/">Батончик Biotech Protein Bar 70 г Strawberry</a>
-<a href="/product/112847/">Батончик Biotech Protein Bar 70 г salted caramel</a>
-<a href="/product/112848/">Батончик Biotech Protein Bar 70 г Banana</a>
-<div class="catalog__pagination"> </div>
+    <div id="6230" data-name="Крупа Моя Країна Кукурудзяна 600 г" data-price="36.00"
+        data-item_category="Кукурудзяна крупа" data-item_category2="Крупи"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+    </div>
+
+    <div id="6231" data-name="Крупа Жменька Кукурудзяна 300 г картон" data-price="25.10"
+        data-item_category="Кукурудзяна крупа" data-item_category2="Крупи"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+    </div>
+
+    <div class="catalog__pagination">
+    </div>
+
+</div>
 """
 
 catalog_rice = """
-<a href="/product/6245/">Рис круглий ваг.</a>
-<a href="/product/6268/">Рис Хуторок 800 г круглий</a>
-<a href="/product/6291/">Рис Трапеза 500 г Басматі пропарений</a>
-<a href="/product/6293/">Рис Хуторок 800 г пропарений</a>
-<a href="/product/6307/">Рис Трапеза 500 г Жасмін Таїланд</a>
-<a href="/product/6308/">Рис Трапеза 500 г Басматі Гімалаї</a>
-<div class="catalog__pagination"> </div>
+<div class="catalog-products">
+    <div id="6245" data-name="Рис круглий ваг." data-price="47.90"
+        data-item_category="Рис" data-item_category2="Крупи"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="2" data-quantity="1" class="products__item">
+    </div>
+
+    <div id="6268" data-name="Рис Хуторок 800 г круглий" data-price="69.40"
+        data-item_category="Рис" data-item_category2="Крупи"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="2" data-quantity="1" class="products__item">
+        <span class="price__old">
+            69.40 ₴
+        </span>
+        <span class="price__discount">
+            56.90 ₴
+        </span>
+    </div>
+
+    <div class="catalog__pagination">
+        <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <li class="page-item">
+                <a class="page-link" href="/catalog/97/?page=1" aria-label="Previous">
+                </a>
+            </li>
+            <li class="page-item current"><span class="page-link">1</span></li>
+            <li class="page-item"><a class="page-link" href="/catalog/97/?page=2">2</a></li>
+            <li class="page-item"><a class="page-link" href="/catalog/97/?page=3">3</a></li>
+            <li class="page-item">
+                <a class="page-link" href="/catalog/97/?page=3" aria-label="Next">
+                <span aria-hidden="true">
+                ...3
+                </span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="/catalog/97/?page=3" aria-label="Next">
+                </a>
+            </li>
+        </ul>
+        </nav>
+    </div>
+</div>
+"""
+
+catalog_rice_2 = """
+<div class="catalog-products">
+    <div id="6291" data-name="Рис Трапеза 500 г Басматі пропарений" data-price="87.60"
+        data-item_category="Рис" data-item_category2="Крупи"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="2" data-quantity="1" class="products__item">
+    </div>
+
+    <div class="catalog__pagination">
+    </div>
+
+</div>
+"""
+
+catalog_rice_3 = """
+<div class="catalog-products">
+    <div id="6293" data-name="Рис Хуторок 800 г пропарений" data-price="63.70"
+        data-item_category="Рис" data-item_category2="Крупи"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="2" data-quantity="1" class="products__item">
+    </div>
+
+    <div class="catalog__pagination">
+    </div>
+
+</div>
+"""
+
+catalog_fast_food = """
+<div class="catalog-products">
+    <div id="9223" data-name="Локшина Роллтон яєчна 75 г стак. зі смаком Курки по-домашньому" data-price="33.80"
+        data-item_category="Їжа швидкого приготування" data-item_category2="Бакалія"
+        data-item_category3="" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+    </div>
+
+    <div id="9229" data-name="Пюре картопл. Эко 30 г Вершкове" data-price="12.40"
+        data-item_category="Їжа швидкого приготування" data-item_category2="Бакалія"
+        data-item_category3="" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+    </div>
+
+    <div id="9254" data-name="Каша Терра вівсяна з верш. 38 г з абрикосом" data-price="13.60"
+        data-item_category="Їжа швидкого приготування" data-item_category2="Бакалія"
+        data-item_category3="" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+    </div>
+
+    <div id="9258" data-name="Каша Терра 38 г вівсяна з яблуком та корицею" data-price="12.20"
+        data-item_category="Їжа швидкого приготування" data-item_category2="Бакалія"
+        data-item_category3="" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+    </div>
+
+    <div class="catalog__pagination">
+    </div>
+
+</div>
+"""
+
+catalog_protein = """
+<div class="catalog-products">
+    <div id="107780" data-name="Батончик протеїновий Healthy Meal 40 г з фісташками глазур." data-price="45.40"
+        data-item_category="Протеїнові батончики" data-item_category2="Бакалія"
+        data-item_category3="" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+    </div>
+
+    <div id="107783" data-name="Батончик протеїновий Vale 4Energy 40 г вишня" data-price="16.80"
+        data-item_category="Протеїнові батончики" data-item_category2="Бакалія"
+        data-item_category3="" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="2" data-quantity="1" class="products__item">
+    </div>
+
+    <div id="107811" data-name="Батончик протеїновий Vale 40 г полуниця" data-price="16.80"
+        data-item_category="Протеїнові батончики" data-item_category2="Бакалія"
+        data-item_category3="" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="3" data-quantity="1" class="products__item">
+    </div>
+
+    <div id="107811" data-name="Батончик Biotech Protein Bar 70 г Strawberry" data-price="95.60"
+        data-item_category="Протеїнові батончики" data-item_category2="Бакалія"
+        data-item_category3="" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="3" data-quantity="1" class="products__item">
+    </div>
+
+    <div class="catalog__pagination">
+    </div>
+</div>
+"""
+
+catalog_chips = """
+<div class="catalog-products">
+    <div id="9431" data-name="Чіпси '7' 70 г зі смаком сметани та зелені (кор.)" data-price="18.30"
+        data-item_category="Чіпси" data-item_category2="Снеки"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="1" data-quantity="1" class="products__item">
+    </div>
+
+    <div id="9508" data-name="Чіпси Люкс 71 г бекон" data-price="38.00"
+        data-item_category="Чіпси" data-item_category2="Снеки"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="2" data-quantity="1" class="products__item">
+    </div>
+
+    <div id="9510" data-name="Чіпси Люкс 133 г сир" data-price="59.80"
+        data-item_category="Чіпси" data-item_category2="Снеки"
+        data-item_category3="Бакалія" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="3" data-quantity="1" class="products__item">
+    </div>
+
+    <div class="catalog__pagination">
+    </div>
+</div>
 """

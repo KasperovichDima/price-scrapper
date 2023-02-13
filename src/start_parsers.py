@@ -8,8 +8,6 @@ from database import SessionLocal
 from database import TestSession
 from database import test_engine
 
-from parsers.tavria import TAVRIA_TEST_URL  # noqa: F401
-from parsers.tavria import TAVRIA_URL  # noqa: F401
 from parsers.tavria import TavriaParser
 
 

@@ -81,8 +81,6 @@ def fake_retailers(fake_session):
 
     retailers = (
         Retailer(name=RetailerName.TAVRIA, home_url=c.TAVRIA_TEST_URL),
-        # Retailer(name='Сільпо', home_url='https://shop.silpo.ua/'),
-        # Retailer(name='Ашан', home_url='https://auchan.ua/ua/'),
     )
     asyncio.run(crud.add_instances(retailers, fake_session))
     yield retailers

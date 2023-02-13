@@ -1,11 +1,16 @@
 import itertools
 from collections import defaultdict, deque, namedtuple
 from typing import Iterable
-from sqlalchemy.orm import Session
+
 from catalog.models import Folder
+
 import crud
-from . import utils as u
+
 from project_typing import ElType
+
+from sqlalchemy.orm import Session
+
+from . import utils as u
 
 
 Path = tuple[str, str | None, str | None]
@@ -19,7 +24,7 @@ class Catalog:
 
     _has_childs: set[int] = set()
     _deprecated_ids: set[int] = set()
-    _ids_to_actualize:deque[int] = deque()
+    _ids_to_actualize: deque[int] = deque()
     _ids_to_deprecate: set[int] = set()
     _id_to_folder: dict[int, Folder] = {}
     _path_to_id_parent_id: PathToIdParentID = {}
@@ -57,7 +62,8 @@ class Catalog:
                 path = (gp_name if gp_name else p_name,
                         p_name if gp_name else None,
                         folder.name)
-            self._path_to_id_parent_id[path] = IdParentID(folder.id, folder.parent_id)
+            self._path_to_id_parent_id[path] = IdParentID(folder.id,
+                                                          folder.parent_id)
 
     def _get_group_parents(self, folder: Folder) -> tuple[str, str | None]:
         p_folder = self._id_to_folder[folder.parent_id]
@@ -94,20 +100,19 @@ class Catalog:
             folders_to_save = []
             for path in pathes:
                 folders_to_save.append(
-                    Folder(
-                        name=self._get_folder_name(path),
-                        parent_id=self._get_parent_id(path),
-                        el_type = type_
-                    )
+                    Folder(name=self._get_folder_name(path),
+                           parent_id=self._get_parent_id(path),
+                           el_type=type_)
                 )
             await crud.add_instances(folders_to_save, self._db_session)
             await self._update_existing_data(folders_to_save)
 
     @staticmethod
-    def _get_folder_name(path: Path) -> str:  # type: ignore
+    def _get_folder_name(path: Path) -> str:
         for name in path[::-1]:
             if name:
                 return name
+        raise ValueError('All names are empty.')
 
     def _get_parent_id(self, path: Path) -> int | None:
         if not path[0]:
