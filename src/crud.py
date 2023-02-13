@@ -67,12 +67,13 @@ async def get_elements(cls_: type[db_type], session: Session,
 async def get_products(
     session: Session,
     prod_ids: Iterable[int] | None = None,
+    prod_names: Iterable[str] | None = None,
     folder_ids: Iterable[int] | None = None
 ) -> list[Product]:
     """Get product objects from product and folder ids."""
 
     return await get_elements(Product, session, id=prod_ids,
-                              parent_id=folder_ids)
+                              name=prod_names, parent_id=folder_ids)
 
 
 async def get_folders(session: Session,

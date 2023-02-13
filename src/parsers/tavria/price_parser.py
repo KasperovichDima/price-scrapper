@@ -25,7 +25,6 @@ from parsers import exceptions as e
 from project_typing import PriceRecord
 
 from retailer.models import Retailer
-from retailer.retailer_typing import RetailerName
 
 from sqlalchemy.orm import Session
 
@@ -114,21 +113,28 @@ class Box:
 
     async def _refresh_products(self) -> None:
         # FIXME: Long method.
-        actual_prod_names = deprecated_prod_names = set()
+        actual_prod_names: set[str] = set()
+        deprecated_prod_names: set[str] = set()
         for product in self._group_products:
             if product.deprecated:
                 deprecated_prod_names.add(product.name)
             else:
                 actual_prod_names.add(product.name)
 
-        new_names = {_[0] for _ in self._factory_results.records}
-        to_create_names = new_names - deprecated_prod_names - actual_prod_names
-        to_create_objects = (Product(name=_, parent_id=self._folder_id)
-                             for _ in to_create_names)
-        await crud.add_instances(to_create_objects, self._db_session)
+        page_names = {_[0] for _ in self._factory_results.records}
+
+        if new_names := page_names - actual_prod_names - deprecated_prod_names:
+            to_create_objects = (Product(name=name, parent_id=self._folder_id)
+                                 for name in new_names)
+            await crud.add_instances(to_create_objects, self._db_session)
+            created = await crud.get_products(self._db_session, 
+                                              prod_names=new_names,
+                                              folder_ids=(self._folder_id,))
+            self._group_products.extend(created)
+
         # TODO: Remove redundant sets
-        to_deprecate = actual_prod_names - new_names
-        to_undeprecate = deprecated_prod_names & new_names
+        to_deprecate = actual_prod_names - page_names
+        to_undeprecate = deprecated_prod_names & page_names
         to_switch_depr_names = to_deprecate.union(to_undeprecate)
         to_switch_depr_objects = (_ for _ in self._group_products
                                    if _.name in to_switch_depr_names)
