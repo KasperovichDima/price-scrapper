@@ -321,8 +321,8 @@ class PriceParser:
         self._f_creator_cls = f_creator_cls
         self._factory_cls = factory_cls
 
-    async def refresh_prices(self, retailer_name: RetailerName,
-                             db_session: Session) -> None:
+    async def refresh_products(self, retailer_name: RetailerName,
+                               db_session: Session) -> None:
 
         await self._get_factories(retailer_name, db_session)
         while self._factories:

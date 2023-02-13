@@ -43,7 +43,7 @@ class TestTavriaPriceParser:
 
         await box.initialize(fake_session)
         parser = PriceParser(FactoryCreator, PriceFactory_test)
-        await parser.refresh_prices(RetailerName.TAVRIA, fake_session)
+        await parser.refresh_products(RetailerName.TAVRIA, fake_session)
 
         products = await crud.get_products(fake_session)
         prod_ids = [_.id for _ in products]

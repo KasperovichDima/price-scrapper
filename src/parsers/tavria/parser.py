@@ -35,7 +35,7 @@ class TavriaParser:
     def _get_factories(self, url: str) -> Factories:
         return self._factory_creator_class()(url, self._db_session)
 
-    async def _refresh_folders(self,) -> None:
+    async def _refresh_folders(self) -> None:
         for type_ in folder_types:
             for factory in self.factories[type_]:
                 print(f'{factory} in progress...')
