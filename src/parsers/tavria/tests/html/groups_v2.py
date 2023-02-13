@@ -220,6 +220,13 @@ catalog_protein = """
         data-index="3" data-quantity="1" class="products__item">
     </div>
 
+    <div id="107811" data-name="Батончик Biotech Protein Bar 70 г Strawberry" data-price="95.60"
+        data-item_category="Протеїнові батончики" data-item_category2="Бакалія"
+        data-item_category3="" data-item_category4=""
+        data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
+        data-index="3" data-quantity="1" class="products__item">
+    </div>
+
     <div class="catalog__pagination">
     </div>
 </div>

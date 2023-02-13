@@ -38,6 +38,23 @@ class TestTavriaPriceParser:
     """Test class for tavria price parser."""
 
     @pytest.mark.asyncio
+    async def test_catalog_parser(self, fake_session, fake_catalog_db, fake_retailers):
+        retailer = await crud.get_ratailer(RetailerName.TAVRIA, fake_session)
+        catalog = Catalog(retailer.home_url, fake_session)
+        f_creator = FactoryCreator(retailer, PriceFactory_test)
+        parser = PriceParser(catalog, f_creator)
+        await parser.update_catalog()
+
+        result_folders = await crud.get_folders(fake_session)
+        result_actual_folder_names = set(_.name for _ in result_folders
+                                         if not _.deprecated)
+        result_deprecated_folder_names = set(_.name for _ in result_folders
+                                             if _.deprecated)
+
+        assert result_actual_folder_names == r.ref_actual_folder_names
+        assert result_deprecated_folder_names == r.ref_deprecated_folder_names
+
+    @pytest.mark.asyncio
     async def test_product_parser(self, fake_session, fake_price_lines):
         # "Distinct on" simulation
         crud.get_last_price_lines = fake_last_price_lines
@@ -49,17 +66,26 @@ class TestTavriaPriceParser:
         parser = PriceParser(catalog, f_creator)
         await parser.update_products()
 
-        products = await crud.get_products(fake_session)
-        prod_ids = [_.id for _ in products]
-        results = set(await crud.get_last_price_lines(prod_ids, 1,
-                                                      fake_session))
-        res = {(_.retailer_id, _.product_id, _.retail_price, _.promo_price)
-               for _ in results}
-        ref = {(_.retailer_id,
-                _.product_id,
-                decimal.Decimal(str(_.retail_price)),
-                decimal.Decimal(str(_.promo_price))
-                if _.promo_price else None)
-               for _ in r.ref_price_lines}
+        result_products = await crud.get_products(fake_session)
+        result_actual_product_names = set(_.name for _ in result_products
+                                          if not _.deprecated)
+        result_deprecated_product_names = set(_ .name for _ in result_products
+                                              if _.deprecated)
 
-        assert res == ref
+        prod_ids = [_.id for _ in result_products]
+        db_prices = set(await crud.get_last_price_lines(prod_ids, 1,
+                                                        fake_session))
+        price_res = {(_.retailer_id, _.product_id, _.retail_price, _.promo_price)
+                     for _ in db_prices}
+        price_ref = {(_.retailer_id,
+                      _.product_id,
+                      decimal.Decimal(str(_.retail_price)),
+                      decimal.Decimal(str(_.promo_price))
+                      if _.promo_price else None)
+                     for _ in r.ref_price_lines}
+
+        assert price_res == price_ref
+        assert result_actual_product_names == r.ref_actual_product_names
+        assert result_deprecated_product_names\
+            == r.ref_deprecated_product_names
+
