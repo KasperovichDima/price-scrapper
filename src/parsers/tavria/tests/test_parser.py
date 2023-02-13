@@ -15,9 +15,9 @@ from sqlalchemy.orm import Session
 from . import reference as r
 from .mock_classes import PriceFactory_test
 from ..catalog import Catalog
-from ..price_parser import FactoryCreator
-from ..price_parser import TavriaParser
-from ..price_parser import box
+from ..parser import FactoryCreator
+from ..parser import TavriaParser
+from ..parser import box
 
 
 async def fake_last_price_lines(product_ids: Iterable[int],
@@ -34,7 +34,7 @@ async def fake_last_price_lines(product_ids: Iterable[int],
     return list({_.product_id: _ for _ in all_lines}.values())
 
 
-class TestTavriaPriceParser:
+class TestTavriaParser:
     """Test class for tavria price parser."""
 
     @pytest.mark.asyncio

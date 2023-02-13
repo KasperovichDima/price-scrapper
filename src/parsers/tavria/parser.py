@@ -156,7 +156,7 @@ class Box:
 box = Box()
 
 
-class PriceFactory:
+class ProductFactory:
 
     """Factory collects price records from page and pages's
     paginated content and transfer them to the box."""
