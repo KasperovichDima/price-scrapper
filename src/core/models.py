@@ -39,7 +39,7 @@ class PriceLine(BaseWithID):
         return hash(self) == hash(__o)
 
     def __repr__(self) -> str:
-        return ('PriceLine >> prod_id: {}, ret_id: {}'
+        return ('PriceLine >> prod_id: {}, ret_id: {}, '
                 'retail: {}, promo: {}, created: {}.'
                 .format(self.product_id, self.retailer_id, self.retail_price,
                         self.promo_price, self.date_created))

@@ -12,6 +12,7 @@ from database import test_engine
 
 from parsers.tavria import Catalog, FactoryCreator
 from parsers.tavria import ProductFactory, TavriaParser
+from parsers.tavria import box
 
 from retailer.retailer_typing import RetailerName
 
@@ -32,6 +33,8 @@ async def run_parser(session):
     f_creator = FactoryCreator(retailer, ProductFactory)
     parser = TavriaParser(catalog, f_creator)
     await parser.update_catalog()
+    await box.initialize(session)
+    await parser.update_products()
 
 
 def main():

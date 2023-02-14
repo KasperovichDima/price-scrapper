@@ -5,6 +5,8 @@ from typing import Protocol
 import aiohttp
 
 
+Path = tuple[str, str | None, str | None]
+
 Parents = tuple[str, str | None, str]
 
 NameRetailPromo = tuple[str, float, float | None]
@@ -34,4 +36,4 @@ class Catalog_P(Protocol):
 
     async def update(self) -> None:
         """Get actual data from the page
-        and update in db catalog structure.""" 
+        and update in db catalog structure."""

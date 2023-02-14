@@ -17,7 +17,7 @@ from project_typing import ElType
 from sqlalchemy.orm import Session
 
 from . import constants as c
-from .tavria_typing import Parents
+from .tavria_typing import Parents, Path
 
 
 def group_is_outstanding(tag: Tag) -> bool:
@@ -102,7 +102,7 @@ async def get_groups_parent_to_id(db_session: Session) -> dict[Parents, int]:
     return parents_to_id
 
 
-def get_page_catalog_folders(url: str) -> deque[tuple[str, str | None, str | None]]:
+def get_page_catalog_folders(url: str) -> deque[Path]:
     c_name = s_name = g_name = None
     data: deque[tuple[str, str | None, str | None]] = deque()
     for tag in get_catalog(url).find_all():

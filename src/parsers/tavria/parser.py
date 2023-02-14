@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 from collections import deque
+from decimal import Decimal
 from functools import cached_property
 from typing import Generator, Iterable
 
@@ -92,15 +93,15 @@ class Box:
         self._group_products = await crud.get_products(
             self._db_session, folder_ids=(self._folder_id,)
         )
-        await self._refresh_products()
-        await self._refresh_price_lines()
+        await self._update_products()
+        await self._update_price_lines()
 
     @property
     def _folder_id(self) -> int:
         assert self._factory_results.parents
         return self._parents_to_id[self._factory_results.parents]
 
-    async def _refresh_products(self) -> None:
+    async def _update_products(self) -> None:
         # FIXME: Long method.
         actual_prod_names: set[str] = set()
         deprecated_prod_names: set[str] = set()
@@ -113,13 +114,13 @@ class Box:
         page_names = {_[0] for _ in self._factory_results.records}
 
         if new_names := page_names - actual_prod_names - deprecated_prod_names:
-            to_create_objects = (Product(name=name, parent_id=self._folder_id)
-                                 for name in new_names)
-            await crud.add_instances(to_create_objects, self._db_session)
-            created = await crud.get_products(self._db_session,
-                                              prod_names=new_names,
-                                              folder_ids=(self._folder_id,))
-            self._group_products.extend(created)
+            new_objects = [Product(name=name, parent_id=self._folder_id)
+                           for name in new_names]
+            await crud.add_instances(new_objects, self._db_session)
+            # created = await crud.get_products(self._db_session,
+            #                                   prod_names=new_names,
+            #                                   folder_ids=(self._folder_id,))
+            self._group_products.extend(new_objects)
 
         # TODO: Remove redundant sets
         to_deprecate = actual_prod_names - page_names
@@ -129,17 +130,19 @@ class Box:
                                   if _.name in to_switch_depr_names)
         await crud.switch_deprecated(to_switch_depr_objects, self._db_session)
 
-    async def _refresh_price_lines(self) -> None:
+    async def _update_price_lines(self) -> None:
         if new_records := await self._get_unique_records():
             await crud.add_instances(new_records, self._db_session)
 
     async def _get_unique_records(self) -> Iterable[PriceLine] | None:
-        records = set(
+        """TODO: Simplifie it after debuging"""
+        page_records = set(
             self._factory_results.get_price_records(self._prod_name_to_id)
         )
-        records.difference_update(await self._last_price_lines)
-        return (PriceLine.from_tuple(rec) for rec in records)\
-            if records else None
+        db_records = await self._last_price_lines
+        page_records.difference_update(db_records)
+        return (PriceLine.from_tuple(rec) for rec in page_records)\
+            if page_records else None
 
     @property
     def _prod_name_to_id(self) -> dict[str, int]:
@@ -180,14 +183,18 @@ class ProductFactory:
         self._aio_session = aio_session
         try:
             await self._get_page_tags()
-        except e.UnexpectedParserError:
+            self._collect_prices()
+            self._results.parents = self.parents
+            await self._get_paginated_content()
+            await box.add(self._results)
+        except Exception as e:
+            print(f'Unsuccessful attempt to get data from {self._url}\n'
+                  f'Failed with "{e}"')
             return
-        self._collect_prices()
-        self._results.parents = self.parents
-        await self._get_paginated_content()
-        await box.add(self._results)
 
     async def _get_page_tags(self) -> None:
+        """TODO: Add loginfo here!"""
+        print(f'Getting data from {self._url}')
         await self._get_product_area()
         self._get_product_tags()
 
@@ -223,14 +230,14 @@ class ProductFactory:
         for tag in self._product_tags:
             self._results.add_record(
                 (tag.get('data-name'),
-                 float(tag.get('data-price')),
+                 Decimal(tag.get('data-price')),
                  self._get_promo_price(tag))
             )
 
     @staticmethod
     def _get_promo_price(tag: Tag) -> float | None:  # type: ignore
         if promo := tag.find('span', {'class': 'price__discount'}):
-            return float(promo.text.strip().removesuffix(' ₴'))
+            return Decimal(promo.text.strip().removesuffix(' ₴'))
 
     @property
     def _page_is_paginated(self) -> bool:
@@ -258,10 +265,7 @@ class ProductFactory:
     async def _page_task(self, url: str) -> None:
         """TODO: Try to remove it."""
         self._url = url
-        try:
-            await self._get_page_tags()
-        except e.UnexpectedParserError:
-            return
+        await self._get_page_tags()
         self._collect_prices()
 
     @property
@@ -349,7 +353,6 @@ class TavriaParser:
 
     async def _single_factory_task(self, factory: Factory_P,
                                    aio_session) -> None:
-        print(f'{factory} in progress...')
         await factory.run(aio_session)
         self._factory_batch.remove(factory)
 

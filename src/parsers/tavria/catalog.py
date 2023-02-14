@@ -11,9 +11,9 @@ from project_typing import ElType
 from sqlalchemy.orm import Session
 
 from . import utils as u
+from .tavria_typing import Path
 
 
-Path = tuple[str, str | None, str | None]
 IdParentID = namedtuple('IdParentID', ('id parent_id'))
 PathToIdParentID = dict[Path, IdParentID]
 
@@ -104,8 +104,17 @@ class Catalog:
                            parent_id=self._get_parent_id(path),
                            el_type=type_)
                 )
+
+                folders_to_save[-1].has_childs = True if not path[2] else False
+
             await crud.add_instances(folders_to_save, self._db_session)
-            await self._update_existing_data(folders_to_save)
+
+            for folder in folders_to_save:
+                if folder.has_childs:
+                    self._has_childs.add(folder.id)
+
+            self._id_to_folder.update({_.id: _ for _ in folders_to_save})
+            self._get_path_to_id_parent_id(folders_to_save)
 
     @staticmethod
     def _get_folder_name(path: Path) -> str:
@@ -124,16 +133,6 @@ class Catalog:
                     return self._path_to_id_parent_id[path].id
                 except KeyError:
                     return self._get_parent_id(path)
-
-    async def _update_existing_data(self, folders: Iterable[Folder]) -> None:
-        names, parent_ids = [], []
-        for folder in folders:
-            names.append(folder.name)
-            parent_ids.append(folder.parent_id)
-        folders = await crud.get_elements(Folder, self._db_session,
-                                          name=names, parent_id=parent_ids)
-        self._get_path_to_id_parent_id(folders)
-        self._id_to_folder.update({_.id: _ for _ in folders})
 
     async def _switch_deprecated(self) -> None:
         if not any((self._ids_to_deprecate, self._ids_to_actualize)):
