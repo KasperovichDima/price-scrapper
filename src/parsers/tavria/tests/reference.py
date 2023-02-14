@@ -12,6 +12,9 @@ ref_actual_folder_names = {
     'Їжа швидкого приготування',
     'Снеки',
     'Чіпси',
+    'Сіль, цукор',
+    'Цукор',
+    'Сіль',
 }
 
 ref_deprecated_folder_names = {

@@ -1,6 +1,5 @@
 import itertools
 from collections import defaultdict, deque
-from typing import Iterable
 
 from catalog.models import Folder
 
@@ -108,8 +107,7 @@ class Catalog:
             await crud.add_instances(folders_to_save, self._db_session)
             self._id_to_folder.update({_.id: _ for _ in folders_to_save})
             self._path_to_id.update({path: folder.id for path, folder  # type: ignore
-                                     in path_to_folder.items()})
-
+                                    in path_to_folder.items()})
 
     @staticmethod
     def _get_folder_name(path: Path) -> str:
@@ -121,9 +119,9 @@ class Catalog:
     def _get_parent_id(self, path: Path) -> int | None:
         if not path[0]:
             return None
-        for ind in range(len(path) - 1, -1, -1):
-            if path[ind]:
-                path = path[:ind] + (None,) + path[ind + 1:]
+        for ind in range(1, len(path) + 1):
+            if path[-ind]:
+                path = path[:-ind] + (None,) * ind
                 try:
                     return self._path_to_id[path]
                 except KeyError:
@@ -132,9 +130,7 @@ class Catalog:
     async def _switch_deprecated(self) -> None:
         if not any((self._ids_to_deprecate, self._ids_to_actualize)):
             return
-        to_switch = (
-            self._id_to_folder[id_] for id_ in
-            itertools.chain(self._ids_to_deprecate,
-                            self._ids_to_actualize)
-        )
+        to_switch = (self._id_to_folder[id_] for id_ in
+                     itertools.chain(self._ids_to_deprecate,
+                                     self._ids_to_actualize))
         await crud.switch_deprecated(to_switch, self._db_session)

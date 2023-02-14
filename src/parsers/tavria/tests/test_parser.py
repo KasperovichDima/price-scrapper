@@ -76,17 +76,17 @@ class TestTavriaParser:
         prod_ids = [_.id for _ in result_products]
         db_prices = set(await crud.get_last_price_lines(prod_ids, 1,
                                                         fake_session))
-        price_res = {(_.retailer_id, _.product_id,
+        result_prices = {(_.retailer_id, _.product_id,
                       _.retail_price, _.promo_price)
                      for _ in db_prices}
-        price_ref = {(_.retailer_id,
+        ref_prices = {(_.retailer_id,
                       _.product_id,
                       decimal.Decimal(str(_.retail_price)),
                       decimal.Decimal(str(_.promo_price))
                       if _.promo_price else None)
                      for _ in r.ref_price_lines}
 
-        assert price_res == price_ref
+        assert result_prices == ref_prices
         assert result_actual_product_names == r.ref_actual_product_names
         assert result_deprecated_product_names\
             == r.ref_deprecated_product_names
