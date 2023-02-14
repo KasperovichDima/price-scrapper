@@ -45,35 +45,40 @@ class Catalog:
 
     def _get_db_folders_data(self) -> None:
         for folder in self._folders_in_db:
-            self._has_childs.add(folder.parent_id)  # type: ignore
-            self._deprecated_ids.add(folder.id) if folder.deprecated\
-                else self._ids_to_deprecate.add(folder.id)  # type: ignore
+            if folder.parent_id and folder.parent_id not in self._has_childs:
+                self._has_childs.add(folder.parent_id)  # type: ignore
+            (self._deprecated_ids.add(folder.id) if folder.deprecated  # type: ignore
+                else self._ids_to_deprecate.add(folder.id))  # type: ignore
             self._id_to_folder[folder.id] = folder  # type: ignore
 
     def _get_path_to_id_parent_id(self, folders: Iterable[Folder]) -> None:
+        """NOTE: Should not be used for new objects!"""
+
         for folder in folders:
             if not folder.parent_id:  # CATEGORY
                 path = (folder.name, None, None)
             elif folder.id in self._has_childs:  # SUBCATEGORY
-                c_name = self._id_to_folder[folder.parent_id].name
-                path = (c_name, folder.name, None)
+                c_name = self._id_to_folder[folder.parent_id].name  # type: ignore
+                path = (c_name, folder.name, None)  # type: ignore
             else:  # GROUP
                 p_name, gp_name = self._get_group_parents(folder)
-                path = (gp_name if gp_name else p_name,
+                path = (gp_name if gp_name else p_name,  # type: ignore
                         p_name if gp_name else None,
                         folder.name)
-            self._path_to_id_parent_id[path] = IdParentID(folder.id,
+            self._path_to_id_parent_id[path] = IdParentID(folder.id,  # type: ignore
                                                           folder.parent_id)
 
     def _get_group_parents(self, folder: Folder) -> tuple[str, str | None]:
-        p_folder = self._id_to_folder[folder.parent_id]
-        gp_folder = self._id_to_folder.get(p_folder.parent_id)
-        return p_folder.name, gp_folder.name if gp_folder else None
+        """Get parent name and grand parent name, if exists."""
+
+        p_folder = self._id_to_folder[folder.parent_id]  # type: ignore
+        gp_folder = self._id_to_folder.get(p_folder.parent_id)  # type: ignore
+        return p_folder.name, gp_folder.name if gp_folder else None  # type: ignore
 
     def _process_page_data(self) -> None:
         for path in u.get_page_catalog_folders(self._url):
             try:  # folder already exists
-                path_id = self._path_to_id_parent_id[path].id
+                path_id: int = self._path_to_id_parent_id[path].id
                 self._check_id_for_deprecation(path_id)
             except KeyError:  # new folder
                 self._add_path_to_create(path)

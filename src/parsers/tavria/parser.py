@@ -117,9 +117,6 @@ class Box:
             new_objects = [Product(name=name, parent_id=self._folder_id)
                            for name in new_names]
             await crud.add_instances(new_objects, self._db_session)
-            # created = await crud.get_products(self._db_session,
-            #                                   prod_names=new_names,
-            #                                   folder_ids=(self._folder_id,))
             self._group_products.extend(new_objects)
 
         # TODO: Remove redundant sets
@@ -312,8 +309,7 @@ class FactoryCreator:
 
 
 class TavriaParser:
-
-    """Parser for collecting prices from specified retailer's web page."""
+    """Parser for collecting data from specified retailer."""
 
     _factories: deque[Factory_P]
 
@@ -323,6 +319,8 @@ class TavriaParser:
         self._f_creator = f_creator
 
     async def update_catalog(self) -> None:
+        """Update catalog folder structure in
+        database and synchronize it with webpage."""
         await self._catalog.update()
         del self._catalog
 
