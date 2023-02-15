@@ -72,7 +72,7 @@ class Catalog:
         return p_folder.name, gp_folder.name if gp_folder else None  # type: ignore
 
     def _process_page_data(self) -> None:
-        for path in u.get_page_catalog_folders(self._url):
+        for path in u.get_page_catalog_pathes(self._url):
             try:  # folder already exists
                 self._check_id_for_deprecation(self._path_to_id[path])
             except KeyError:  # folder is new
@@ -98,34 +98,24 @@ class Catalog:
             folders_to_save = []
             path_to_folder = {}
             for path in pathes:
-                folder = Folder(name=self._get_folder_name(path),
-                                parent_id=self._get_parent_id(path),
-                                el_type=type_)
-                folders_to_save.append(folder)
-                path_to_folder[path] = folder
+                new_folder = Folder(name=u.get_folder_name(path),
+                                    parent_id=self._get_parent_id(path),
+                                    el_type=type_)
+                folders_to_save.append(new_folder)
+                path_to_folder[path] = new_folder
 
             await crud.add_instances(folders_to_save, self._db_session)
             self._id_to_folder.update({_.id: _ for _ in folders_to_save})
             self._path_to_id.update({path: folder.id for path, folder  # type: ignore
                                     in path_to_folder.items()})
 
-    @staticmethod
-    def _get_folder_name(path: Path) -> str:
-        for name in path[::-1]:
-            if name:
-                return name
-        raise ValueError('All names are empty.')
-
     def _get_parent_id(self, path: Path) -> int | None:
-        if not path[0]:
+        if not any((path[1], path[2])):
             return None
-        for ind in range(1, len(path) + 1):
-            if path[-ind]:
-                path = path[:-ind] + (None,) * ind
-                try:
-                    return self._path_to_id[path]
-                except KeyError:
-                    return self._get_parent_id(path)
+        try:
+            return self._path_to_id[u.cut_path(path)]
+        except KeyError:
+            return self._get_parent_id(u.cut_path(path))
 
     async def _switch_deprecated(self) -> None:
         if not any((self._ids_to_deprecate, self._ids_to_actualize)):

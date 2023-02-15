@@ -1,6 +1,7 @@
 """Tavria parser utils."""
 import asyncio
 from collections import deque
+from functools import lru_cache
 from typing import Iterable
 from urllib import request
 
@@ -48,7 +49,7 @@ def get_url(tag: Tag) -> str | None:
     return None
 
 
-def get_type_checker():
+def __get_type_checker():
     """TODO: Could be unsafe if call it one more time!"""
     discount_checked = False
 
@@ -71,7 +72,7 @@ def get_type_checker():
     return get_tag_type
 
 
-tag_type_for = get_type_checker()
+tag_type_for = __get_type_checker()
 
 
 def aiohttp_session_maker() -> aiohttp.ClientSession:
@@ -102,9 +103,9 @@ async def get_groups_parent_to_id(db_session: Session) -> dict[Parents, int]:
     return parents_to_id
 
 
-def get_page_catalog_folders(url: str) -> deque[Path]:
-    c_name = s_name = g_name = None
-    data: deque[tuple[str, str | None, str | None]] = deque()
+def get_page_catalog_pathes(url: str) -> deque[Path]:
+    s_name = g_name = None
+    pathes: deque[tuple[str, str | None, str | None]] = deque()
     for tag in get_catalog(url).find_all():
         match tag_type_for(tag):
             case ElType.GROUP:
@@ -119,8 +120,44 @@ def get_page_catalog_folders(url: str) -> deque[Path]:
                 s_name = g_name = None
             case _:
                 continue
-        data.append((c_name, s_name, g_name))
-    # removing disount
-    if data[0][2] == 'Акції':
-        data.popleft()
-    return data
+        assert c_name
+        pathes.append((c_name, s_name, g_name))
+    return remove_discount(pathes)
+
+
+def remove_discount(pathes: deque[Path]) -> deque[Path]:
+    """Remove 'discount' path if it is first in pathes."""
+    if pathes[0][2] == 'Акції':
+        pathes.popleft()
+    return pathes
+
+
+@lru_cache(maxsize=1)
+def cut_path(path: Path) -> Path:  # type: ignore
+    """
+    Cut passed path to get parent path. Attempt
+    to cut path of category is not allowed.
+    >>> cut_path('Cat_name', 'Sub_name', 'Group_name')
+    ('Cat_name', 'Sub_name', None)
+    >>> cut_path('Cat_name', None, 'Group_name')
+    ('Cat_name', None, None)
+    """
+    assert any((path[1], path[2]))
+
+    for i in range(1, len(path) + 1):
+        if path[-i]:
+            return path[:-i] + (None,) * i  # type: ignore
+
+
+def get_folder_name(path: Path) -> str:
+    """
+    Returns last specified name in the path.
+    >>> get_folder_name('Cat_name', 'Sub_name', 'Group_name')
+    'Group_name'
+    >>> get_folder_name('Cat_name', 'Sub_name', None)
+    'Sub_name'
+    """
+    for name in path[::-1]:
+        if name:
+            return name
+    raise ValueError('All names are empty.')
