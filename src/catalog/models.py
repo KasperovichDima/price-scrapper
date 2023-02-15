@@ -5,13 +5,9 @@ TODO: Remove ElType. Just Folder and Product.
       If Folder has parent and childs - it is subcategory.
       If Folder has no childrens - it is a grouop.
 """
-from __future__ import annotations
-
 from base_models import BaseWithRepr
 
-from project_typing import ElType
-
-from sqlalchemy import Boolean, Column, Enum, ForeignKey
+from sqlalchemy import Boolean, Column, ForeignKey
 from sqlalchemy import Integer, Numeric, String
 
 
@@ -35,7 +31,6 @@ class Folder(BaseCatalogElement):
 
     name = Column(String(100), index=True, nullable=False)
     parent_id = Column(Integer, index=True)
-    el_type = Column(Enum(ElType), nullable=False)
 
 
 class Product(BaseCatalogElement):
@@ -51,5 +46,3 @@ class Product(BaseCatalogElement):
     parent_id = Column(Integer, ForeignKey('folder.id', ondelete='CASCADE'),
                        nullable=False)
     prime_cost = Column(Numeric(scale=2))
-
-    el_type = ElType.PRODUCT  # type: ignore
