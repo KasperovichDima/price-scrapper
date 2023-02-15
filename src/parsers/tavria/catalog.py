@@ -1,5 +1,6 @@
 import itertools
 from collections import defaultdict, deque
+from typing import Iterable
 
 from catalog.models import Folder
 
@@ -36,7 +37,8 @@ class Catalog:
         del self._folders_in_db
         self._process_page_data()
         await self._create_new_folders()
-        await self._switch_deprecated()
+        if any((self._ids_to_deprecate, self._ids_to_actualize)):
+            await crud.switch_deprecated(self._to_switch, self._db_session)
 
     def _get_db_folders_data(self) -> None:
         """NOTE: Should not be used with new objects!"""
@@ -117,10 +119,8 @@ class Catalog:
         except KeyError:
             return self._get_parent_id(u.cut_path(path))
 
-    async def _switch_deprecated(self) -> None:
-        if not any((self._ids_to_deprecate, self._ids_to_actualize)):
-            return
-        to_switch = (self._id_to_folder[id_] for id_ in
-                     itertools.chain(self._ids_to_deprecate,
-                                     self._ids_to_actualize))
-        await crud.switch_deprecated(to_switch, self._db_session)
+    @property
+    def _to_switch(self) -> Iterable[Folder]:
+        return (self._id_to_folder[id_] for id_ in
+                itertools.chain(self._ids_to_deprecate,
+                                self._ids_to_actualize))
