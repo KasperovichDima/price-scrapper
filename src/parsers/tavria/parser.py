@@ -83,7 +83,7 @@ class Box:
         """Initialize box with db_session, which is required for
         it's work. Also parents_to_id table will be created."""
         self._db_session = db_session
-        self._parents_to_id = await u.get_groups_parent_to_id(db_session)
+        self._parents_to_id = await u.get_path_to_id(db_session)
         self.__initialized = True
 
     async def add(self, factory_results: FactoryResults) -> None:

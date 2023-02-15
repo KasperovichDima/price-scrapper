@@ -20,7 +20,7 @@ from fastapi.testclient import TestClient
 
 from main import app
 
-from project_typing import ElType, UserType
+from project_typing import UserType
 
 import pytest
 
@@ -65,8 +65,8 @@ def create_fake_user(fake_session: Session,
                      fake_user_data: UserCreate):
     """Creates and saves fake user to db. Deletes it after test."""
     user = User(**fake_user_data.dict())
-    user.is_active = True
-    user.type = UserType.USER
+    user.is_active = True  # type: ignore
+    user.type = UserType.USER  # type: ignore
     asyncio.run(crud.add_instance(user, fake_session))
     yield user
 
@@ -101,9 +101,9 @@ def fake_db_content(fake_session):
     """Fill database catalog with fake content."""
     content = RequestObjects(
         [
-            Folder(name='Alcohol', el_type=ElType.CATEGORY),
-            Folder(name='Grocery', el_type=ElType.CATEGORY),
-            Folder(name='Milk', el_type=ElType.CATEGORY),
+            Folder(name='Alcohol'),
+            Folder(name='Grocery'),
+            Folder(name='Milk'),
         ],
         [
             Product(name='Beer Chernigovskoe 0,5', parent_id=1, prime_cost=23.5),  # noqa: E501

@@ -1,8 +1,6 @@
 """Product catalog validation schemas."""
 from decimal import Decimal
 
-from project_typing import ElType
-
 from pydantic import BaseModel
 
 from . import extra_schemas as es
@@ -14,7 +12,6 @@ class BaseCatScheme(BaseModel):
     id: int
     name: str
     parent_id: int | None
-    el_type: ElType
 
     class Config:
         orm_mode = True

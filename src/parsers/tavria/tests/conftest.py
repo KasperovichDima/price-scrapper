@@ -8,8 +8,6 @@ from core.models import PriceLine
 
 import crud
 
-from project_typing import ElType
-
 import pytest
 
 from retailer.models import Retailer
@@ -24,19 +22,19 @@ def fake_catalog_db(fake_session):
 
     catalog: tuple[BaseCatalogElement] = (
         #  Actual fodlers:
-        Folder(name='Бакалія', el_type=ElType.CATEGORY),
-        Folder(name='Крупи', el_type=ElType.SUBCATEGORY, parent_id=1),
-        Folder(name='Снеки', el_type=ElType.SUBCATEGORY, parent_id=1),
-        Folder(name='Гречана крупа', el_type=ElType.GROUP, parent_id=2),
-        Folder(name='Кукурудзяна крупа', el_type=ElType.GROUP, parent_id=2),
-        Folder(name='Рис', el_type=ElType.GROUP, parent_id=2),
-        Folder(name='Протеїнові батончики', el_type=ElType.GROUP, parent_id=1),
-        Folder(name='Їжа швидкого приготування', el_type=ElType.GROUP, parent_id=1),  # noqa: E501
-        Folder(name='Чіпси', el_type=ElType.GROUP, parent_id=3),  # noqa: E501
+        Folder(name='Бакалія'),
+        Folder(name='Крупи', parent_id=1),
+        Folder(name='Снеки', parent_id=1),
+        Folder(name='Гречана крупа', parent_id=2),
+        Folder(name='Кукурудзяна крупа', parent_id=2),
+        Folder(name='Рис', parent_id=2),
+        Folder(name='Протеїнові батончики', parent_id=1),
+        Folder(name='Їжа швидкого приготування', parent_id=1),  # noqa: E501
+        Folder(name='Чіпси', parent_id=3),  # noqa: E501
         #  Deprecated folders:
-        Folder(name='Deprecated folder 1', el_type=ElType.CATEGORY),
-        Folder(name='Deprecated folder 2', el_type=ElType.SUBCATEGORY, parent_id=1),  # noqa: E501
-        Folder(name='Deprecated folder 3', el_type=ElType.GROUP, parent_id=2),
+        Folder(name='Deprecated folder 1'),
+        Folder(name='Deprecated folder 2', parent_id=1),  # noqa: E501
+        Folder(name='Deprecated folder 3', parent_id=2),
         #  Actual products:
         Product(name="Крупа Українська Зірка Гречана 1 кг", parent_id=4, prime_cost=49.93),  # noqa: E501
         Product(name="Крупа Хуторок Гречана 800 г", parent_id=4, prime_cost=59.98),  # noqa: E501

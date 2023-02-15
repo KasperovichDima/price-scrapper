@@ -1,11 +1,13 @@
-"""Catalog conftest."""
+"""
+Catalog conftest.
+TODO: Remove it and use catalog from parser test.
+"""
 import asyncio
 
 from catalog.models import Folder
 
 import crud
 
-from project_typing import ElType
 
 import pytest
 
@@ -14,16 +16,16 @@ import pytest
 def fake_db_del_content(fake_session):
     """Fake content for delete folder test."""
     folders = {
-            1: Folder(name='Alcohol', el_type=ElType.CATEGORY),
-            2: Folder(name='Hard', el_type=ElType.SUBCATEGORY, parent_id=1),
-            3: Folder(name='Easy', el_type=ElType.SUBCATEGORY, parent_id=1),
-            4: Folder(name='NonAlcohol', el_type=ElType.SUBCATEGORY, parent_id=1),  # noqa: E501
-            5: Folder(name='Vine', el_type=ElType.GROUP, parent_id=2),
-            6: Folder(name='Vodka', el_type=ElType.GROUP, parent_id=2),
-            7: Folder(name='Beer', el_type=ElType.GROUP, parent_id=3),
-            8: Folder(name='Cocktails', el_type=ElType.GROUP, parent_id=3),
-            9: Folder(name='Juices', el_type=ElType.GROUP, parent_id=4),
-            10: Folder(name='Water', el_type=ElType.GROUP, parent_id=4),
+            1: Folder(name='Alcohol'),
+            2: Folder(name='Hard', parent_id=1),
+            3: Folder(name='Easy', parent_id=1),
+            4: Folder(name='NonAlcohol', parent_id=1),
+            5: Folder(name='Vine', parent_id=2),
+            6: Folder(name='Vodka', parent_id=2),
+            7: Folder(name='Beer', parent_id=3),
+            8: Folder(name='Cocktails', parent_id=3),
+            9: Folder(name='Juices', parent_id=4),
+            10: Folder(name='Water', parent_id=4),
     }
 
     asyncio.run(crud.add_instances(folders.values(), fake_session))
