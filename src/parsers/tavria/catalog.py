@@ -153,6 +153,7 @@ class Catalog:
                                 self._ids_to_actualize))
 
     def _clear(self) -> None:
+        # TODO: Finish me!
         print('cleared')
         # del Catalog._url
         # del Catalog._db_session
