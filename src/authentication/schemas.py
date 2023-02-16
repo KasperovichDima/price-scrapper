@@ -1,9 +1,8 @@
 """Authentication validation schemas."""
-from project_typing import UserType
-
 from pydantic import BaseModel, EmailStr, Field
 
 from . import extra_schemas as es
+from .auth_typing import UserType
 
 
 class UserBase(BaseModel):

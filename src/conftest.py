@@ -4,6 +4,7 @@ import asyncio
 from authentication.models import User
 from authentication.schemas import UserCreate
 from authentication.utils import create_access_token
+from authentication import UserType
 
 from catalog.models import Folder, Product
 
@@ -19,8 +20,6 @@ from dependencies import get_session, get_test_session
 from fastapi.testclient import TestClient
 
 from main import app
-
-from project_typing import UserType
 
 import pytest
 

@@ -1,5 +1,5 @@
 """Authentication schemas exmples."""
-from project_typing import UserType
+from authentication import UserType
 
 
 user_create = {

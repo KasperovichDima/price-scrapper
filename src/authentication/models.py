@@ -1,9 +1,9 @@
 """Authentication models."""
 from base_models import BaseWithID
 
-from project_typing import UserType
-
 from sqlalchemy import Boolean, Column, Enum, String
+
+from .auth_typing import UserType
 
 
 class User(BaseWithID):
