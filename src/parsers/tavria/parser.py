@@ -28,10 +28,11 @@ from sqlalchemy.orm import Session
 
 from . import constants as c
 from . import utils as u
+from .catalog import catalog
 from .tavria_typing import Catalog_P
 from .tavria_typing import FactoryCreator_P
 from .tavria_typing import Factory_P
-from .tavria_typing import NameRetailPromo, Parents
+from .tavria_typing import NameRetailPromo, Path
 
 
 class FactoryResults:
@@ -42,7 +43,7 @@ class FactoryResults:
 
     def __init__(self, retailer_id: int) -> None:
         self.retailer_id = retailer_id
-        self.parents: Parents | None = None
+        self.parents: Path | None = None
         self.records: deque[NameRetailPromo] = deque()
 
     def add_record(self, record: NameRetailPromo) -> None:
@@ -75,7 +76,6 @@ class Box:
 
     _group_products: list[Product]
     _db_session: Session
-    _parents_to_id: dict[Parents, int]
 
     __initialized = False
 
@@ -83,7 +83,6 @@ class Box:
         """Initialize box with db_session, which is required for
         it's work. Also parents_to_id table will be created."""
         self._db_session = db_session
-        self._parents_to_id = await u.get_path_to_id(db_session)
         self.__initialized = True
 
     async def add(self, factory_results: FactoryResults) -> None:
@@ -99,7 +98,7 @@ class Box:
     @property
     def _folder_id(self) -> int:
         assert self._factory_results.parents
-        return self._parents_to_id[self._factory_results.parents]
+        return catalog.get_id_by_path(self._factory_results.parents)
 
     async def _update_products(self) -> None:
         # FIXME: Long method.
@@ -213,7 +212,7 @@ class ProductFactory:
             .find_all('div', {'class': "products__item"})
 
     @property
-    def parents(self) -> Parents:
+    def parents(self) -> Path:
         first_tag = self._product_tags[0]
         c_name = first_tag.get('data-item_category3')
         s_name = first_tag.get('data-item_category2')
@@ -319,10 +318,9 @@ class TavriaParser:
         self._f_creator = f_creator
 
     async def update_catalog(self) -> None:
-        """Update catalog folder structure in
+        """Update catalog folder structure in the
         database and synchronize it with webpage."""
-        await self._catalog.update()
-        del self._catalog
+        await catalog.update()
 
     async def update_products(self) -> None:
 
