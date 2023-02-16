@@ -62,7 +62,7 @@ class TestTavriaParser:
 
         await box.initialize(fake_session)
         retailer = await crud.get_ratailer(RetailerName.TAVRIA, fake_session)
-        catalog = Catalog(retailer.home_url, fake_session)
+        await catalog.initialize(retailer.home_url, fake_session)
         f_creator = FactoryCreator(retailer, PriceFactory_test)
         parser = TavriaParser(catalog, f_creator)
         await parser.update_products()
@@ -77,10 +77,9 @@ class TestTavriaParser:
         db_prices = set(await crud.get_last_price_lines(prod_ids, 1,
                                                         fake_session))
         result_prices = {(_.retailer_id, _.product_id,
-                      _.retail_price, _.promo_price)
-                     for _ in db_prices}
-        ref_prices = {(_.retailer_id,
-                      _.product_id,
+                          _.retail_price, _.promo_price)
+                         for _ in db_prices}
+        ref_prices = {(_.retailer_id, _.product_id,
                       decimal.Decimal(str(_.retail_price)),
                       decimal.Decimal(str(_.promo_price))
                       if _.promo_price else None)
