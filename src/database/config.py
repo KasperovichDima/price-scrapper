@@ -4,8 +4,7 @@ TODO: Switch to 2.0
 """
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
-from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from . import constants as c
@@ -28,4 +27,4 @@ test_engine = create_engine("sqlite://",
                             poolclass=StaticPool)
 TestSession = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
-Base = declarative_base(metaclass=DeclarativeMeta)
+Base = declarative_base()
