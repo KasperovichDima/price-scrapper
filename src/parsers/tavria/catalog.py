@@ -152,16 +152,17 @@ class Catalog:
                 itertools.chain(self._ids_to_deprecate,
                                 self._ids_to_actualize))
 
-    # def _cleaer(self) -> None:
-    #     del Catalog._url
-    #     del Catalog._db_session
-    #     self._db_folders.clear()
-    #     self._ids_with_childs.clear()
-    #     self._deprecated_ids.clear()
-    #     self._ids_to_actualize.clear()
-    #     self._ids_to_deprecate.clear()
-    #     self._id_to_folder.clear()
-    #     del Catalog._to_create
+    def _clear(self) -> None:
+        print('cleared')
+        # del Catalog._url
+        # del Catalog._db_session
+        # self._db_folders.clear()
+        # self._ids_with_childs.clear()
+        # self._deprecated_ids.clear()
+        # self._ids_to_actualize.clear()
+        # self._ids_to_deprecate.clear()
+        # self._id_to_folder.clear()
+        # del Catalog._to_create
 
 
 catalog = Catalog()

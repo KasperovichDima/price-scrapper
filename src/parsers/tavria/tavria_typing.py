@@ -1,17 +1,52 @@
 """Tavria parser typing."""
 from collections import deque
-from typing import Protocol
+from decimal import Decimal
+from typing import Iterator, Protocol
 
 import aiohttp
+
+from project_typing import PriceRecord
 
 
 Path = tuple[str, str | None, str | None]
 
-NameRetailPromo = tuple[str, float, float | None]
+NameRetailPromo = tuple[str, Decimal, Decimal | None]
+
+
+class Retailer_P(Protocol):
+    """Retailer model protocol. Provides variables: home_url, id."""
+
+    id: int
+    home_url: str
+
+
+class FactoryResults_P(Protocol):
+    """FactoryResults protocol. Provides signatures for:
+    1. 'add_record' method to add new factory record.
+    2. 'get_price_records' to return result records.
+
+    Also supports variables: retailer_id, parents, records.
+    """
+
+    retailer_id: int
+    parents: Path | None = None
+    records: deque[NameRetailPromo]
+
+    def add_record(self, record: NameRetailPromo) -> None:
+        """Add new record form factory of type NameRetailPromo."""
+
+    def get_price_records(self, prod_name_to_id_table: dict[str, int]
+                          ) -> Iterator[PriceRecord]:
+        """
+        Returns tuples:
+        (product_id, retailer_id, retail_price, promo_price)
+        """
 
 
 class Factory_P(Protocol):
-    """Factory protocol."""
+    """Factory protocol. Provides signatures for:
+    1. 'run' method to start factory.
+    2. '__init__' method for initialization."""
 
     _main_url: str
 
@@ -23,14 +58,14 @@ class Factory_P(Protocol):
 
 
 class FactoryCreator_P(Protocol):
-    """FactoryCreator protocol."""
+    """FactoryCreator protocol. Provides signature for create method."""
 
     def create(self) -> deque[Factory_P]:
-        """Create new factories. Retailer must be specified."""
+        """Creates and returns new factories."""
 
 
 class Catalog_P(Protocol):
-    """Catalog updater protocol."""
+    """Catalog updater protocol. Provides signature for update method."""
 
     async def update(self) -> None:
         """Get actual data from the page

@@ -1,5 +1,5 @@
 """Test mocks and changes to allow testing."""
-from parsers.tavria.parser import ProductFactory
+from parsers.tavria import ProductFactory
 
 from .html import groups as g
 

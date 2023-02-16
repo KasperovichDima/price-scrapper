@@ -1,6 +1,7 @@
 """Custom datatypes for the project."""
 from __future__ import annotations
 
+from decimal import Decimal
 from enum import Enum, auto
 from typing import TypeVar
 
@@ -13,16 +14,7 @@ class UserType(Enum):
     SUPERUSER = auto()
 
 
-# class ElType(Enum):
-#     """Levels of catalog folders. NOTE: Order matters! Do not change!"""
-
-#     CATEGORY = auto()
-#     SUBCATEGORY = auto()
-#     GROUP = auto()
-#     PRODUCT = auto()
-
-
 db_type = TypeVar('db_type')
 
 
-PriceRecord = tuple[int, int, float, float | None]
+PriceRecord = tuple[int, int, Decimal, Decimal | None]

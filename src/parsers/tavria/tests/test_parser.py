@@ -6,6 +6,11 @@ from core.models import PriceLine
 
 import crud
 
+from parsers.tavria import FactoryCreator
+from parsers.tavria import TavriaParser
+from parsers.tavria import catalog
+from parsers.tavria import product_box
+
 import pytest
 
 from retailer.retailer_typing import RetailerName
@@ -14,10 +19,6 @@ from sqlalchemy.orm import Session
 
 from . import reference as r
 from .mock_classes import PriceFactory_test
-from ..catalog import catalog
-from ..parser import FactoryCreator
-from ..parser import TavriaParser
-from ..parser import box
 
 
 async def fake_last_price_lines(product_ids: Iterable[int],
@@ -60,7 +61,7 @@ class TestTavriaParser:
         # "Distinct on" simulation
         crud.get_last_price_lines = fake_last_price_lines
 
-        await box.initialize(fake_session)
+        await product_box.initialize(fake_session)
         retailer = await crud.get_ratailer(RetailerName.TAVRIA, fake_session)
         await catalog.initialize(retailer.home_url, fake_session)
         f_creator = FactoryCreator(retailer, PriceFactory_test)
@@ -70,6 +71,7 @@ class TestTavriaParser:
         result_products = await crud.get_products(fake_session)
         result_actual_product_names = set(_.name for _ in result_products
                                           if not _.deprecated)
+
         result_deprecated_product_names = set(_ .name for _ in result_products
                                               if _.deprecated)
 
@@ -79,11 +81,12 @@ class TestTavriaParser:
         result_prices = {(_.retailer_id, _.product_id,
                           _.retail_price, _.promo_price)
                          for _ in db_prices}
+
         ref_prices = {(_.retailer_id, _.product_id,
-                      decimal.Decimal(str(_.retail_price)),
-                      decimal.Decimal(str(_.promo_price))
-                      if _.promo_price else None)
-                     for _ in r.ref_price_lines}
+                       decimal.Decimal(str(_.retail_price)),
+                       decimal.Decimal(str(_.promo_price))
+                       if _.promo_price else None)
+                      for _ in r.ref_price_lines}
 
         assert result_prices == ref_prices
         assert result_actual_product_names == r.ref_actual_product_names
