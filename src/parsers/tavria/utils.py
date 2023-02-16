@@ -81,45 +81,45 @@ def tasks_are_finished() -> None:
     raise asyncio.exceptions.TimeoutError
 
 
-async def get_path_to_id(db_session: Session) -> dict[Path, int]:
+# async def get_path_to_id(db_session: Session) -> dict[Path, int]:
 
-    def get_group_parents
+#     def get_group_parents
 
-    db_folders = await crud.get_folders(db_session)
-    ids_with_childs: set[int] = set()
-    id_to_folder: dict[int, Folder] = {}
+#     db_folders = await crud.get_folders(db_session)
+#     ids_with_childs: set[int] = set()
+#     id_to_folder: dict[int, Folder] = {}
 
-    for folder in db_folders:
-        if folder.parent_id and folder.parent_id not in ids_with_childs:
-            ids_with_childs.add(folder.parent)
-        id_to_folder[folder.id] = folder  # type: ignore
+#     for folder in db_folders:
+#         if folder.parent_id and folder.parent_id not in ids_with_childs:
+#             ids_with_childs.add(folder.parent)
+#         id_to_folder[folder.id] = folder  # type: ignore
 
-    path_to_id: dict[Path, int] ={}
-    for folder in db_folders:
-        if folder.parent_id is None:  # CATEGORY
-            path = (folder.name, None, None)
-        elif folder.id in ids_with_childs:  # SUBCATEGORY
-            c_name = id_to_folder[folder.parent_id].name  # type: ignore
-            path = (c_name, folder.name, None)  # type: ignore
-        else:  # GROUP
-            p_name, gp_name = self._get_group_parents(folder)
-            path = (gp_name if gp_name else p_name,  # type: ignore
-                    p_name if gp_name else None,
-                    folder.name)
-        path_to_id[path] = folder.id  # type: ignore
+#     path_to_id: dict[Path, int] ={}
+#     for folder in db_folders:
+#         if folder.parent_id is None:  # CATEGORY
+#             path = (folder.name, None, None)
+#         elif folder.id in ids_with_childs:  # SUBCATEGORY
+#             c_name = id_to_folder[folder.parent_id].name  # type: ignore
+#             path = (c_name, folder.name, None)  # type: ignore
+#         else:  # GROUP
+#             p_name, gp_name = self._get_group_parents(folder)
+#             path = (gp_name if gp_name else p_name,  # type: ignore
+#                     p_name if gp_name else None,
+#                     folder.name)
+#         path_to_id[path] = folder.id  # type: ignore
 
-    folders = await crud.get_folders(db_session)
-    id_to_folder = {_.id: _ for _ in folders}
-    parents_to_id: dict[Path, int] = {}
-    for group in (_ for _ in folders if _.el_type is ElType.GROUP):
-        p_folder = id_to_folder[group.parent_id]
-        gp_folder = id_to_folder.get(p_folder.parent_id)
-        c_name = gp_folder.name if gp_folder else p_folder.name
-        s_name = p_folder.name if gp_folder else None
-        g_name = group.name
-        parents = (c_name, s_name, g_name)
-        parents_to_id[parents] = group.id
-    return parents_to_id
+#     folders = await crud.get_folders(db_session)
+#     id_to_folder = {_.id: _ for _ in folders}
+#     parents_to_id: dict[Path, int] = {}
+#     for group in (_ for _ in folders if _.el_type is ElType.GROUP):
+#         p_folder = id_to_folder[group.parent_id]
+#         gp_folder = id_to_folder.get(p_folder.parent_id)
+#         c_name = gp_folder.name if gp_folder else p_folder.name
+#         s_name = p_folder.name if gp_folder else None
+#         g_name = group.name
+#         parents = (c_name, s_name, g_name)
+#         parents_to_id[parents] = group.id
+#     return parents_to_id
 
 
 def is_subcategory(tag: Tag) -> bool:
