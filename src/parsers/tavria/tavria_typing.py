@@ -7,8 +7,6 @@ import aiohttp
 
 Path = tuple[str, str | None, str | None]
 
-Parents = tuple[str, str | None, str]
-
 NameRetailPromo = tuple[str, float, float | None]
 
 
