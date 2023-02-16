@@ -13,13 +13,13 @@ class UserType(Enum):
     SUPERUSER = auto()
 
 
-class ElType(Enum):
-    """Levels of catalog folders. NOTE: Order matters! Do not change!"""
+# class ElType(Enum):
+#     """Levels of catalog folders. NOTE: Order matters! Do not change!"""
 
-    CATEGORY = auto()
-    SUBCATEGORY = auto()
-    GROUP = auto()
-    PRODUCT = auto()
+#     CATEGORY = auto()
+#     SUBCATEGORY = auto()
+#     GROUP = auto()
+#     PRODUCT = auto()
 
 
 db_type = TypeVar('db_type')
