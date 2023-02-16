@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from . import reference as r
 from .mock_classes import PriceFactory_test
-from ..catalog import Catalog
+from ..catalog import catalog
 from ..parser import FactoryCreator
 from ..parser import TavriaParser
 from ..parser import box
@@ -41,7 +41,7 @@ class TestTavriaParser:
     async def test_catalog_parser(self, fake_session,
                                   fake_catalog_db, fake_retailers):
         retailer = await crud.get_ratailer(RetailerName.TAVRIA, fake_session)
-        catalog = Catalog(retailer.home_url, fake_session)
+        await catalog.initialize(retailer.home_url, fake_session)
         f_creator = FactoryCreator(retailer, PriceFactory_test)
         parser = TavriaParser(catalog, f_creator)
         await parser.update_catalog()
