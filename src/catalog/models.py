@@ -1,10 +1,4 @@
-"""
-Product catalog models and get model function.
-TODO: Remove ElType. Just Folder and Product.
-      If Folder has no parents - it is Category.
-      If Folder has parent and childs - it is subcategory.
-      If Folder has no childrens - it is a grouop.
-"""
+"""Product catalog models and get model function."""
 from base_models import BaseWithRepr
 
 from sqlalchemy import Boolean, Column, ForeignKey
@@ -25,7 +19,6 @@ class BaseCatalogElement(BaseWithRepr):
 
 class Folder(BaseCatalogElement):
     """Product folder class."""
-    #  TODO: ondelete='CASCADE'?
     __tablename__ = 'folder'
 
     name = Column(String(100), index=True, nullable=False)

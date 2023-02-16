@@ -1,7 +1,4 @@
-"""
-Report manager class and instance.
-TODO: Connect ParserDataCreator.
-"""
+"""Report manager class and instance."""
 from collections import defaultdict
 
 from authentication.models import User
