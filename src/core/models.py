@@ -6,7 +6,7 @@ from base_models import BaseWithID
 from project_typing import PriceRecord
 
 from sqlalchemy import Column, Date, ForeignKey, Numeric
-from sqlalchemy import func
+from sqlalchemy.sql import functions
 
 
 class PriceLine(BaseWithID):
@@ -20,7 +20,7 @@ class PriceLine(BaseWithID):
     retail_price = Column(Numeric(scale=2))
     promo_price = Column(Numeric(scale=2))
 
-    date_created = Column(Date(), server_default=func.now())
+    date_created = Column(Date(), server_default=functions.now())
 
     @classmethod
     def from_tuple(cls, record: PriceRecord) -> PriceLine:
