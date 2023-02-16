@@ -17,7 +17,6 @@ class BaseCatalogElement(BaseWithRepr):
 
     name: Column[String]
     parent_id: Column[Integer]
-    el_type: Column
     deprecated = Column(Boolean, default=False)
 
     def __hash__(self) -> int:
