@@ -1,7 +1,7 @@
 """Core models."""
 from __future__ import annotations
 
-from base_models import BaseWithID
+from base_models import Base
 
 from project_typing import PriceRecord
 
@@ -9,7 +9,7 @@ from sqlalchemy import Column, Date, ForeignKey, Numeric
 from sqlalchemy.sql import functions
 
 
-class PriceLine(BaseWithID):
+class PriceLine(Base):
     """Represents prices of concrete product in concrete retailer's shop."""
 
     __tablename__ = 'price_line'
@@ -20,7 +20,7 @@ class PriceLine(BaseWithID):
     retail_price = Column(Numeric(scale=2))
     promo_price = Column(Numeric(scale=2))
 
-    date_created = Column(Date(), server_default=functions.now())
+    date_created = Column(Date(), server_default=functions.current_date())
 
     @classmethod
     def from_tuple(cls, record: PriceRecord) -> PriceLine:
