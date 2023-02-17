@@ -5,7 +5,7 @@ from authentication.schemas import TokenData, UserScheme
 
 import crud
 
-from database import SessionLocal
+from database import DBSession
 from database import TestSession
 
 from fastapi import Depends, HTTPException
@@ -21,7 +21,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 def get_session():
     """Returns database connection."""
-    session = SessionLocal()
+    session = DBSession()
     try:
         yield session
     finally:
@@ -38,7 +38,7 @@ def get_test_session():
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme),
-                           session: Session = Depends(get_session)):
+                           session: DBSession = Depends(get_session)):
     """Returns current user by token."""
     try:
         payload = jwt.decode(

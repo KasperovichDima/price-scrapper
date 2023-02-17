@@ -6,7 +6,7 @@ from typing import Iterable, Sequence
 
 from authentication.models import User
 
-from base_models import BaseWithID
+from base_models import Base
 
 from catalog.models import BaseCatalogElement, Folder, Product
 from catalog.schemas import FolderContent
@@ -24,13 +24,13 @@ from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 
-async def add_instance(instance: BaseWithID, session: Session) -> None:
+async def add_instance(instance: Base, session: Session) -> None:
     """Add new instance to database."""
     session.add(instance)
     session.commit()
 
 
-async def add_instances(instances: Iterable[BaseWithID],
+async def add_instances(instances: Iterable[Base],
                         session: Session) -> None:
     """Add new instances to database."""
     session.add_all(instances)
@@ -92,7 +92,7 @@ async def get_retailers(ids: list[int],
     return await get_elements(Retailer, session, id=ids)
 
 
-async def delete_cls_instances(instances: Sequence[BaseWithID],
+async def delete_cls_instances(instances: Sequence[Base],
                                session: Session) -> None:
     """
     Remove specified objects from database.

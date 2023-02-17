@@ -1,1 +1,1 @@
-from .config import Base, SessionLocal, TestSession, engine, test_engine  # noqa: F401 E501
+from .config import Base, DBSession, TestSession, engine, test_engine  # noqa: F401 E501

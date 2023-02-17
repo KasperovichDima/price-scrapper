@@ -29,7 +29,7 @@ from retailer.retailer_typing import RetailerName
 from sqlalchemy.orm import Session
 
 
-target_metadata = Base.metadata  # type: ignore
+target_metadata = Base.metadata
 target_metadata.create_all(test_engine)
 
 app.dependency_overrides[get_session] = get_test_session
@@ -64,8 +64,8 @@ def create_fake_user(fake_session: Session,
                      fake_user_data: UserCreate):
     """Creates and saves fake user to db. Deletes it after test."""
     user = User(**fake_user_data.dict())
-    user.is_active = True  # type: ignore
-    user.type = UserType.USER  # type: ignore
+    user.is_active = True
+    user.type = UserType.USER
     asyncio.run(crud.add_instance(user, fake_session))
     yield user
 

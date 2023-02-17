@@ -6,7 +6,7 @@ import pstats  # noqa: F401
 import crud
 
 from database import Base
-from database import SessionLocal
+from database import DBSession
 from database import TestSession
 from database import test_engine
 
@@ -17,7 +17,7 @@ from parsers.tavria import box
 from retailer.retailer_typing import RetailerName
 
 
-session_maker = SessionLocal
+session_maker = DBSession
 
 test_mode = False
 # test_mode = True
