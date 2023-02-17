@@ -1,11 +1,11 @@
 """Product catalog models and get model function."""
-from base_models import BaseWithRepr
+from base_models import Base
 
 from sqlalchemy import Boolean, Column, ForeignKey
 from sqlalchemy import Integer, Numeric, String
 
 
-class BaseCatalogElement(BaseWithRepr):
+class BaseCatalogElement(Base):
 
     __abstract__ = True
 
@@ -15,6 +15,12 @@ class BaseCatalogElement(BaseWithRepr):
 
     def __hash__(self) -> int:
         return hash((self.name, self.parent_id))
+
+    def __eq__(self, __o: object) -> bool:
+        return all((
+            self.name == __o.name,
+            self.parent_id == __o.parent_id
+        ))
 
 
 class Folder(BaseCatalogElement):
