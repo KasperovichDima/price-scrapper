@@ -69,7 +69,7 @@ def create_fake_user(fake_session: Session,
     asyncio.run(crud.add_instance(user, fake_session))
     yield user
 
-    asyncio.run(crud.delete_user(user.email, fake_session))  # type: ignore
+    asyncio.run(crud.delete_user(user.email, fake_session))
 
 
 @pytest.fixture(scope='session')

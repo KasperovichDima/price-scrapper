@@ -80,14 +80,14 @@ class Catalog:
             self._ids_with_childs.add(folder.parent_id)
 
     def _sort_deprecated(self, folder: Folder) -> None:
-        (self._deprecated_ids.add(folder.id) if folder.deprecated  # type: ignore  # noqa: E501
-         else self._ids_to_deprecate.add(folder.id))  # type: ignore
+        (self._deprecated_ids.add(folder.id) if folder.deprecated
+         else self._ids_to_deprecate.add(folder.id))
 
     def _get_path(self, folder: Folder) -> Path:
         if self._folder_is_group(folder):
             p_name, gp_name = self._get_parents(folder)
-            path = (gp_name if gp_name else p_name,  # type: ignore
-                    p_name if gp_name else None, folder.name)
+            path: Path = (gp_name if gp_name else p_name,
+                          p_name if gp_name else None, folder.name)
         else:
             try:  # SUBCATEGORY
                 parent = self._id_to_folder[folder.parent_id]
@@ -98,13 +98,14 @@ class Catalog:
         return path
 
     def _folder_is_group(self, folder: Folder) -> bool:
-        return folder.parent_id and folder.id not in self._ids_with_childs
+        return (folder.parent_id is not None 
+                and (folder.id not in self._ids_with_childs))
 
     def _get_parents(self, folder: Folder) -> tuple[str, str | None]:
         """Get parent name and grand parent name, if exists."""
 
-        p_folder = self._id_to_folder[folder.parent_id]  # type: ignore
-        gp_folder = self._id_to_folder.get(p_folder.parent_id)  # type: ignore
+        p_folder = self._id_to_folder[folder.parent_id]
+        gp_folder = self._id_to_folder.get(p_folder.parent_id)
         return (p_folder.name, gp_folder.name
                 if gp_folder else None)
 

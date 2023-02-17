@@ -22,7 +22,7 @@ session_maker = DBSession
 test_mode = False
 # test_mode = True
 if test_mode:
-    target_metadata = Base.metadata  # type: ignore
+    target_metadata = Base.metadata
     target_metadata.create_all(test_engine)
     session_maker = TestSession
 

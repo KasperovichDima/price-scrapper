@@ -6,14 +6,14 @@ from typing import Iterable, Sequence
 
 from authentication.models import User
 
-from base_models import Base
-
 from catalog.models import BaseCatalogElement, Folder, Product
 from catalog.schemas import FolderContent
 
 from core.models import PriceLine
 
 import crud_exceptions as c_ex
+
+from database import Base
 
 from project_typing import db_type
 
@@ -161,5 +161,5 @@ async def switch_deprecated(objects: Iterable[BaseCatalogElement],
                             session: Session) -> None:
     """Invert and save deprecated status."""
     for obj in objects:
-        obj.deprecated = not obj.deprecated  # type: ignore
+        obj.deprecated = not obj.deprecated
     session.commit()
