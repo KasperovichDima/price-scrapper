@@ -1,6 +1,4 @@
-"""SQLAlchemy database configuration.
-TODO: Remove all the type ignore in code
-"""
+"""SQLAlchemy database configuration."""
 from datetime import date
 from decimal import Decimal
 
