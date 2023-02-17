@@ -1,19 +1,20 @@
 from logging.config import fileConfig
 
+from alembic import context
+
+from database.config import Base, db_url
+
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from alembic import context
-from dotenv import load_dotenv
-from sys import path
-import os
+from authentication.models import User  # noqa: F401, I100, I201
+from catalog.models import Folder, Product  # noqa: F401, I100, I201
+from core.models import PriceLine  # noqa: F401, I100, I201
+from retailer.models import Retailer  # noqa: F401, I100, I201
 
-from database import config as my_config
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
-load_dotenv()
-
 config = context.config
 
 # Interpret the config file for Python logging.
@@ -21,21 +22,18 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option('sqlalchemy.url', str(my_config.url))
+config.set_main_option('sqlalchemy.url', db_url)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-
-from authentication.models import User
-from catalog.models import Folder, Product
-from core.models import PriceLine
-from retailer.models import Retailer
-from database.config import Base
+# from authentication.models import User
+# from catalog.models import Folder, Product
+# from core.models import PriceLine
+# from retailer.models import Retailer
 
 target_metadata = Base.metadata
-# render_as_batch = True
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -75,7 +73,7 @@ def run_migrations_online() -> None:
 
     """
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
+        config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
