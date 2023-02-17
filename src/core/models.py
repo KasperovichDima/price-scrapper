@@ -1,11 +1,15 @@
 """Core models."""
 from __future__ import annotations
 
-from base_models import Base
+from datetime import date
+from decimal import Decimal
+
+from database import Base, int_fk
 
 from project_typing import PriceRecord
 
-from sqlalchemy import Column, Date, ForeignKey, Numeric
+from sqlalchemy import ForeignKey, Numeric
+from sqlalchemy.orm import Mapped, mapped_column  # type: ignore
 from sqlalchemy.sql import functions
 
 
@@ -14,13 +18,16 @@ class PriceLine(Base):
 
     __tablename__ = 'price_line'
 
-    product_id = Column(ForeignKey('product.id'))
-    retailer_id = Column(ForeignKey('retailer.id'))
+    product_id: Mapped[int_fk] = mapped_column(ForeignKey('product.id'))
+    retailer_id: Mapped[int_fk] = mapped_column(ForeignKey('retailer.id'))
 
-    retail_price = Column(Numeric(scale=2))
-    promo_price = Column(Numeric(scale=2))
+    retail_price: Mapped[Decimal] = mapped_column(Numeric(scale=2))
+    promo_price: Mapped[Decimal] = mapped_column(Numeric(scale=2),
+                                                 nullable=True)
 
-    date_created = Column(Date(), server_default=functions.current_date())
+    date_created: Mapped[date] = mapped_column(
+        server_default=functions.current_date()
+    )
 
     @classmethod
     def from_tuple(cls, record: PriceRecord) -> PriceLine:

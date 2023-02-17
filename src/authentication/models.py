@@ -1,22 +1,25 @@
 """Authentication models."""
-from base_models import BaseWithID
+from database import Base
 
-from sqlalchemy import Boolean, Column, Enum, String
+from exceptions import EqCompareError
+
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column  # type: ignore
 
 from .auth_typing import UserType
 
 
-class User(BaseWithID):
+class User(Base):
     """System user representation."""
 
     __tablename__ = 'user'
 
-    first_name = Column(String(20), index=True)
-    last_name = Column(String(40), index=True)
-    email = Column(String(100), index=True)
-    password = Column(String(250))
-    is_active = Column(Boolean, default=False)
-    type = Column(Enum(UserType), default=UserType.USER)
+    first_name: Mapped[str] = mapped_column(String(20), index=True)
+    last_name: Mapped[str] = mapped_column(String(40), index=True)
+    email: Mapped[str] = mapped_column(String(100), index=True)
+    password: Mapped[str] = mapped_column(String(250))
+    is_active: Mapped[bool] = mapped_column(default=False)
+    type: Mapped[UserType] = mapped_column(default=UserType.USER)
 
     def __repr__(self) -> str:
         return f'{self.first_name} {self.last_name}'
@@ -25,4 +28,7 @@ class User(BaseWithID):
         return hash(self.email)
 
     def __eq__(self, __o: object) -> bool:
-        return self.email == __o.email  # type: ignore
+        try:
+            return self.email == __o.email  # type: ignore
+        except AttributeError:
+            raise EqCompareError(self, __o)

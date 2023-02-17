@@ -1,23 +1,30 @@
 """Retailer models."""
-from base_models import Base
+from database import Base
 
-from sqlalchemy import Column, Enum, String
+from exceptions import EqCompareError
+
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column  # type: ignore
 
 from .retailer_typing import RetailerName
 
 
-class Retailer(Base):  # type: ignore
+class Retailer(Base):
     """Retailer class."""
     __tablename__ = "retailer"
 
-    name = Column(Enum(RetailerName), nullable=False)
-    home_url = Column(String(100), nullable=False)
+    name: Mapped[RetailerName]
+    home_url: Mapped[str] = mapped_column(String(100))
 
     def __repr__(self) -> str:
         return self.name.value
 
     def __eq__(self, __o: object) -> bool:
-        return self.name is __o.name
+        try:
+            return self.name is __o.name  # type: ignore
+        except AttributeError:
+            raise EqCompareError(self, __o)
 
     def __hash__(self) -> int:
         return hash(self.name)

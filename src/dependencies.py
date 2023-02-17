@@ -15,7 +15,6 @@ from jose import JWTError, jwt
 
 from sqlalchemy.orm import Session
 
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
@@ -38,7 +37,7 @@ def get_test_session():
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme),
-                           session: DBSession = Depends(get_session)):
+                           session: Session = Depends(get_session)):
     """Returns current user by token."""
     try:
         payload = jwt.decode(

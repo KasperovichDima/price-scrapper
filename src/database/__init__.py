@@ -1,1 +1,7 @@
-from .config import Base, DBSession, TestSession, engine, test_engine  # noqa: F401 E501
+from .config import Base
+from .config import int_id
+from .config import int_fk
+from .config import DBSession
+from .config import test_engine
+from .config import TestSession
+
