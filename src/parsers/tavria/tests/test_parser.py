@@ -6,8 +6,8 @@ from core.models import PriceLine
 
 import crud
 
+from parsers import TavriaParser
 from parsers.tavria import FactoryCreator
-from parsers.tavria import TavriaParser
 from parsers.tavria import catalog
 from parsers.tavria import product_box
 
@@ -58,7 +58,7 @@ class TestTavriaParser:
 
     @pytest.mark.asyncio
     async def test_product_parser(self, fake_session, fake_price_lines):
-        # "Distinct on" simulation
+        # "Distinct on" simulation (monkey patch)
         crud.get_last_price_lines = fake_last_price_lines
 
         await product_box.initialize(fake_session)
