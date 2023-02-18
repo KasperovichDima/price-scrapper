@@ -16,7 +16,7 @@ mocked_pages['catalog_rice?page=2'] = g.catalog_rice_2
 mocked_pages['catalog_rice?page=3'] = g.catalog_rice_3
 
 
-class PriceFactory_test(ProductFactory):
+class ProductFactory_test(ProductFactory):
     """Mock class for testing with changed _get_page_html method"""
 
     async def _get_page_html(self) -> str | None:

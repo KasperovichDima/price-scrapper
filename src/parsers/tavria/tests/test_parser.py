@@ -18,7 +18,7 @@ from retailer.retailer_typing import RetailerName
 from sqlalchemy.orm import Session
 
 from . import reference as r
-from .mock_classes import PriceFactory_test
+from .mock_classes import ProductFactory_test
 
 
 async def fake_last_price_lines(product_ids: Iterable[int],
@@ -43,7 +43,7 @@ class TestTavriaParser:
                                   fake_catalog_db, fake_retailers):
         retailer = await crud.get_ratailer(RetailerName.TAVRIA, fake_session)
         await catalog.initialize(retailer.home_url, fake_session)
-        f_creator = FactoryCreator(retailer, PriceFactory_test)
+        f_creator = FactoryCreator(retailer, ProductFactory_test)
         parser = TavriaParser(catalog, f_creator)
         await parser.update_catalog()
 
@@ -64,7 +64,7 @@ class TestTavriaParser:
         await product_box.initialize(fake_session)
         retailer = await crud.get_ratailer(RetailerName.TAVRIA, fake_session)
         await catalog.initialize(retailer.home_url, fake_session)
-        f_creator = FactoryCreator(retailer, PriceFactory_test)
+        f_creator = FactoryCreator(retailer, ProductFactory_test)
         parser = TavriaParser(catalog, f_creator)
         await parser.update_products()
 
