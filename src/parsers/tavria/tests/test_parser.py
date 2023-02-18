@@ -61,7 +61,7 @@ class TestTavriaParser:
         # "Distinct on" simulation (monkey patch)
         crud.get_last_price_lines = fake_last_price_lines
 
-        await product_box.initialize(fake_session)
+        await product_box.initialize(catalog, fake_session)
         retailer = await crud.get_ratailer(RetailerName.TAVRIA, fake_session)
         await catalog.initialize(retailer.home_url, fake_session)
         f_creator = FactoryCreator(retailer, ProductFactory_test)

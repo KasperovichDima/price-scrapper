@@ -1,7 +1,4 @@
-"""
-Product box class.
-TODO: Clear or del
-"""
+"""Product box class."""
 from typing import Generator, Iterable
 
 from catalog.models import Product
@@ -12,8 +9,7 @@ import crud
 
 from sqlalchemy.orm import Session
 
-from .catalog import catalog
-from .tavria_typing import FactoryResults_P
+from .tavria_typing import Catalog_P, FactoryResults_P
 
 
 class ProductBox:
@@ -29,19 +25,20 @@ class ProductBox:
 
     _fodler_id: int
 
-    _db_products: list[Product]
+    _catalog: Catalog_P
     _db_session: Session
+    _db_products: list[Product]
 
     _factory_results: FactoryResults_P
     _actual_prod_names: set[str]
     _depr_prod_names: set[str]
 
-    _prod_name_to_id: dict[str, int]
+    async def initialize(self, catalog: Catalog_P,
+                         db_session: Session) -> None:
+        """Initialize box with db_session and
+        catalog which are required for it's work."""
 
-    async def initialize(self, db_session: Session) -> None:
-        """Initialize box with db_session,
-        which is required for it's work."""
-
+        self._catalog = catalog
         self._db_session = db_session
 
     async def add(self, factory_results: FactoryResults_P) -> None:
@@ -49,7 +46,7 @@ class ProductBox:
 
         assert self._db_session
         assert factory_results.parents
-        self._folder_id = catalog.get_id_by_path(factory_results.parents)
+        self._folder_id = self._catalog.get_id_by_path(factory_results.parents)
         self._factory_results = factory_results
         self._db_products = await crud.get_products(
             self._db_session, folder_ids=(self._folder_id,)
@@ -70,12 +67,10 @@ class ProductBox:
     def _collect_products_data(self) -> None:
         self._actual_prod_names: set[str] = set()
         self._depr_prod_names: set[str] = set()
-        self._prod_name_to_id = {}
 
         for product in self._db_products:
             self._depr_prod_names.add(product.name) if product.deprecated\
                 else self._actual_prod_names.add(product.name)
-            self._prod_name_to_id[product.name] = product.id
 
     @property
     def _page_prod_names(self) -> Generator[str, None, None]:
@@ -109,6 +104,11 @@ class ProductBox:
         page_lines.difference_update(await self._get_last_db_lines())
         return (PriceLine.from_tuple(line) for line in page_lines)\
             if page_lines else None
+
+    @property
+    def _prod_name_to_id(self) -> dict[str, int]:
+        #  FIXME: Not tested yet.
+        return {product.name: product.id for product in self._db_products}
 
     async def _get_last_db_lines(self) -> list[PriceLine]:
         return await crud.get_last_price_lines(

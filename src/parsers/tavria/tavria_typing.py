@@ -70,3 +70,6 @@ class Catalog_P(Protocol):
     async def update(self) -> None:
         """Get actual data from the page
         and update in db catalog structure."""
+
+    def get_id_by_path(self, path: Path) -> int:
+        """Get id of folder with specified path."""

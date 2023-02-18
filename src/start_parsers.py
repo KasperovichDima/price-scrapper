@@ -34,7 +34,7 @@ async def run_parser(session):
     f_creator = FactoryCreator(retailer, ProductFactory)
     parser = TavriaParser(catalog, f_creator)
     await parser.update_catalog()
-    await product_box.initialize(session)
+    await product_box.initialize(catalog, session)
     await parser.update_products()
 
 
