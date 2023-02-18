@@ -80,7 +80,7 @@ class ProductFactory:
             await product_box.add(self._results)
         except Exception as e:
             print(f'Unsuccessful attempt to get data from {self._url}\n'
-                  f'Failed with "{e}"')
+                  f'Failed with "{e.__class__.__name__}, {e}"')
             return
 
     async def _get_page_tags(self) -> None:
