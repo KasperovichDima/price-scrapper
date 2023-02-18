@@ -1,5 +1,8 @@
-"""Product box class."""
-from typing import Iterable
+"""
+Product box class.
+TODO: Clear or del
+"""
+from typing import Generator, Iterable
 
 from catalog.models import Product
 
@@ -24,7 +27,7 @@ class ProductBox:
     NOTE: 'initialize' method must be awaited before using the box.
     """
 
-    _group_products: list[Product]
+    _db_products: list[Product]
     _db_session: Session
 
     __initialized = False
@@ -41,7 +44,7 @@ class ProductBox:
 
         assert self.__initialized
         self._factory_results = factory_results
-        self._group_products = await crud.get_products(
+        self._db_products = await crud.get_products(
             self._db_session, folder_ids=(self._folder_id,)
         )
         await self._update_products()
@@ -56,7 +59,7 @@ class ProductBox:
         # FIXME: Long method.
         actual_prod_names: set[str] = set()
         deprecated_prod_names: set[str] = set()
-        for product in self._group_products:
+        for product in self._db_products:
             if product.deprecated:
                 deprecated_prod_names.add(product.name)
             else:
@@ -68,13 +71,13 @@ class ProductBox:
             new_objects = [Product(name=name, parent_id=self._folder_id)
                            for name in new_names]
             await crud.add_instances(new_objects, self._db_session)
-            self._group_products.extend(new_objects)
+            self._db_products.extend(new_objects)
 
         # TODO: Remove redundant sets
         to_deprecate = actual_prod_names - page_names
         to_undeprecate = deprecated_prod_names & page_names
         to_switch_depr_names = to_deprecate.union(to_undeprecate)
-        to_switch_depr_objects = (_ for _ in self._group_products
+        to_switch_depr_objects = (_ for _ in self._db_products
                                   if _.name in to_switch_depr_names)
         await crud.switch_deprecated(to_switch_depr_objects, self._db_session)
 
@@ -94,11 +97,11 @@ class ProductBox:
 
     @property
     def _prod_name_to_id(self) -> dict[str, int]:
-        return {_.name: _.id for _ in self._group_products}
+        return {_.name: _.id for _ in self._db_products}
 
     @property
     async def _last_price_lines(self) -> list[PriceLine]:
-        prod_ids = (_.id for _ in self._group_products)
+        prod_ids = (_.id for _ in self._db_products)
         return await crud.get_last_price_lines(
             prod_ids, self._factory_results.retailer_id, self._db_session
         )

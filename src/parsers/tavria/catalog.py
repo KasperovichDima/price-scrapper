@@ -46,7 +46,7 @@ class Catalog:
     _deprecated_ids: set[int]
     _ids_to_actualize: deque[int]
     _ids_to_deprecate: set[int]
-    #  hash tables:
+
     _id_to_folder: dict[int, Folder]
     _path_to_id: dict[Path, int]
 
@@ -60,11 +60,9 @@ class Catalog:
         self._deprecated_ids: set[int] = set()
         self._ids_to_deprecate: set[int] = set()
         self._ids_to_actualize: deque[int] = deque()
-        #  hash tables:
+
         self._id_to_folder: dict[int, Folder] = {}
         self._path_to_id: dict[Path, int] = {}
-
-        self._to_create = PathesToCreate()
 
         self._db_folders = await crud.get_folders(db_session)
         self._collect_db_folders_data()
@@ -126,6 +124,8 @@ class Catalog:
         return self._path_to_id[path]
 
     async def update(self) -> None:
+        self._to_create = PathesToCreate()
+
         for path in u.get_page_catalog_pathes(self._url):
             if path in self._path_to_id:
                 self._actualize_path(path)

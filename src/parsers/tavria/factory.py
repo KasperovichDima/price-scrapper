@@ -10,6 +10,8 @@ import aiohttp
 from bs4 import BeautifulSoup as bs
 from bs4 import ResultSet, Tag
 
+from exceptions import EqCompareError
+
 from parsers import exceptions as e
 
 from project_typing import PriceRecord
@@ -169,5 +171,7 @@ class ProductFactory:
         return hash(self._main_url)
 
     def __eq__(self, __o: object) -> bool:
-        return self._main_url == __o._main_url  # type: ignore
-
+        try:
+            return self._main_url == __o._main_url  # type: ignore
+        except AttributeError:
+            raise EqCompareError(self, __o)
