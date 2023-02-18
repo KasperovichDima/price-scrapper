@@ -30,6 +30,11 @@ class ProductBox:
     _db_products: list[Product]
     _db_session: Session
 
+    _actual_prod_names: set[str]
+    _depr_prod_names: set[str]
+
+    _prod_name_to_id: dict[str, int]
+
     __initialized = False
 
     async def initialize(self, db_session: Session) -> None:
@@ -56,55 +61,68 @@ class ProductBox:
         return catalog.get_id_by_path(self._factory_results.parents)
 
     async def _update_products(self) -> None:
-        # FIXME: Long method.
-        actual_prod_names: set[str] = set()
-        deprecated_prod_names: set[str] = set()
+        self._collect_products_data()
+
+        if new_products := self._get_new_products():
+            await crud.add_instances(new_products, self._db_session)
+            self._db_products.extend(new_products)
+
+        if to_switch := self._get_objects_to_switch():
+            await crud.switch_deprecated(to_switch, self._db_session)
+
+    def _collect_products_data(self) -> None:
+        self._actual_prod_names: set[str] = set()
+        self._depr_prod_names: set[str] = set()
+        self._prod_name_to_id = {}
+
         for product in self._db_products:
-            if product.deprecated:
-                deprecated_prod_names.add(product.name)
-            else:
-                actual_prod_names.add(product.name)
+            self._depr_prod_names.add(product.name) if product.deprecated\
+                else self._actual_prod_names.add(product.name)
+            self._prod_name_to_id[product.name] = product.id
 
-        page_names = {_[0] for _ in self._factory_results.records}
+    @property  # FIXME
+    def _page_prod_names(self) -> set[str]:
+        return {_[0] for _ in self._factory_results.records}
 
-        if new_names := page_names - actual_prod_names - deprecated_prod_names:
-            new_objects = [Product(name=name, parent_id=self._folder_id)
-                           for name in new_names]
-            await crud.add_instances(new_objects, self._db_session)
-            self._db_products.extend(new_objects)
+    @property
+    def _new_prod_names(self) -> set[str]:
+        return (self._page_prod_names
+                - self._actual_prod_names
+                - self._depr_prod_names)
 
-        # TODO: Remove redundant sets
-        to_deprecate = actual_prod_names - page_names
-        to_undeprecate = deprecated_prod_names & page_names
-        to_switch_depr_names = to_deprecate.union(to_undeprecate)
-        to_switch_depr_objects = (_ for _ in self._db_products
-                                  if _.name in to_switch_depr_names)
-        await crud.switch_deprecated(to_switch_depr_objects, self._db_session)
+    def _get_new_products(self) -> list[Product]:
+        return [Product(name=name, parent_id=self._folder_id)
+                for name in self._new_prod_names]
+
+    def _get_objects_to_switch(self) -> list[Product]:
+        names_to_deprecate = self._actual_prod_names - self._page_prod_names
+        names_to_actualize = self._depr_prod_names & self._page_prod_names
+        names_to_switch = names_to_deprecate.union(names_to_actualize)
+        return [product for product in self._db_products
+                if product.name in names_to_switch]
 
     async def _update_price_lines(self) -> None:
-        if new_records := await self._get_unique_records():
+        if new_records := await self._get_new_lines():
             await crud.add_instances(new_records, self._db_session)
 
-    async def _get_unique_records(self) -> Iterable[PriceLine] | None:
-        """TODO: Simplifie it after debuging"""
-        page_records = set(
-            self._factory_results.get_price_records(self._prod_name_to_id)
+    async def _get_new_lines(self) -> Iterable[PriceLine] | None:
+        page_lines = self._factory_results.get_price_lines(
+            self._prod_name_to_id
         )
-        db_records = await self._last_price_lines
-        page_records.difference_update(db_records)
-        return (PriceLine.from_tuple(rec) for rec in page_records)\
-            if page_records else None
+        page_lines.difference_update(await self._get_last_db_lines())
+        return (PriceLine.from_tuple(line) for line in page_lines)\
+            if page_lines else None
 
-    @property
-    def _prod_name_to_id(self) -> dict[str, int]:
-        return {_.name: _.id for _ in self._db_products}
-
-    @property
-    async def _last_price_lines(self) -> list[PriceLine]:
-        prod_ids = (_.id for _ in self._db_products)
+    async def _get_last_db_lines(self) -> list[PriceLine]:
         return await crud.get_last_price_lines(
-            prod_ids, self._factory_results.retailer_id, self._db_session
+            self._product_ids,
+            self._factory_results.retailer_id,
+            self._db_session
         )
+
+    @property
+    def _product_ids(self) -> Generator[int, None, None]:
+        return (_.id for _ in self._db_products)
 
 
 product_box = ProductBox()

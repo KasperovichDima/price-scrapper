@@ -2,7 +2,7 @@
 import asyncio
 from collections import deque
 from decimal import Decimal
-from functools import cached_property
+from functools import cache, cached_property
 from typing import Generator, Iterator
 
 import aiohttp
@@ -34,20 +34,20 @@ class FactoryResults:
     def add_record(self, record: NameRetailPromo) -> None:
         self.records.append(record)
 
-    def get_price_records(self, prod_name_to_id_table: dict[str, int]
-                          ) -> Iterator[PriceRecord]:
+    def get_price_lines(self, prod_name_to_id_table: dict[str, int]
+                        ) -> set[PriceRecord]:
         """
         Returns tuples:
         (product_id, retailer_id, retail_price, promo_price)
         """
 
-        return zip(
+        return set(zip(
             (prod_name_to_id_table[rec[0]] for rec in self.records),
             (self.retailer_id for _ in self.records),
             (rec[1] for rec in self.records),
             (rec[2] for rec in self.records),
             strict=True
-        )
+        ))
 
 
 class ProductFactory:

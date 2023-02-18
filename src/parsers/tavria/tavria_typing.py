@@ -35,8 +35,8 @@ class FactoryResults_P(Protocol):
     def add_record(self, record: NameRetailPromo) -> None:
         """Add new record form factory of type NameRetailPromo."""
 
-    def get_price_records(self, prod_name_to_id_table: dict[str, int]
-                          ) -> Iterator[PriceRecord]:
+    def get_price_lines(self, prod_name_to_id_table: dict[str, int]
+                        ) -> set[PriceRecord]:
         """
         Returns tuples:
         (product_id, retailer_id, retail_price, promo_price)
