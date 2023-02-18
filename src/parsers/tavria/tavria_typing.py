@@ -1,7 +1,7 @@
 """Tavria parser typing."""
 from collections import deque
 from decimal import Decimal
-from typing import Iterator, Protocol
+from typing import Protocol
 
 import aiohttp
 

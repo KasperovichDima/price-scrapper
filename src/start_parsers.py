@@ -10,9 +10,10 @@ from database import DBSession
 from database import TestSession
 from database import test_engine
 
-from parsers.tavria import Catalog, FactoryCreator
+from parsers.tavria import FactoryCreator
 from parsers.tavria import ProductFactory, TavriaParser
-from parsers.tavria import box
+from parsers.tavria import catalog
+from parsers.tavria import product_box
 
 from retailer.retailer_typing import RetailerName
 
@@ -29,11 +30,11 @@ if test_mode:
 
 async def run_parser(session):
     retailer = await crud.get_ratailer(RetailerName.TAVRIA, session)
-    catalog = Catalog(retailer.home_url, session)
+    await catalog.initialize(retailer.home_url, session)
     f_creator = FactoryCreator(retailer, ProductFactory)
     parser = TavriaParser(catalog, f_creator)
     await parser.update_catalog()
-    await box.initialize(session)
+    await product_box.initialize(session)
     await parser.update_products()
 
 
