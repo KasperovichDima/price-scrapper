@@ -4,7 +4,6 @@ from collections import deque
 
 from . import constants as c
 from . import utils as u
-from .catalog import catalog
 from .tavria_typing import Catalog_P
 from .tavria_typing import FactoryCreator_P
 from .tavria_typing import Factory_P
@@ -23,7 +22,7 @@ class TavriaParser:
     async def update_catalog(self) -> None:
         """Update catalog folder structure in the
         database and synchronize it with webpage."""
-        await catalog.update()
+        await self._catalog.update()
 
     async def update_products(self) -> None:
 
