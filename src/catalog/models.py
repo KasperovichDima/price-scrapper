@@ -13,6 +13,7 @@ class BaseCatalogElement(Base):
 
     __abstract__ = True
 
+    name: str
     parent_id: int | None
     deprecated: Mapped[bool] = mapped_column(default=False)
 
@@ -25,6 +26,9 @@ class BaseCatalogElement(Base):
                         self.parent_id == __o.parent_id))  # type: ignore
         except AttributeError:
             raise EqCompareError(self, __o)
+
+    def __repr__(self) -> str:
+        return self.name
 
 
 class Product(BaseCatalogElement):

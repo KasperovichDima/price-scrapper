@@ -27,38 +27,35 @@ class ProductBox:
     NOTE: 'initialize' method must be awaited before using the box.
     """
 
+    _fodler_id: int
+
     _db_products: list[Product]
     _db_session: Session
 
+    _factory_results: FactoryResults_P
     _actual_prod_names: set[str]
     _depr_prod_names: set[str]
 
     _prod_name_to_id: dict[str, int]
-
-    __initialized = False
 
     async def initialize(self, db_session: Session) -> None:
         """Initialize box with db_session,
         which is required for it's work."""
 
         self._db_session = db_session
-        self.__initialized = True
 
     async def add(self, factory_results: FactoryResults_P) -> None:
         """Add factory results to box. Data will be processed and saved."""
 
-        assert self.__initialized
+        assert self._db_session
+        assert factory_results.parents
+        self._folder_id = catalog.get_id_by_path(factory_results.parents)
         self._factory_results = factory_results
         self._db_products = await crud.get_products(
             self._db_session, folder_ids=(self._folder_id,)
         )
         await self._update_products()
         await self._update_price_lines()
-
-    @property
-    def _folder_id(self) -> int:
-        assert self._factory_results.parents
-        return catalog.get_id_by_path(self._factory_results.parents)
 
     async def _update_products(self) -> None:
         self._collect_products_data()
@@ -80,24 +77,24 @@ class ProductBox:
                 else self._actual_prod_names.add(product.name)
             self._prod_name_to_id[product.name] = product.id
 
-    @property  # FIXME
-    def _page_prod_names(self) -> set[str]:
-        return {_[0] for _ in self._factory_results.records}
+    @property
+    def _page_prod_names(self) -> Generator[str, None, None]:
+        return (_[0] for _ in self._factory_results.records)
 
     @property
-    def _new_prod_names(self) -> set[str]:
-        return (self._page_prod_names
-                - self._actual_prod_names
-                - self._depr_prod_names)
+    def _new_prod_names(self) -> Generator[str, None, None]:
+        return (name for name in self._page_prod_names
+                if name not in self._actual_prod_names
+                and name not in self._depr_prod_names)
 
     def _get_new_products(self) -> list[Product]:
         return [Product(name=name, parent_id=self._folder_id)
                 for name in self._new_prod_names]
 
     def _get_objects_to_switch(self) -> list[Product]:
-        names_to_deprecate = self._actual_prod_names - self._page_prod_names
-        names_to_actualize = self._depr_prod_names & self._page_prod_names
-        names_to_switch = names_to_deprecate.union(names_to_actualize)
+        self._actual_prod_names.difference_update(self._page_prod_names)
+        self._depr_prod_names.intersection_update(self._page_prod_names)
+        names_to_switch = self._actual_prod_names.union(self._depr_prod_names)
         return [product for product in self._db_products
                 if product.name in names_to_switch]
 
