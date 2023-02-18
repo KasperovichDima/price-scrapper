@@ -1,1 +1,1 @@
-from tavria import TavriaParser
+from .tavria import TavriaParser
