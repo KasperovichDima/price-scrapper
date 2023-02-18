@@ -21,11 +21,10 @@ class Retailer_P(Protocol):
 
 
 class FactoryResults_P(Protocol):
-    """FactoryResults protocol. Provides signatures for:
+    """
+    Represents Price factory work results with methods:
     1. 'add_record' method to add new factory record.
     2. 'get_price_records' to return result records.
-
-    Also supports variables: retailer_id, parents, records.
     """
 
     retailer_id: int
@@ -44,9 +43,10 @@ class FactoryResults_P(Protocol):
 
 
 class Factory_P(Protocol):
-    """Factory protocol. Provides signatures for:
-    1. 'run' method to start factory.
-    2. '__init__' method for initialization."""
+    """ProductFactory collects product names and prices from specified page
+    and pages's paginated content. Then send them to product box, where they
+    will be processed and saved. Provides next method:
+    1. 'run' method to start factory. aio_session needed."""
 
     _main_url: str
 
@@ -58,18 +58,20 @@ class Factory_P(Protocol):
 
 
 class FactoryCreator_P(Protocol):
-    """FactoryCreator protocol. Provides signature for create method."""
+    """Use group tags from target page to create product factories."""
 
     def create(self) -> deque[Factory_P]:
         """Creates and returns new factories."""
 
 
 class Catalog_P(Protocol):
-    """Catalog updater protocol. Provides signature for update method."""
+    """Implementation of product catalog tree. Main functions are:
+        1. update - synchronize catalog structure in database with web page.
+        2. get_id_by_path - will return you id of folder, specified by path."""
 
     async def update(self) -> None:
         """Get actual data from the page
-        and update in db catalog structure."""
+        and update in_db catalog structure."""
 
     def get_id_by_path(self, path: Path) -> int:
         """Get id of folder with specified path."""

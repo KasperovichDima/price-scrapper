@@ -13,6 +13,8 @@ from .tavria_typing import Path
 
 
 class PathesToCreate:
+    """Implementation of 'to create' list. Can
+    save and return folder pathes in correct order."""
 
     __categories: deque[Path] = deque()
     __subcategories: deque[Path] = deque()
@@ -37,6 +39,10 @@ class PathesToCreate:
 
 
 class Catalog:
+    """
+    Implementation of Catalog protocol.
+    NOTE: 'initialize' method must be awaited before using the catalog.
+    """
 
     _url: str
     _db_session: Session
@@ -53,6 +59,9 @@ class Catalog:
     _to_create: PathesToCreate
 
     async def initialize(self, url: str, db_session: Session) -> None:
+        """Async method, that must be called before using the object.
+        Provides the object with the resources, required for it's work"""
+
         self._url = url
         self._db_session = db_session
 
@@ -103,7 +112,7 @@ class Catalog:
         return path
 
     def _folder_is_group(self, folder: Folder) -> bool:
-        return (folder.parent_id is not None 
+        return (folder.parent_id is not None
                 and (folder.id not in self._ids_with_childs))
 
     def _get_parents(self, folder: Folder) -> tuple[str, str | None]:
@@ -119,7 +128,6 @@ class Catalog:
         del self._db_folders
 
     def get_id_by_path(self, path: Path) -> int:
-        """Return id of folder, described by path."""
         assert self._path_to_id
         return self._path_to_id[path]
 

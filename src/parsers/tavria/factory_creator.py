@@ -6,7 +6,7 @@ from .tavria_typing import Factory_P, Retailer_P
 
 
 class FactoryCreator:
-    """Use group tags from target page to create product factories."""
+    """Implementation of FactoryCreator protocol."""
     _factories: deque[Factory_P] = deque()
 
     def __init__(self, retailer: Retailer_P,

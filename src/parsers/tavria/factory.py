@@ -2,8 +2,8 @@
 import asyncio
 from collections import deque
 from decimal import Decimal
-from functools import cache, cached_property
-from typing import Generator, Iterator
+from functools import cached_property
+from typing import Generator
 
 import aiohttp
 
@@ -21,8 +21,7 @@ from .tavria_typing import NameRetailPromo, Path
 
 
 class FactoryResults:
-    """Represents Price factory work
-    results with get_records method."""
+    """Implementation of FactoryResults protocol."""
 
     __slots__ = ('retailer_id', 'parents', 'records')
 
@@ -36,10 +35,6 @@ class FactoryResults:
 
     def get_price_lines(self, prod_name_to_id_table: dict[str, int]
                         ) -> set[PriceRecord]:
-        """
-        Returns tuples:
-        (product_id, retailer_id, retail_price, promo_price)
-        """
 
         return set(zip(
             (prod_name_to_id_table[rec[0]] for rec in self.records),
@@ -51,9 +46,6 @@ class FactoryResults:
 
 
 class ProductFactory:
-
-    """Factory collects price records from page and pages's
-    paginated content and transfer them to the box."""
 
     _product_tags: ResultSet[Tag]
     _results: FactoryResults
@@ -69,8 +61,6 @@ class ProductFactory:
         )
 
     async def run(self, aio_session: aiohttp.ClientSession) -> None:
-        """Run factory to add it results to box."""
-
         self._aio_session = aio_session
         try:
             await self._get_page_tags()
