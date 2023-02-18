@@ -42,29 +42,36 @@ class Catalog:
     _db_session: Session
 
     _db_folders: list[Folder]
-    _ids_with_childs: set[int] = set()
-    _deprecated_ids: set[int] = set()
-    _ids_to_actualize: deque[int] = deque()
-    _ids_to_deprecate: set[int] = set()
+    _ids_with_childs: set[int]
+    _deprecated_ids: set[int]
+    _ids_to_actualize: deque[int]
+    _ids_to_deprecate: set[int]
     #  hash tables:
-    _id_to_folder: dict[int, Folder] = {}
-    _path_to_id: dict[Path, int] = {}
+    _id_to_folder: dict[int, Folder]
+    _path_to_id: dict[Path, int]
 
-    _to_create = PathesToCreate()
-
-    def get_id_by_path(self, path: Path) -> int:
-        """Return id of folder, described by path."""
-        assert self._path_to_id
-        return self._path_to_id[path]
+    _to_create: PathesToCreate
 
     async def initialize(self, url: str, db_session: Session) -> None:
         self._url = url
         self._db_session = db_session
 
+        self._ids_with_childs: set[int] = set()
+        self._deprecated_ids: set[int] = set()
+        self._ids_to_deprecate: set[int] = set()
+        self._ids_to_actualize: deque[int] = deque()
+        #  hash tables:
+        self._id_to_folder: dict[int, Folder] = {}
+        self._path_to_id: dict[Path, int] = {}
+
+        self._to_create = PathesToCreate()
+
         self._db_folders = await crud.get_folders(db_session)
         self._collect_db_folders_data()
         self._path_to_id = {self._get_path(folder): folder.id
                             for folder in self._db_folders}
+
+        self._post_init_clear()
 
     def _collect_db_folders_data(self) -> None:
         """Get ids_with_childs, deprecated
@@ -109,6 +116,15 @@ class Catalog:
         return (p_folder.name, gp_folder.name
                 if gp_folder else None)
 
+    def _post_init_clear(self) -> None:
+        del self._ids_with_childs
+        del self._db_folders
+
+    def get_id_by_path(self, path: Path) -> int:
+        """Return id of folder, described by path."""
+        assert self._path_to_id
+        return self._path_to_id[path]
+
     async def update(self) -> None:
         for path in u.get_page_catalog_pathes(self._url):
             if path in self._path_to_id:
@@ -121,7 +137,7 @@ class Catalog:
         if any((self._ids_to_deprecate, self._ids_to_actualize)):
             await crud.switch_deprecated(self._to_switch, self._db_session)
 
-        self._clear()
+        self._post_update_clear()
 
     def _actualize_path(self, path: Path) -> None:
         id_ = self._path_to_id[path]
@@ -153,18 +169,14 @@ class Catalog:
                 itertools.chain(self._ids_to_deprecate,
                                 self._ids_to_actualize))
 
-    def _clear(self) -> None:
-        # TODO: Finish me!
-        print('cleared')
-        # del Catalog._url
-        # del Catalog._db_session
-        # self._db_folders.clear()
-        # self._ids_with_childs.clear()
-        # self._deprecated_ids.clear()
-        # self._ids_to_actualize.clear()
-        # self._ids_to_deprecate.clear()
-        # self._id_to_folder.clear()
-        # del Catalog._to_create
+    def _post_update_clear(self) -> None:
+        del self._deprecated_ids
+        del self._ids_to_actualize
+        del self._ids_to_deprecate
+        del self._to_create
+        del self._id_to_folder
+        del self._url
+        del self._db_session
 
 
 catalog = Catalog()
