@@ -13,7 +13,8 @@ from .tavria_typing import Catalog_P, FactoryResults_P
 
 
 class ProductBox:
-    """Class for handle product factory results. Product names and prices.
+    """
+    Class for handle product factory results. Product names and prices.
     Factory just creates records from page data and drop them to the box.
     Use 'add' public method to add factory_results and perform them.
     Box will:
