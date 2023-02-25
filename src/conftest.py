@@ -15,7 +15,7 @@ import crud
 
 from database import Base, TestSession, test_engine
 
-from dependencies import get_session, get_test_session
+from dependencies import get_db_session, get_test_session
 
 from fastapi.testclient import TestClient
 
@@ -26,13 +26,18 @@ import pytest
 from retailer.models import Retailer
 from retailer.retailer_typing import RetailerName
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
-target_metadata = Base.metadata
-target_metadata.create_all(test_engine)
+app.dependency_overrides[get_db_session] = get_test_session
 
-app.dependency_overrides[get_session] = get_test_session
+
+async def create_tables() -> None:
+    async with test_engine.begin() as con:
+        await con.run_sync(Base.metadata.create_all)
+
+
+asyncio.run(create_tables())
 
 client = TestClient(app)
 
@@ -60,7 +65,7 @@ def create_user_data():
 
 
 @pytest.fixture(scope='session')
-def create_fake_user(fake_session: Session,
+def create_fake_user(fake_session: AsyncSession,
                      fake_user_data: UserCreate):
     """Creates and saves fake user to db. Deletes it after test."""
     user = User(**fake_user_data.dict())
