@@ -3,11 +3,11 @@ from collections import defaultdict
 
 from authentication.models import User
 
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
+import crud
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from .request import Request
-from ..models import PriceLine
 from ..schemas import ReportHeaderScheme
 from ..schemas import ReportScheme
 from ..schemas import RequestInScheme
@@ -32,7 +32,7 @@ class ReportManager:
 
     async def add_request_data(self, user: User,
                                in_data: RequestInScheme,
-                               session: Session) -> RequestOutScheme:
+                               session: AsyncSession) -> RequestOutScheme:
 
         request = self.get_request(user)
         request.add_objects(await get_request_objects(in_data, session))
@@ -40,28 +40,24 @@ class ReportManager:
 
     async def remove_request_data(self, user: User,
                                   in_data: RequestInScheme,
-                                  session: Session) -> RequestOutScheme:
+                                  session: AsyncSession) -> RequestOutScheme:
 
         request = self.get_request(user)
         request.remove_objects(await get_request_objects(in_data, session))
         return request.out_data
 
-    def get_report(self, user: User,
-                   header: ReportHeaderScheme,
-                   session: Session):
-        """
-        Returns report, created by request parameters.
-        TODO: Refactoring.
-        """
+    async def get_report(self, user: User,
+                         header: ReportHeaderScheme,
+                         session: AsyncSession):
+        """Returns report, created by request parameters."""
 
         header.user_name = str(user)
         request = self.__requests.pop(user)
-        price_lines: list[PriceLine] = session.query(PriceLine).where(
-            and_(
-                PriceLine.product_id.in_((_.id for _ in request.products)),
-                PriceLine.retailer_id.in_((_.id for _ in request.retailers))
-            )
-        ).all()
+        product_ids = (_.id for _ in request.products)
+        retailer_ids = (_.id for _ in request.retailers)
+        price_lines = await crud.get_price_lines(prod_ids=product_ids,
+                                                 ret_ids=retailer_ids,
+                                                 session=session)
 
         return ReportScheme(
             header=header,
