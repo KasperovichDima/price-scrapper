@@ -11,8 +11,3 @@ instance_not_exists_exception = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND,
     detail='Instance with this params not exists.'
 )
-
-same_type_exception = HTTPException(
-    status_code=status.HTTP_409_CONFLICT,
-    detail='All objects must be the same class.'
-)
