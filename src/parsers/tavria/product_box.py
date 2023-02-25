@@ -1,5 +1,5 @@
 """Product box class."""
-from typing import Generator, Iterable
+from typing import Iterable, Iterator
 
 from catalog.models import Product
 
@@ -7,7 +7,7 @@ from core.models import PriceLine
 
 import crud
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from .tavria_typing import Catalog_P, FactoryResults_P
 
@@ -27,7 +27,7 @@ class ProductBox:
     _fodler_id: int
 
     _catalog: Catalog_P
-    _db_session: Session
+    _db_session: AsyncSession
     _db_products: list[Product]
 
     _factory_results: FactoryResults_P
@@ -35,7 +35,7 @@ class ProductBox:
     _depr_prod_names: set[str]
 
     async def initialize(self, catalog: Catalog_P,
-                         db_session: Session) -> None:
+                         db_session: AsyncSession) -> None:
         """Initialize box with db_session and
         catalog which are required for it's work."""
 
@@ -52,6 +52,7 @@ class ProductBox:
         self._db_products = await crud.get_products(
             self._db_session, folder_ids=(self._folder_id,)
         )
+
         await self._update_products()
         await self._update_price_lines()
 
@@ -74,11 +75,11 @@ class ProductBox:
                 else self._actual_prod_names.add(product.name)
 
     @property
-    def _page_prod_names(self) -> Generator[str, None, None]:
+    def _page_prod_names(self) -> Iterator[str]:
         return (_[0] for _ in self._factory_results.records)
 
     @property
-    def _new_prod_names(self) -> Generator[str, None, None]:
+    def _new_prod_names(self) -> Iterator[str]:
         return (name for name in self._page_prod_names
                 if name not in self._actual_prod_names
                 and name not in self._depr_prod_names)
@@ -119,7 +120,7 @@ class ProductBox:
         )
 
     @property
-    def _product_ids(self) -> Generator[int, None, None]:
+    def _product_ids(self) -> Iterator[int]:
         return (_.id for _ in self._db_products)
 
 
