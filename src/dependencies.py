@@ -13,31 +13,35 @@ from fastapi.security import OAuth2PasswordBearer
 
 from jose import JWTError, jwt
 
-from sqlalchemy.orm import Session
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
-def get_session():
-    """Returns database connection."""
+async def get_db_session():
+    """
+    Returns database connection.
+    TODO: think about commented...
+    """
     session = DBSession()
     try:
         yield session
+    # except:
+    #     await session.rollback()
+    #     raise
     finally:
-        session.close()
+        await session.close()
 
 
-def get_test_session():
+async def get_test_session():
     """Returns test database connection."""
     session = TestSession()
     try:
         yield session
     finally:
-        session.close()
+        await session.close()
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme),
-                           session: Session = Depends(get_session)):
+                           session = Depends(get_db_session)):
     """Returns current user by token."""
     try:
         payload = jwt.decode(
