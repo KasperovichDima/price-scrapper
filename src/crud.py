@@ -21,29 +21,30 @@ from retailer.models import Retailer
 from retailer.retailer_typing import RetailerName
 
 from sqlalchemy import delete, select
-from sqlalchemy.orm import Session
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
-async def add_instance(instance: Base, session: Session) -> None:
+async def add_instance(instance: Base, session: AsyncSession) -> None:
     """Add new instance to database."""
     session.add(instance)
-    session.commit()
+    await session.commit()
 
 
 async def add_instances(instances: Iterable[Base],
-                        session: Session) -> None:
+                        session: AsyncSession) -> None:
     """Add new instances to database."""
     session.add_all(instances)
-    session.commit()
+    await session.commit()
 
 
-async def get_user(email: str, session: Session) -> User | None:
+async def get_user(email: str, session: AsyncSession) -> User | None:
     """Get user instance by email."""
     stm = select(User).where(User.email == email)
-    return session.execute(stm).scalar()
+    return (await session.execute(stm)).scalar()
 
 
-async def get_elements(cls_: type[db_type], session: Session,
+async def get_elements(cls_: type[db_type], session: AsyncSession,
                        **params) -> Sequence[db_type]:
     """Returns elements of specified class using
     IN statement. NOTE: kwargs dict keys must be
@@ -52,19 +53,19 @@ async def get_elements(cls_: type[db_type], session: Session,
     for param_name, seq in params.items():
         if seq:
             stm = stm.where(getattr(cls_, param_name).in_(seq))
-    return session.scalars(stm).all()
+    return (await session.scalars(stm)).all()
 
 
-async def get_folder_content(id: int, session: Session) -> FolderContent:
+async def get_folder_content(id: int, session: AsyncSession) -> FolderContent:
     """Get content of folder with specified id."""
     return FolderContent(
-        products=await get_elements(Product, session, parent_id=(id,)),
-        folders=await get_elements(Folder, session, parent_id=(id,))
+        products = await get_elements(Product, session, parent_id=(id,)),
+        folders = await get_elements(Folder, session, parent_id=(id,))
     )
 
 
 async def get_products(
-    session: Session,
+    session: AsyncSession,
     prod_ids: Iterable[int] | None = None,
     prod_names: Iterable[str] | None = None,
     folder_ids: Iterable[int] | None = None
@@ -75,7 +76,7 @@ async def get_products(
                               name=prod_names, parent_id=folder_ids)
 
 
-async def get_folders(session: Session,
+async def get_folders(session: AsyncSession,
                       ids: Iterable[int] | None = None,
                       ) -> Sequence[Folder]:
     """
@@ -86,37 +87,37 @@ async def get_folders(session: Session,
 
 
 async def get_retailers(ids: list[int],
-                        session: Session) -> Sequence[Retailer]:
+                        session: AsyncSession) -> Sequence[Retailer]:
     """Get retailer objects by retailer id."""
     return await get_elements(Retailer, session, id=ids)
 
 
 async def delete_cls_instances(instances: Sequence[Base],
-                               session: Session) -> None:
+                               session: AsyncSession) -> None:
     """
     Remove specified objects from database.
     NOTE: All objects must be the same class.
-    Raises same_type_exception if not.
     """
 
     cls_ = type(instances[0])
-    if not all((isinstance(_, cls_) for _ in instances)):
-        raise c_ex.same_type_exception
+    assert all((isinstance(_, cls_) for _ in instances))
 
-    session.execute(delete(cls_).where(cls_.id.in_((_.id for _ in instances))))
-    session.commit()
+    await session.execute(
+        delete(cls_).where(cls_.id.in_((_.id for _ in instances)))
+    )
+    await session.commit()
 
 
-async def delete_user(email: str, session: Session) -> None:
+async def delete_user(email: str, session: AsyncSession) -> None:
     """Delete user, specified by email. Raises
     user_not_exists_exception if email not in database."""
     if not (user := await get_user(email, session)):
         raise c_ex.instance_not_exists_exception
-    session.delete(user)
-    session.commit()
+    await session.delete(user)
+    await session.commit()
 
 
-async def delete_folder(id: int, session: Session) -> int:
+async def delete_folder(id: int, session: AsyncSession) -> int:
     """Recursively deletes folder specified by id and child folders. Also
     deletes products by CASCADE. Raises instance_not_exists_exception if
     specified folder not exists.
@@ -138,31 +139,38 @@ async def delete_folder(id: int, session: Session) -> int:
     return id
 
 
-async def get_price_lines(session: Session) -> list[PriceLine]:
-    return session.query(PriceLine).all()
+async def get_price_lines(*, prod_ids: Iterable[int] | None = None,
+                          ret_ids: Iterable[int] | None = None,
+                          session: AsyncSession) -> Sequence[PriceLine]:
+    """Get price lines for specified (optional) products
+    (by id) and for specified (optional) retailers (by id)."""
+    return await get_elements(PriceLine, session,
+                              product_id=prod_ids,
+                              retailer_id=ret_ids)
 
 
-async def get_last_price_lines(product_ids: Iterable[int],
-                               reatiler_id: int,
-                               session: Session) -> Sequence[PriceLine]:
+async def get_last_price_lines(prod_ids: Iterable[int],
+                               reat_ids: int,
+                               session: AsyncSession) -> Sequence[PriceLine]:
     """Get last price lines for products, specified by
     product_ids, in retailer, specified by reatiler_id."""
-    return session.query(PriceLine).distinct(PriceLine.product_id)\
+    stm = select(PriceLine).distinct(PriceLine.product_id)\
         .order_by(PriceLine.product_id, PriceLine.date_created.desc())\
-        .where(PriceLine.retailer_id.in_((reatiler_id,)),
-                PriceLine.product_id.in_(product_ids)).all()
+        .where(PriceLine.retailer_id.in_((reat_ids,)),
+               PriceLine.product_id.in_(prod_ids))
+    return (await session.scalars(stm)).all()
 
 
 async def get_ratailer(retailer_name: RetailerName,
-                       session: Session) -> Retailer:
+                       session: AsyncSession) -> Retailer:
     """Get retailer by retailer name."""
     stm = select(Retailer).where(Retailer.name == retailer_name)
-    return session.execute(stm).scalar()
+    return (await session.execute(stm)).scalar()
 
 
 async def switch_deprecated(objects: Iterable[BaseCatalogElement],
-                            session: Session) -> None:
+                            session: AsyncSession) -> None:
     """Invert and save deprecated status."""
     for obj in objects:
         obj.deprecated = not obj.deprecated
-    session.commit()
+    await session.commit()
