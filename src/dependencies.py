@@ -24,9 +24,9 @@ async def get_db_session():
     session = DBSession()
     try:
         yield session
-    # except:
-    #     await session.rollback()
-    #     raise
+    except:
+        await session.rollback()
+        raise
     finally:
         await session.close()
 
@@ -36,6 +36,9 @@ async def get_test_session():
     session = TestSession()
     try:
         yield session
+    except:
+        await session.rollback()
+        raise
     finally:
         await session.close()
 
