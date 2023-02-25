@@ -3,16 +3,18 @@ from datetime import date
 from decimal import Decimal
 
 from sqlalchemy import MetaData
-from sqlalchemy import create_engine
 from sqlalchemy import types
-from sqlalchemy.orm import DeclarativeBase, sessionmaker  # type: ignore
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column  # type: ignore
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.orm import mapped_column
 
 from typing_extensions import Annotated
 
 from . import constants as c
+
+
+from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine
 
 
 db_url = '{driver}://{user}:{password}@{host}:{port}/{db_name}'.format(
@@ -24,12 +26,16 @@ db_url = '{driver}://{user}:{password}@{host}:{port}/{db_name}'.format(
     db_name=c.POSTGRES_BASE_NAME
 )
 
-engine = create_engine(db_url)
-DBSession = sessionmaker(engine)
+engine = create_async_engine(db_url)
+DBSession = async_sessionmaker(engine, expire_on_commit=False)
 
-test_engine = create_engine("sqlite://", poolclass=StaticPool,
-                            connect_args={"check_same_thread": False})
-TestSession = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+test_engine = create_async_engine("sqlite+aiosqlite://",
+                                  connect_args={"check_same_thread": False})
+
+TestSession = async_sessionmaker(test_engine,
+                                 autocommit=False,
+                                 autoflush=False,
+                                 expire_on_commit=False)
 
 type_map = {
     bool: types.Boolean(),
