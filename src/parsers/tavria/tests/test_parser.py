@@ -15,7 +15,8 @@ import pytest
 
 from retailer.retailer_typing import RetailerName
 
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import reference as r
 from .mock_classes import ProductFactory_test
@@ -23,15 +24,14 @@ from .mock_classes import ProductFactory_test
 
 async def fake_last_price_lines(product_ids: Iterable[int],
                                 reatiler_id: int,
-                                session: Session) -> list[PriceLine]:
+                                session: AsyncSession) -> list[PriceLine]:
     """Distinct on is not supported by SQLite, so we need simulation here."""
 
-    all_lines: list[PriceLine] = session.query(PriceLine)\
-        .filter(PriceLine.retailer_id == reatiler_id,
-                PriceLine.product_id.in_(product_ids))\
-        .order_by(PriceLine.product_id.asc())\
-        .order_by(PriceLine.date_created.asc())\
-        .all()
+    stm = select(PriceLine).filter(PriceLine.retailer_id == reatiler_id,
+                                   PriceLine.product_id.in_(product_ids))\
+                           .order_by(PriceLine.product_id.asc())\
+                           .order_by(PriceLine.date_created.asc())
+    all_lines = (await session.scalars(stm)).all()
     return list({_.product_id: _ for _ in all_lines}.values())
 
 
