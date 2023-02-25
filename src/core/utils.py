@@ -1,14 +1,14 @@
 """Core utilites."""
 import crud
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from .core_typing import RequestObjects
 from .schemas import RequestInScheme
 
 
 async def get_request_objects(in_data: RequestInScheme,
-                              session: Session) -> RequestObjects:
+                              session: AsyncSession) -> RequestObjects:
     """Get objects for request by specified ids."""
     return RequestObjects(
         await crud.get_folders(session, ids=in_data.folders),

@@ -34,7 +34,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-async def authenticate_user(email: str, password: str, db):
-    user = await crud.get_user(email, db)
+async def authenticate_user(email: str, password: str, db_session):
+    user = await crud.get_user(email, db_session)
     return user if user and verify_password(password, user.password)\
         else False

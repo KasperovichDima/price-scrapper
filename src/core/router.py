@@ -1,7 +1,7 @@
 """Core router."""
 from authentication.models import User
 
-from dependencies import get_current_active_user, get_session, oauth2_scheme
+from dependencies import get_current_active_user, get_db_session, oauth2_scheme
 
 from fastapi import APIRouter, Depends
 
@@ -18,7 +18,7 @@ router = APIRouter(prefix='/report', tags=['reports'])
 async def add_request_data(data: RequestInScheme,
                            user: User = Depends(get_current_active_user),
                            token=Depends(oauth2_scheme),
-                           session=Depends(get_session)):
+                           session=Depends(get_db_session)):
     """Add products or retailers to report of current authorized user."""
 
     return await report_mngr.add_request_data(user, data, session)
@@ -28,7 +28,7 @@ async def add_request_data(data: RequestInScheme,
 async def remove_request_data(data: RequestInScheme,
                               user: User = Depends(get_current_active_user),
                               token=Depends(oauth2_scheme),
-                              session=Depends(get_session)):
+                              session=Depends(get_db_session)):
     """Remove products or retailers from report of current authorized user."""
 
     return await report_mngr.remove_request_data(user, data, session)
@@ -38,8 +38,8 @@ async def remove_request_data(data: RequestInScheme,
 async def get_report(header: ReportHeaderScheme,
                      user: User = Depends(get_current_active_user),
                      token=Depends(oauth2_scheme),
-                     session=Depends(get_session)):
+                     session=Depends(get_db_session)):
     """Returns report, created by request parameters."""
     if not bool(report_mngr.get_request(user)):
         raise empty_request_exception
-    return report_mngr.get_report(user, header, session)
+    return await report_mngr.get_report(user, header, session)

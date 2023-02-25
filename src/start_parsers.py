@@ -38,15 +38,16 @@ async def run_parser(session):
     await parser.update_products()
 
 
-def main():
-    with session_maker() as session:
-        asyncio.run(run_parser(session))
+async def main():
+    async with session_maker() as session:
+        await run_parser(session)
 
 
 if __name__ == '__main__':
     # profiler = cProfile.Profile()
     # profiler.enable()
-    main()
+    asyncio.run(main())
+    # main()
     # profiler.disable()
     # stats = pstats.Stats(profiler).sort_stats('cumtime')
     # stats.print_stats()

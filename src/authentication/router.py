@@ -3,7 +3,7 @@ import crud
 
 from crud_exceptions import email_exists_exception
 
-from dependencies import get_current_active_user, get_session, oauth2_scheme
+from dependencies import get_current_active_user, get_db_session, oauth2_scheme
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -30,7 +30,7 @@ async def get_current_user(token=Depends(oauth2_scheme),
 @router.post('/token', response_model=TokenScheme)
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    session=Depends(get_session)
+    session=Depends(get_db_session)
 ):
     """Attempt to get access token by username and password from form data.
     Raises HTTPException if username not exiss or password is incorrect.
@@ -51,7 +51,7 @@ async def login_for_access_token(
 
 @router.post('/create_user', response_model=UserScheme)
 async def create_user(user_data: UserCreate,
-                      session=Depends(get_session)):
+                      session=Depends(get_db_session)):
     """Creates new user and returns new user's data. If
     email already exists - raises email_exists_exception."""
     if await crud.get_user(user_data.email, session):
@@ -64,7 +64,7 @@ async def create_user(user_data: UserCreate,
 
 @router.delete('/delete_user', response_description='email of deleted user')
 async def delete_user(email: str = Body(example='john@travolta.com'),
-                      session=Depends(get_session)) -> str:
+                      session=Depends(get_db_session)) -> str:
     """Deletes user by email. If email is not in
     database - raises instance_not_exists_exception."""
     await crud.delete_user(email, session)
