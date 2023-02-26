@@ -1,13 +1,15 @@
 """Catalog tests."""
 from catalog.models import Folder
 
+from conftest import client
+
 from core.core_typing import RequestObjects
 
 import crud
 
-import pytest
+from database import TestSession
 
-from conftest import client
+import pytest
 
 from . import references as r
 
@@ -35,7 +37,7 @@ class TestCatalog:
             and not response.json()['folders']
 
     @pytest.mark.asyncio
-    async def test_del_folder_ok(self, access_token, fake_session,
+    async def test_del_folder_ok(self, access_token,
                                  fake_db_del_content: list[Folder]):
         """Correct attempt to delete folder. Cant
         test delete products because of SQLite PRAGMA."""
@@ -44,7 +46,8 @@ class TestCatalog:
 
         response = client.delete(self.__del_url + str(del_id),
                                  headers=access_token)
-        folders = await crud.get_folders(fake_session)
+        async with TestSession() as test_session:
+            folders = await crud.get_folders(test_session)
 
         assert response.status_code == 200\
             and response.json() == del_id\

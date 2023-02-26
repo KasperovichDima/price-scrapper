@@ -39,8 +39,8 @@ class TestTavriaParser:
     """Test class for tavria price parser."""
 
     @pytest.mark.asyncio
-    async def test_catalog_parser(self, fake_session,
-                                  fake_catalog_db, fake_retailers):
+    async def test_catalog_parser(self, fake_catalog_db,
+                                  fake_retailers):
         retailer = await crud.get_ratailer(RetailerName.TAVRIA, fake_session)
         await catalog.initialize(retailer.home_url, fake_session)
         f_creator = FactoryCreator(retailer, ProductFactory_test)

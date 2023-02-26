@@ -2,18 +2,17 @@
 Catalog conftest.
 TODO: Remove it and use catalog from parser test.
 """
-import asyncio
-
 from catalog.models import Folder
 
 import crud
 
+from database import TestSession
 
-import pytest
+import pytest_asyncio
 
 
-@pytest.fixture
-def fake_db_del_content(fake_session):
+@pytest_asyncio.fixture
+async def fake_db_del_content():
     """Fake content for delete folder test."""
     folders = {
             1: Folder(name='Alcohol'),
@@ -28,10 +27,11 @@ def fake_db_del_content(fake_session):
             10: Folder(name='Water', parent_id=4),
     }
 
-    asyncio.run(crud.add_instances(folders.values(), fake_session))
-    yield folders.values()
-    folders.pop(3)
-    folders.pop(7)
-    folders.pop(8)
-    to_delete = list(folders.values())
-    asyncio.run(crud.delete_cls_instances(to_delete, fake_session))
+    async with TestSession() as test_session:
+        await crud.add_instances(folders.values(), test_session)
+        yield folders.values()
+        folders.pop(3)
+        folders.pop(7)
+        folders.pop(8)
+        to_delete = list(folders.values())
+        await crud.delete_cls_instances(to_delete, test_session)

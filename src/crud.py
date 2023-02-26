@@ -21,7 +21,6 @@ from retailer.models import Retailer
 from retailer.retailer_typing import RetailerName
 
 from sqlalchemy import delete, select
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -59,8 +58,8 @@ async def get_elements(cls_: type[db_type], session: AsyncSession,
 async def get_folder_content(id: int, session: AsyncSession) -> FolderContent:
     """Get content of folder with specified id."""
     return FolderContent(
-        products = await get_elements(Product, session, parent_id=(id,)),
-        folders = await get_elements(Folder, session, parent_id=(id,))
+        products=await get_elements(Product, session, parent_id=(id,)),
+        folders=await get_elements(Folder, session, parent_id=(id,))
     )
 
 
@@ -97,6 +96,7 @@ async def delete_cls_instances(instances: Sequence[Base],
     """
     Remove specified objects from database.
     NOTE: All objects must be the same class.
+    TODO: Move commit to client code.
     """
 
     cls_ = type(instances[0])

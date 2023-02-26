@@ -22,11 +22,10 @@ from fastapi.testclient import TestClient
 from main import app
 
 import pytest
+import pytest_asyncio
 
 from retailer.models import Retailer
 from retailer.retailer_typing import RetailerName
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 app.dependency_overrides[get_db_session] = get_test_session
@@ -42,7 +41,7 @@ asyncio.run(create_tables())
 client = TestClient(app)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def fake_user_data():
     """Fake data for user creation."""
     return UserCreate(
@@ -53,7 +52,7 @@ def fake_user_data():
     )
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def create_user_data():
     """Fake data for user creation."""
     return UserCreate(
@@ -64,27 +63,20 @@ def create_user_data():
     )
 
 
-@pytest.fixture(scope='session')
-def create_fake_user(fake_session: AsyncSession,
-                     fake_user_data: UserCreate):
+@pytest_asyncio.fixture()
+async def create_fake_user(fake_user_data: UserCreate):
     """Creates and saves fake user to db. Deletes it after test."""
     user = User(**fake_user_data.dict())
     user.is_active = True
     user.type = UserType.USER
-    asyncio.run(crud.add_instance(user, fake_session))
-    yield user
+    async with TestSession() as test_session:
+        await crud.add_instance(user, test_session)
+        yield user
 
-    asyncio.run(crud.delete_user(user.email, fake_session))
-
-
-@pytest.fixture(scope='session')
-def fake_session():
-    session = TestSession()
-    yield session
-    session.close() 
+        await crud.delete_user(user.email, test_session)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def access_token(fake_user_data: UserCreate, create_fake_user):
     """Get access token for tests."""
     token = 'Bearer ' + create_access_token({'sub': fake_user_data.email})
@@ -102,8 +94,8 @@ def fake_payload() -> RequestInScheme:
     )
 
 
-@pytest.fixture
-def fake_db_content(fake_session):
+@pytest_asyncio.fixture
+async def fake_db_content():
     """Fill database catalog with fake content."""
     content = RequestObjects(
         [
@@ -129,8 +121,11 @@ def fake_db_content(fake_session):
         ],
     )
 
-    asyncio.run(crud.add_instances((*content.folders, *content.products,
-                                    *content.retailers), fake_session))
-    yield content
-    for container in content:
-        asyncio.run(crud.delete_cls_instances(container, fake_session))
+    async with TestSession() as test_session:
+        await crud.add_instances((*content.folders,
+                                  *content.products,
+                                  *content.retailers),
+                                 test_session)
+        yield content
+        for container in content:
+            await crud.delete_cls_instances(container, test_session)

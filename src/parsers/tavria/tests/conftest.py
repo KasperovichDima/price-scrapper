@@ -1,5 +1,4 @@
 """Parser conftest."""
-import asyncio
 from datetime import date
 
 from catalog.models import BaseCatalogElement, Folder, Product
@@ -8,7 +7,9 @@ from core.models import PriceLine
 
 import crud
 
-import pytest
+from database import TestSession
+
+import pytest_asyncio
 
 from retailer.models import Retailer
 from retailer.retailer_typing import RetailerName
@@ -16,8 +17,8 @@ from retailer.retailer_typing import RetailerName
 from . import constants as c
 
 
-@pytest.fixture
-def fake_catalog_db(fake_session):
+@pytest_asyncio.fixture
+async def fake_catalog_db():
     """Fill database catalog with fake content required for parser tests."""
 
     catalog: tuple[BaseCatalogElement] = (
@@ -65,28 +66,30 @@ def fake_catalog_db(fake_session):
         Product(name="Deprecated product 3", parent_id=5, prime_cost=120),
         Product(name="Deprecated product 4", parent_id=5, prime_cost=130),
     )
-    asyncio.run(crud.add_instances(catalog, fake_session))
-    yield catalog
-    folders = asyncio.run(crud.get_folders(fake_session))
-    asyncio.run(crud.delete_cls_instances(folders, fake_session))
-    products = asyncio.run(crud.get_products(fake_session))
-    asyncio.run(crud.delete_cls_instances(products, fake_session))
+    async with TestSession() as test_session:
+        await crud.add_instances(catalog, test_session)
+        yield catalog
+        folders = await crud.get_folders(test_session)
+        await crud.delete_cls_instances(folders, test_session)
+        products = await crud.get_products(test_session)
+        await crud.delete_cls_instances(products, test_session)
 
 
-@pytest.fixture
-def fake_retailers(fake_session):
+@pytest_asyncio.fixture
+async def fake_retailers():
     """Fill database with fake retailers required for price parser tests."""
 
     retailers = (
         Retailer(name=RetailerName.TAVRIA, home_url=c.TAVRIA_TEST_URL),
     )
-    asyncio.run(crud.add_instances(retailers, fake_session))
-    yield retailers
-    asyncio.run(crud.delete_cls_instances(retailers, fake_session))
+    async with TestSession() as test_session: 
+        await crud.add_instances(retailers, test_session)
+        yield retailers
+        await crud.delete_cls_instances(retailers, test_session)
 
 
-@pytest.fixture
-def fake_price_lines(fake_session, fake_catalog_db, fake_retailers):
+@pytest_asyncio.fixture
+async def fake_price_lines(fake_catalog_db, fake_retailers):
     """Fill database with fake price lines required for price parser tests."""
 
     lines = (
@@ -106,6 +109,7 @@ def fake_price_lines(fake_session, fake_catalog_db, fake_retailers):
         PriceLine(product_id=11, retailer_id=1, retail_price=87.60, promo_price=None, date_created=date(2023, 1, 1)),
         PriceLine(product_id=12, retailer_id=1, retail_price=63.70, promo_price=None, date_created=date(2023, 1, 1)),
     )
-    asyncio.run(crud.add_instances(lines, fake_session))
-    yield lines
-    asyncio.run(crud.delete_cls_instances(lines, fake_session))
+    async with TestSession() as test_session:
+        await crud.add_instances(lines, test_session)
+        yield lines
+        await crud.delete_cls_instances(lines, test_session)

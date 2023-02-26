@@ -11,25 +11,34 @@ from core.schemas import ReportHeaderScheme, RequestInScheme
 
 import crud
 
+from database import TestSession
+
 import pytest
+import pytest_asyncio
 
 from sqlalchemy.orm import Session
 
 
-@pytest.fixture
-def fake_request_data(create_fake_user: User, fake_session: Session,
-                      fake_payload: RequestInScheme, fake_db_content):
+@pytest_asyncio.fixture
+async def fake_request_data(create_fake_user: User,
+                            fake_payload: RequestInScheme,
+                            fake_db_content):
     """
     Load report manager with fake request data. Autocleard after test.
     TODO: Check if we need it.
     """
-    request_data = asyncio.run(report_mngr.add_request_data(create_fake_user,
-                                                            fake_payload,
-                                                            fake_session))
-    yield request_data
-    asyncio.run(report_mngr.remove_request_data(create_fake_user,
-                                                fake_payload,
-                                                fake_session))
+    async with TestSession() as test_session:
+        request_data = await report_mngr.add_request_data(
+            create_fake_user,
+            fake_payload,
+            test_session
+        )
+        yield request_data
+        await report_mngr.remove_request_data(
+            create_fake_user,
+            fake_payload,
+            test_session
+        )
 
 
 @pytest.fixture
@@ -41,8 +50,8 @@ def fake_header():
     )
 
 
-@pytest.fixture
-def fake_prices(fake_session, fake_db_content: RequestObjects):
+@pytest_asyncio.fixture
+async def fake_prices(fake_db_content: RequestObjects):
     """Create random prices for products for retailers."""
 
     retail_price = 50
@@ -50,17 +59,18 @@ def fake_prices(fake_session, fake_db_content: RequestObjects):
     price_lines = []
     for pr in fake_db_content.products:
         for rt in fake_db_content.retailers:
-            price_lines.append(
-                PriceLine(
-                    product_id=pr.id,
-                    retailer_id=rt.id,
-                    retail_price=retail_price,
-                    promo_price=promo_price,
-                )
+            line = PriceLine(
+                product_id=pr.id,
+                retailer_id=rt.id,
+                retail_price=retail_price,
+                promo_price=promo_price
             )
+            price_lines.append(line)
             retail_price += 1
             promo_price += 1
 
-    asyncio.run(crud.add_instances(price_lines, fake_session))
-    yield price_lines
-    asyncio.run(crud.delete_cls_instances(price_lines, fake_session))
+    async with TestSession() as test_session:
+        await crud.add_instances(price_lines, test_session)
+        yield price_lines
+
+        await crud.delete_cls_instances(price_lines, test_session)
