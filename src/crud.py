@@ -27,14 +27,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 async def add_instance(instance: Base, session: AsyncSession) -> None:
     """Add new instance to database."""
     session.add(instance)
-    await session.commit()
 
 
 async def add_instances(instances: Iterable[Base],
                         session: AsyncSession) -> None:
     """Add new instances to database."""
     session.add_all(instances)
-    await session.commit()
 
 
 async def get_user(email: str, session: AsyncSession) -> User | None:
@@ -96,7 +94,6 @@ async def delete_cls_instances(instances: Sequence[Base],
     """
     Remove specified objects from database.
     NOTE: All objects must be the same class.
-    TODO: Move commit to client code.
     """
 
     cls_ = type(instances[0])
@@ -105,7 +102,6 @@ async def delete_cls_instances(instances: Sequence[Base],
     await session.execute(
         delete(cls_).where(cls_.id.in_((_.id for _ in instances)))
     )
-    await session.commit()
 
 
 async def delete_user(email: str, session: AsyncSession) -> None:
@@ -114,7 +110,6 @@ async def delete_user(email: str, session: AsyncSession) -> None:
     if not (user := await get_user(email, session)):
         raise c_ex.instance_not_exists_exception
     await session.delete(user)
-    await session.commit()
 
 
 async def delete_folder(id: int, session: AsyncSession) -> int:
@@ -173,4 +168,3 @@ async def switch_deprecated(objects: Iterable[BaseCatalogElement],
     """Invert and save deprecated status."""
     for obj in objects:
         obj.deprecated = not obj.deprecated
-    await session.commit()

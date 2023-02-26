@@ -144,6 +144,7 @@ class Catalog:
 
         if any((self._ids_to_deprecate, self._ids_to_actualize)):
             await crud.switch_deprecated(self._to_switch, self._db_session)
+            await self._db_session.commit()
 
         self._post_update_clear()
 
@@ -161,6 +162,7 @@ class Catalog:
                                   parent_id=self._get_parent_id(path))
                            for path in batch]
             await crud.add_instances(new_folders, self._db_session)
+            await self._db_session.commit()
             self._id_to_folder.update({_.id: _ for _ in new_folders})
             self._path_to_id.update(zip(batch, (_.id for _ in new_folders)))
 

@@ -8,6 +8,8 @@ from dependencies import get_current_active_user, get_db_session, oauth2_scheme
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from .constants import access_token_expires
 from .models import User
 from .schemas import TokenScheme, UserCreate, UserScheme
@@ -51,7 +53,7 @@ async def login_for_access_token(
 
 @router.post('/create_user', response_model=UserScheme)
 async def create_user(user_data: UserCreate,
-                      session=Depends(get_db_session)):
+                      session: AsyncSession = Depends(get_db_session)):
     """Creates new user and returns new user's data. If
     email already exists - raises email_exists_exception."""
     if await crud.get_user(user_data.email, session):
@@ -59,13 +61,15 @@ async def create_user(user_data: UserCreate,
     user_data.password = get_password_hash(user_data.password)
     user = User(**user_data.dict())
     await crud.add_instance(user, session)
+    await session.commit()
     return user
 
 
 @router.delete('/delete_user', response_description='email of deleted user')
 async def delete_user(email: str = Body(example='john@travolta.com'),
-                      session=Depends(get_db_session)) -> str:
+                      session: AsyncSession = Depends(get_db_session)) -> str:
     """Deletes user by email. If email is not in
     database - raises instance_not_exists_exception."""
     await crud.delete_user(email, session)
+    await session.commit()
     return email

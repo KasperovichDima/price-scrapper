@@ -61,10 +61,12 @@ class ProductBox:
 
         if new_products := self._get_new_products():
             await crud.add_instances(new_products, self._db_session)
+            await self._db_session.commit()
             self._db_products.extend(new_products)
 
         if to_switch := self._get_objects_to_switch():
             await crud.switch_deprecated(to_switch, self._db_session)
+            await self._db_session.commit()
 
     def _collect_products_data(self) -> None:
         self._actual_prod_names: set[str] = set()
@@ -98,6 +100,7 @@ class ProductBox:
     async def _update_price_lines(self) -> None:
         if new_records := await self._get_new_lines():
             await crud.add_instances(new_records, self._db_session)
+            await self._db_session.commit()
 
     async def _get_new_lines(self) -> Iterable[PriceLine] | None:
         page_lines = self._factory_results.get_price_lines(

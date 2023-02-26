@@ -71,6 +71,8 @@ async def fake_prices(fake_db_content: RequestObjects):
 
     async with TestSession() as test_session:
         await crud.add_instances(price_lines, test_session)
+        await test_session.commit()
         yield price_lines
 
         await crud.delete_cls_instances(price_lines, test_session)
+        await test_session.commit()

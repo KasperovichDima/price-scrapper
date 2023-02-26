@@ -71,9 +71,11 @@ async def create_fake_user(fake_user_data: UserCreate):
     user.type = UserType.USER
     async with TestSession() as test_session:
         await crud.add_instance(user, test_session)
+        await test_session.commit()
         yield user
 
         await crud.delete_user(user.email, test_session)
+        await test_session.commit()
 
 
 @pytest.fixture()
@@ -126,6 +128,8 @@ async def fake_db_content():
                                   *content.products,
                                   *content.retailers),
                                  test_session)
+        await test_session.commit()
         yield content
         for container in content:
             await crud.delete_cls_instances(container, test_session)
+        await test_session.commit()

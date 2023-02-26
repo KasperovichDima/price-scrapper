@@ -68,11 +68,13 @@ async def fake_catalog_db():
     )
     async with TestSession() as test_session:
         await crud.add_instances(catalog, test_session)
+        await test_session.commit()
         yield catalog
         folders = await crud.get_folders(test_session)
         await crud.delete_cls_instances(folders, test_session)
         products = await crud.get_products(test_session)
         await crud.delete_cls_instances(products, test_session)
+        await test_session.commit()
 
 
 @pytest_asyncio.fixture
@@ -84,8 +86,10 @@ async def fake_retailers():
     )
     async with TestSession() as test_session: 
         await crud.add_instances(retailers, test_session)
+        await test_session.commit()
         yield retailers
         await crud.delete_cls_instances(retailers, test_session)
+        await test_session.commit()
 
 
 @pytest_asyncio.fixture
@@ -111,5 +115,7 @@ async def fake_price_lines(fake_catalog_db, fake_retailers):
     )
     async with TestSession() as test_session:
         await crud.add_instances(lines, test_session)
+        await test_session.commit()
         yield lines
         await crud.delete_cls_instances(lines, test_session)
+        await test_session.commit()

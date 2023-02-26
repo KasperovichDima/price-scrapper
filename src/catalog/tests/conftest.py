@@ -29,9 +29,11 @@ async def fake_db_del_content():
 
     async with TestSession() as test_session:
         await crud.add_instances(folders.values(), test_session)
+        await test_session.commit()
         yield folders.values()
         folders.pop(3)
         folders.pop(7)
         folders.pop(8)
         to_delete = list(folders.values())
         await crud.delete_cls_instances(to_delete, test_session)
+        await test_session.commit()

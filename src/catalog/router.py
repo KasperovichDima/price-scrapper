@@ -5,6 +5,8 @@ from dependencies import get_db_session, oauth2_scheme
 
 from fastapi import APIRouter, Depends, Path
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from .schemas import FolderContent
 
 
@@ -22,8 +24,11 @@ async def get_folder_content(id: int = Path(gt=0),
 
 
 @router.delete('/delete_folder/{id}')
-async def delete_folder(id: int = Path(gt=0), session=Depends(get_db_session),
+async def delete_folder(id: int = Path(gt=0),
+                        session: AsyncSession = Depends(get_db_session),
                         token=Depends(oauth2_scheme)) -> int:
     """Delete folder and all folder's content. Folder to
     delete is specified by id. Returns deleted folder id."""
-    return await crud.delete_folder(id, session)
+    deleted_id = await crud.delete_folder(id, session)
+    await session.commit()
+    return deleted_id
