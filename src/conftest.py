@@ -79,7 +79,9 @@ def create_fake_user(fake_session: AsyncSession,
 
 @pytest.fixture(scope='session')
 def fake_session():
-    return TestSession()
+    session = TestSession()
+    yield session
+    session.close() 
 
 
 @pytest.fixture(scope='session')

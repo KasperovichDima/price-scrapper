@@ -32,10 +32,7 @@ DBSession = async_sessionmaker(engine, expire_on_commit=False)
 test_engine = create_async_engine("sqlite+aiosqlite://",
                                   connect_args={"check_same_thread": False})
 
-TestSession = async_sessionmaker(test_engine,
-                                 autocommit=False,
-                                 autoflush=False,
-                                 expire_on_commit=False)
+TestSession = async_sessionmaker(test_engine, expire_on_commit=False)
 
 type_map = {
     bool: types.Boolean(),
