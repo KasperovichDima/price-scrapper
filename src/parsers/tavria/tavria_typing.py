@@ -1,9 +1,12 @@
 """Tavria parser typing."""
 from collections import deque
+from dataclasses import dataclass
 from decimal import Decimal
-from typing import Protocol
+from typing import Iterable, Protocol, Type
 
 import aiohttp
+
+from catalog.models import BaseCatalogElement
 
 from project_typing import PriceRecord
 
@@ -75,3 +78,14 @@ class Catalog_P(Protocol):
 
     def get_id_by_path(self, path: Path) -> int:
         """Get id of folder with specified path."""
+
+
+@dataclass(repr=False, eq=False, kw_only=True, frozen=True, slots=True)
+class ToSwitchStatus:
+    """Contains information about objects, whose
+    'deprecated' status needs to be changed.
+    NOTE: All objects must have same class."""
+
+    cls_: Type[BaseCatalogElement]
+    ids_to_depr: Iterable[int]
+    ids_to_undepr: Iterable[int]

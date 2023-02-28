@@ -1,4 +1,3 @@
-import itertools
 from collections import deque
 from typing import Iterable
 
@@ -6,10 +5,11 @@ from catalog.models import Folder
 
 import crud
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from . import utils as u
-from .tavria_typing import Path
+from .tavria_typing import Path, ToSwitchStatus
 
 
 class PathesToCreate:
@@ -45,7 +45,7 @@ class Catalog:
     """
 
     _url: str
-    _db_session: Session
+    _session_maker: async_sessionmaker[AsyncSession]
 
     _db_folders: list[Folder]
     _ids_with_childs: set[int]
@@ -58,12 +58,15 @@ class Catalog:
 
     _to_create: PathesToCreate
 
-    async def initialize(self, url: str, db_session: Session) -> None:
+    async def initialize(
+            self, url: str,
+            session_maker: async_sessionmaker[AsyncSession]
+            ) -> None:
         """Async method, that must be called before using the object.
         Provides the object with the resources, required for it's work"""
 
         self._url = url
-        self._db_session = db_session
+        self._session_maker = session_maker
 
         self._ids_with_childs: set[int] = set()
         self._deprecated_ids: set[int] = set()
@@ -73,7 +76,8 @@ class Catalog:
         self._id_to_folder: dict[int, Folder] = {}
         self._path_to_id: dict[Path, int] = {}
 
-        self._db_folders = await crud.get_folders(db_session)
+        async with self._session_maker() as db_session:
+            self._db_folders = await crud.get_folders(db_session)
         self._collect_db_folders_data()
         self._path_to_id = {self._get_path(folder): folder.id
                             for folder in self._db_folders}
@@ -136,19 +140,26 @@ class Catalog:
 
         for path in u.get_page_catalog_pathes(self._url):
             if path in self._path_to_id:
-                self._actualize_path(path)
+                self._update_path_status(path)
             else:
                 self._to_create.add(path)
 
         await self._create_new_folders()
 
         if any((self._ids_to_deprecate, self._ids_to_actualize)):
-            await crud.switch_deprecated(self._to_switch, self._db_session)
-            await self._db_session.commit()
+            to_switch = ToSwitchStatus(
+                cls_=Folder,
+                ids_to_depr=self._ids_to_deprecate,
+                ids_to_undepr=self._ids_to_actualize
+            )
+            async with self._session_maker() as db_session:
+                async with db_session.begin():
+                    await crud.switch_deprecated(to_switch, db_session)
+                    await db_session.commit()
 
         self._post_update_clear()
 
-    def _actualize_path(self, path: Path) -> None:
+    def _update_path_status(self, path: Path) -> None:
         id_ = self._path_to_id[path]
         if id_ in self._ids_to_deprecate:
             self._ids_to_deprecate.remove(id_)
@@ -161,8 +172,9 @@ class Catalog:
             new_folders = [Folder(name=u.get_folder_name(path),
                                   parent_id=self._get_parent_id(path))
                            for path in batch]
-            await crud.add_instances(new_folders, self._db_session)
-            await self._db_session.commit()
+            async with self._session_maker() as db_session:
+                await crud.add_instances(new_folders, db_session)
+                await db_session.commit()
             self._id_to_folder.update({_.id: _ for _ in new_folders})
             self._path_to_id.update(zip(batch, (_.id for _ in new_folders)))
 
@@ -173,12 +185,6 @@ class Catalog:
             return parent_id
         return self._get_parent_id(u.cut_path(path))
 
-    @property
-    def _to_switch(self) -> Iterable[Folder]:
-        return (self._id_to_folder[id_] for id_ in
-                itertools.chain(self._ids_to_deprecate,
-                                self._ids_to_actualize))
-
     def _post_update_clear(self) -> None:
         del self._deprecated_ids
         del self._ids_to_actualize
@@ -186,7 +192,7 @@ class Catalog:
         del self._to_create
         del self._id_to_folder
         del self._url
-        del self._db_session
+        del self._session_maker
 
 
 catalog = Catalog()

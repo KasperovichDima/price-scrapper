@@ -6,7 +6,7 @@ from typing import Iterable, Sequence
 
 from authentication.models import User
 
-from catalog.models import BaseCatalogElement, Folder, Product
+from catalog.models import Folder, Product
 from catalog.schemas import FolderContent
 
 from core.models import PriceLine
@@ -15,12 +15,14 @@ import crud_exceptions as c_ex
 
 from database import Base
 
+from parsers.tavria.tavria_typing import ToSwitchStatus
+
 from project_typing import db_type
 
 from retailer.models import Retailer
 from retailer.retailer_typing import RetailerName
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -116,7 +118,7 @@ async def delete_folder(id: int, session: AsyncSession) -> int:
     """Recursively deletes folder specified by id and child folders. Also
     deletes products by CASCADE. Raises instance_not_exists_exception if
     specified folder not exists.
-    
+
     TODO: Must be changed to only use maximum 2 queries:
           1 for folders 1 for products."""
     if not (del_folders := await get_elements(Folder, session, id=(id,))):
@@ -163,8 +165,19 @@ async def get_ratailer(retailer_name: RetailerName,
     return (await session.execute(stm)).scalar()
 
 
-async def switch_deprecated(objects: Iterable[BaseCatalogElement],
+async def switch_deprecated(to_switch: ToSwitchStatus,
                             session: AsyncSession) -> None:
-    """Invert and save deprecated status."""
-    for obj in objects:
-        obj.deprecated = not obj.deprecated
+    """Update deprecated status of the objects."""
+
+    async def switch(status: bool) -> None:
+        ids = to_switch.ids_to_depr if status else to_switch.ids_to_undepr
+        stm = (update(to_switch.cls_)
+               .where(to_switch.cls_.id.in_(ids))
+               .values(deprecated=status))
+        await session.execute(stm)
+
+    if to_switch.ids_to_depr:
+        await switch(True)
+
+    if to_switch.ids_to_undepr:
+        await switch(False)
