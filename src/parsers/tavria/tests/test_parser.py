@@ -97,7 +97,7 @@ class TestTavriaParser:
                        if _.promo_price else None)
                       for _ in r.ref_price_lines}
 
-        assert result_prices == ref_prices
         assert result_actual_product_names == r.ref_actual_product_names
         assert result_deprecated_product_names\
             == r.ref_deprecated_product_names
+        assert result_prices == ref_prices
