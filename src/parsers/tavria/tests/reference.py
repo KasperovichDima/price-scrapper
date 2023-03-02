@@ -77,7 +77,7 @@ ref_price_lines = {
     PriceLine(product_id=18, retailer_id=1, retail_price=12.40, promo_price=None),  # Пюре картопл. Эко 30 г Вершкове
     PriceLine(product_id=19, retailer_id=1, retail_price=13.60, promo_price=None),  # Каша Терра вівсяна з верш. 38 г з абрикосом
     PriceLine(product_id=20, retailer_id=1, retail_price=12.20, promo_price=None),  # Каша Терра 38 г вівсяна з яблуком та корицею
-    PriceLine(product_id=21, retailer_id=1, retail_price=18.30, promo_price=None),  # Чіпси '7' 70 г зі смаком сметани та зелені (кор.)
-    PriceLine(product_id=22, retailer_id=1, retail_price=38.00, promo_price=None),  # Чіпси Люкс 71 г бекон
-    PriceLine(product_id=23, retailer_id=1, retail_price=59.80, promo_price=None),  # Чіпси Люкс 133 г сир
+    PriceLine(product_id=25, retailer_id=1, retail_price=18.30, promo_price=None),  # Чіпси '7' 70 г зі смаком сметани та зелені (кор.)
+    PriceLine(product_id=26, retailer_id=1, retail_price=38.00, promo_price=None),  # Чіпси Люкс 71 г бекон
+    PriceLine(product_id=27, retailer_id=1, retail_price=59.80, promo_price=None),  # Чіпси Люкс 133 г сир
 }
