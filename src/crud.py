@@ -22,7 +22,7 @@ from project_typing import db_type
 from retailer.models import Retailer
 from retailer.retailer_typing import RetailerName
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select, update, Update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -147,13 +147,13 @@ async def get_price_lines(*, prod_ids: Iterable[int] | None = None,
 
 
 async def get_last_price_lines(prod_ids: Iterable[int],
-                               reat_ids: int,
+                               retailer_id: int,
                                session: AsyncSession) -> Sequence[PriceLine]:
     """Get last price lines for products, specified by
     product_ids, in retailer, specified by reatiler_id."""
     stm = select(PriceLine).distinct(PriceLine.product_id)\
         .order_by(PriceLine.product_id, PriceLine.date_created.desc())\
-        .where(PriceLine.retailer_id.in_((reat_ids,)),
+        .where(PriceLine.retailer_id.in_((retailer_id,)),
                PriceLine.product_id.in_(prod_ids))
     return (await session.scalars(stm)).all()
 
@@ -167,17 +167,20 @@ async def get_ratailer(retailer_name: RetailerName,
 
 async def switch_deprecated(to_switch: ToSwitchStatus,
                             session: AsyncSession) -> None:
-    """Update deprecated status of the objects."""
+    """
+    Update deprecated status of the objects.
+    TODO: Update logic here!
+    TODO: Make it recurs.
+    """
 
-    async def switch(status: bool) -> None:
+    def get_stm(status: bool) -> Update:
         ids = to_switch.ids_to_depr if status else to_switch.ids_to_undepr
-        stm = (update(to_switch.cls_)
-               .where(to_switch.cls_.id.in_(ids))
-               .values(deprecated=status))
-        await session.execute(stm)
+        return (update(to_switch.cls_)
+                .where(to_switch.cls_.id.in_(ids))
+                .values(deprecated=status))
+    
+    async def execute(stms: Iterable[Update]) -> None:
+        for _ in stms:
+            await session.execute(_)
 
-    if to_switch.ids_to_depr:
-        await switch(True)
-
-    if to_switch.ids_to_undepr:
-        await switch(False)
+    await execute((get_stm(True), get_stm(False)))

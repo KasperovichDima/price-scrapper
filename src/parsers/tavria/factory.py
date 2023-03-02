@@ -1,6 +1,6 @@
 """Factory and FactoryResults classes."""
 import asyncio
-from collections import deque
+# from collections import deque
 from decimal import Decimal
 from functools import cached_property
 from typing import Generator
@@ -12,62 +12,61 @@ from bs4 import ResultSet, Tag
 
 from exceptions import EqCompareError
 
+from .new_box import ResultHandler
+
 from parsers import exceptions as e
 
-from project_typing import PriceRecord
+# from project_typing import PriceRecord
 
-from .product_box import product_box
-from .tavria_typing import NameRetailPromo, Path
+# from .product_box import product_box
+from .tavria_typing import ResultHandler_P, Path
 
 
-class FactoryResults:
-    """Implementation of FactoryResults protocol."""
+# class FactoryResults:
+#     """Implementation of FactoryResults protocol."""
 
-    __slots__ = ('retailer_id', 'parents', 'records')
+#     __slots__ = ('retailer_id', 'parent_path', 'records')
 
-    def __init__(self, retailer_id: int) -> None:
-        self.retailer_id = retailer_id
-        self.parents: Path | None = None
-        self.records: deque[NameRetailPromo] = deque()
+#     def __init__(self, retailer_id: int, parent_path: Path) -> None:
+#         self.retailer_id = retailer_id
+#         self.parent_path = parent_path
+#         self.records: deque[NameRetailPromo] = deque()
 
-    def add_record(self, record: NameRetailPromo) -> None:
-        self.records.append(record)
+#     def add_record(self, record: NameRetailPromo) -> None:
+#         self.records.append(record)
 
-    def get_price_lines(self, prod_name_to_id_table: dict[str, int]
-                        ) -> set[PriceRecord]:
+#     def get_price_lines(self, prod_name_to_id_table: dict[str, int]
+#                         ) -> set[PriceRecord]:
 
-        return set(zip(
-            (prod_name_to_id_table[rec[0]] for rec in self.records),
-            (self.retailer_id for _ in self.records),
-            (rec[1] for rec in self.records),
-            (rec[2] for rec in self.records),
-            strict=True
-        ))
+#         return set(zip(
+#             (prod_name_to_id_table[rec[0]] for rec in self.records),
+#             (self.retailer_id for _ in self.records),
+#             (rec[1] for rec in self.records),
+#             (rec[2] for rec in self.records),
+#             strict=True
+#         ))
 
 
 class ProductFactory:
 
     _product_tags: ResultSet[Tag]
-    _results: FactoryResults
+    _results: ResultHandler
 
     __PARSER_ERROR_MSG = """
     Something went wrong while parsing {}...
     """
 
-    def __init__(self, url: str, retailer_id: int) -> None:
+    def __init__(self, url: str) -> None:
         self._main_url = self._url = url
-        self._results = FactoryResults(
-            retailer_id=retailer_id,
-        )
 
     async def run(self, aio_session: aiohttp.ClientSession) -> None:
         self._aio_session = aio_session
         try:
             await self._get_page_tags()
+            self._results = ResultHandler(self.parent_path)
             self._collect_prices()
-            self._results.parents = self.parents
             await self._get_paginated_content()
-            await product_box.add(self._results)
+            await  self._results.update()
         except Exception as e:
             print(f'Unsuccessful attempt to get data from {self._url}\n'
                   f'Failed with "{e.__class__.__name__}, {e}"')
@@ -97,7 +96,7 @@ class ProductFactory:
             .find_all('div', {'class': "products__item"})
 
     @property
-    def parents(self) -> Path:
+    def parent_path(self) -> Path:
         first_tag = self._product_tags[0]
         c_name = first_tag.get('data-item_category3')
         s_name = first_tag.get('data-item_category2')

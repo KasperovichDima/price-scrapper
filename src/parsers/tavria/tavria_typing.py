@@ -16,11 +16,21 @@ Path = tuple[str, str | None, str | None]
 NameRetailPromo = tuple[str, Decimal, Decimal | None]
 
 
-class Retailer_P(Protocol):
-    """Retailer model protocol. Provides variables: home_url, id."""
+# class Retailer_P(Protocol):
+#     """Retailer model protocol. Provides variables: home_url, id."""
 
-    id: int
-    home_url: str
+#     id: int
+#     home_url: str
+
+
+class ResultHandler_P(Protocol):
+    # TODO: DO we need it?
+
+    def __init__(self, parent_path: Path) -> None: ...
+
+    def add_record(self, record: NameRetailPromo) -> None: ...
+
+    async def update(self) -> None: ...
 
 
 class FactoryResults_P(Protocol):
@@ -31,7 +41,7 @@ class FactoryResults_P(Protocol):
     """
 
     retailer_id: int
-    parents: Path | None = None
+    parent_path: Path
     records: deque[NameRetailPromo]
 
     def add_record(self, record: NameRetailPromo) -> None:
@@ -53,8 +63,7 @@ class Factory_P(Protocol):
 
     _main_url: str
 
-    def __init__(self, url: str, retailer_id: int) -> None:
-        ...
+    def __init__(self, url: str) -> None: ...
 
     async def run(self, aio_session: aiohttp.ClientSession) -> None:
         """Run factory to add it results to box."""

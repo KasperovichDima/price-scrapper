@@ -25,13 +25,13 @@ class ProductBox:
     NOTE: 'initialize' method must be awaited before using the box.
     """
 
-    _fodler_id: int
+    _folder_id: int
     _catalog: Catalog_P
     _session_maker: async_sessionmaker[AsyncSession]
     _db_session: AsyncSession
     _factory_results: FactoryResults_P
-
     _db_products: list[Product]
+
     _db_ids: list[int] = []
     _actual_ids: set[int] = set()
     _depr_ids: set[int] = set()
@@ -50,9 +50,8 @@ class ProductBox:
     async def add(self, factory_results: FactoryResults_P) -> None:
         """Add factory results to box. Data will be processed and saved."""
         assert self._session_maker
-        assert factory_results.parents
 
-        self._folder_id = self._catalog.get_id_by_path(factory_results.parents)
+        self._folder_id = self._catalog.get_id_by_path(factory_results.parent_path)
         self._factory_results = factory_results
         async with self._session_maker() as db_session:
             async with db_session.begin():
@@ -111,12 +110,12 @@ class ProductBox:
             await crud.add_instances(new_records, self._db_session)
 
     async def _get_new_lines(self) -> Iterable[PriceLine] | None:
-        page_lines = self._factory_results.get_price_lines(
+        page_price_lines = self._factory_results.get_price_lines(
             self._prod_name_to_id
         )
-        page_lines.difference_update(await self._get_last_db_lines())
-        return (PriceLine.from_tuple(line) for line in page_lines)\
-            if page_lines else None
+        page_price_lines.difference_update(await self._get_last_db_lines())
+        return (PriceLine.from_tuple(line) for line in page_price_lines)\
+            if page_price_lines else None
 
     @property
     def _prod_name_to_id(self) -> dict[str, int]:
