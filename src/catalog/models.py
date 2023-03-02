@@ -13,8 +13,8 @@ class BaseCatalogElement(Base):
 
     __abstract__ = True
 
-    name: str
-    parent_id: int | None
+    name: Mapped[str]
+    parent_id: Mapped[int_fk] | None
     deprecated: Mapped[bool] = mapped_column(default=False)
 
     def __hash__(self) -> int:
