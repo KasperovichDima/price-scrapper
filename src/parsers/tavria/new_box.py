@@ -15,7 +15,8 @@ import crud
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from .tavria_typing import Catalog_P, ToSwitchStatus
+from .tavria_typing import Catalog_P
+from .support_classes import ToSwitchStatus
 from .tavria_typing import NameRetailPromo, Path
 
 
@@ -72,25 +73,34 @@ class ResultHandler:
     async def update(self) -> None:
         """"""
         async with self._session_maker() as self._db_session:
-            async with self._db_session.begin():
-
-                self._db_products = await crud.get_products(
+            self._db_products = await crud.get_products(
                     self._db_session, folder_ids=(self._folder_id,)
                 )
+            self._collect_db_products_data()
 
-                await self._update_products()
-                await self._update_price_lines()
-                ####
-                # prods = await crud.get_products(self._db_session)
-                # ids = (_.id for _ in prods)
-                # lines = await crud.get_last_price_lines(
-                #     ids, 1, self._db_session
-                # )
-                ####
-                await self._db_session.commit()
+    # async with self._session_maker() as self._db_session:
+    #     async with self._db_session.begin():
+            print(self._folder_id, 'updating products')
+            print(self._depr_ids, self._actual_ids)
+            await self._update_products()
+            # print(self._depr_ids, self._actual_ids)
+            await self._db_session.flush()
+
+    # async with self._session_maker() as self._db_session:
+    #     async with self._db_session.begin():
+            print(self._folder_id, 'updating prices')
+            await self._update_price_lines()
+            ####
+            # prods = await crud.get_products(self._db_session)
+            # ids = (_.id for _ in prods)
+            # lines = await crud.get_last_price_lines(
+            #     ids, 1, self._db_session
+            # )
+            ####
+            await self._db_session.commit()
 
     async def _update_products(self) -> None:
-        self._collect_db_products_data()
+        # self._collect_db_products_data()
 
         if new_products := self._get_new_products():
             await crud.add_instances(new_products, self._db_session)
@@ -140,7 +150,7 @@ class ResultHandler:
         return {product.name: product.id for product in self._db_products}
 
     async def _get_last_db_lines(self) -> list[PriceLine]:
-        return await crud.get_last_price_lines(
+        return await crud.get_last_prices(
             chain(self._depr_ids, self._actual_ids),
             self._retailer_id,
             self._db_session
