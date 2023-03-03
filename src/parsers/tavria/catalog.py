@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from . import utils as u
-from .tavria_typing import Path, ToSwitchStatus
+from .support_classes import Path, ToSwitchStatus
 
 
 class PathesToCreate:

@@ -2,7 +2,7 @@
 from collections import deque
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Iterable, Protocol, Type
+from typing import Iterable, NamedTuple, Protocol, Type
 
 import aiohttp
 
@@ -23,36 +23,36 @@ NameRetailPromo = tuple[str, Decimal, Decimal | None]
 #     home_url: str
 
 
-class ResultHandler_P(Protocol):
-    # TODO: DO we need it?
+# class ResultHandler_P(Protocol):
+#     # TODO: DO we need it?
 
-    def __init__(self, parent_path: Path) -> None: ...
+#     def __init__(self, parent_path: Path) -> None: ...
 
-    def add_record(self, record: NameRetailPromo) -> None: ...
+#     def add_record(self, record: NameRetailPromo) -> None: ...
 
-    async def update(self) -> None: ...
+#     async def update(self) -> None: ...
 
 
-class FactoryResults_P(Protocol):
-    """
-    Represents Price factory work results with methods:
-    1. 'add_record' method to add new factory record.
-    2. 'get_price_records' to return result records.
-    """
+# class FactoryResults_P(Protocol):
+#     """
+#     Represents Price factory work results with methods:
+#     1. 'add_record' method to add new factory record.
+#     2. 'get_price_records' to return result records.
+#     """
 
-    retailer_id: int
-    parent_path: Path
-    records: deque[NameRetailPromo]
+#     retailer_id: int
+#     parent_path: Path
+#     records: deque[NameRetailPromo]
 
-    def add_record(self, record: NameRetailPromo) -> None:
-        """Add new record form factory of type NameRetailPromo."""
+#     def add_record(self, record: NameRetailPromo) -> None:
+#         """Add new record form factory of type NameRetailPromo."""
 
-    def get_price_lines(self, prod_name_to_id_table: dict[str, int]
-                        ) -> set[PriceRecord]:
-        """
-        Returns tuples:
-        (product_id, retailer_id, retail_price, promo_price)
-        """
+#     def get_price_lines(self, prod_name_to_id_table: dict[str, int]
+#                         ) -> set[PriceRecord]:
+#         """
+#         Returns tuples:
+#         (product_id, retailer_id, retail_price, promo_price)
+#         """
 
 
 class Factory_P(Protocol):
@@ -98,3 +98,8 @@ class ToSwitchStatus:
     cls_: Type[BaseCatalogElement]
     ids_to_depr: Iterable[int]
     ids_to_undepr: Iterable[int]
+
+
+class Results(NamedTuple):
+    folder_path: Path
+    records: deque[NameRetailPromo]
