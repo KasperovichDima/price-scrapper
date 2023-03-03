@@ -10,7 +10,8 @@ import crud
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from .tavria_typing import Catalog_P, FactoryResults_P, ToSwitchStatus
+from .tavria_typing import Catalog_P, FactoryResults_P
+from .support_classes import ToSwitchStatus
 
 
 class ProductBox:
@@ -123,7 +124,7 @@ class ProductBox:
         return {product.name: product.id for product in self._db_products}
 
     async def _get_last_db_lines(self) -> list[PriceLine]:
-        return await crud.get_last_price_lines(
+        return await crud.get_last_prices(
             self._db_ids,
             self._factory_results.retailer_id,
             self._db_session
