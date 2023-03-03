@@ -1,6 +1,7 @@
 """Tavria price parser."""
 import asyncio
 from collections import deque
+from typing import Coroutine, Iterator
 
 from . import constants as c
 from . import utils as u
@@ -54,7 +55,7 @@ class TavriaParser:
         await factory.run(aio_session)
         self._factory_batch.remove(factory)
 
-    async def _complete_tasks(self, tasks) -> None:
+    async def _complete_tasks(self, tasks: Iterator[Coroutine]) -> None:
         try:
             await asyncio.gather(*tasks)
             u.tasks_are_finished()
