@@ -234,7 +234,7 @@ catalog_protein = """
 
 catalog_chips = """
 <div class="catalog-products">
-    <div id="9431" data-name="Чіпси '7' 70 г зі смаком сметани та зелені (кор.)" data-price="18.30"
+    <div id="9431" data-name='Чіпси 7 70 г зі смаком сметани та зелені (кор.)' data-price="18.30"
         data-item_category="Чіпси" data-item_category2="Снеки"
         data-item_category3="Бакалія" data-item_category4=""
         data-brand="" data-item_list_name="Каталог" data-item_list_id="2"
