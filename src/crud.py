@@ -15,7 +15,7 @@ import crud_exceptions as c_ex
 
 from database import Base
 
-from parsers.tavria.tavria_typing import ToSwitchStatus
+from parsers.tavria import ToSwitchStatus
 
 from project_typing import db_type
 
@@ -146,9 +146,9 @@ async def get_price_lines(*, prod_ids: Iterable[int] | None = None,
                               retailer_id=ret_ids)
 
 
-async def get_last_price_lines(prod_ids: Iterable[int],
-                               retailer_id: int,
-                               session: AsyncSession) -> Sequence[PriceLine]:
+async def get_last_prices(prod_ids: Iterable[int],
+                          retailer_id: int,
+                          session: AsyncSession) -> Sequence[PriceLine]:
     """Get last price lines for products, specified by
     product_ids, in retailer, specified by reatiler_id."""
     stm = select(PriceLine).distinct(PriceLine.product_id)\
