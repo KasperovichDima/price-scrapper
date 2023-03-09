@@ -5,6 +5,8 @@ from dependencies import get_current_active_user, get_db_session, oauth2_scheme
 
 from fastapi import APIRouter, Depends
 
+from project_typing import NameRetailPromo
+
 from .exceptions import empty_request_exception
 from .report_mngr import report_mngr
 from .schemas import ReportHeaderScheme, ReportScheme
@@ -43,3 +45,12 @@ async def get_report(header: ReportHeaderScheme,
     if not bool(report_mngr.get_request(user)):
         raise empty_request_exception
     return await report_mngr.get_report(user, header, session)
+
+
+@router.post('/get_prices')
+async def get_prices(folder_id: int,
+                     retailer_id: int,
+                     token=Depends(oauth2_scheme),
+                     session=Depends(get_db_session)
+                     ) -> list[NameRetailPromo]:
+    return await report_mngr.get_prices(folder_id, retailer_id, session)
