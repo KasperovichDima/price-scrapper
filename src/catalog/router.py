@@ -14,13 +14,13 @@ router = APIRouter(prefix='/catalog', tags=['catalog'])
 
 
 @router.get('/folder_content/{id}', response_model=FolderContent)
-async def get_folder_content(id: int = Path(gt=0),
+async def get_folder_content(id_: int = Path(gt=0),
                              session=Depends(get_db_session),
                              token=Depends(oauth2_scheme)):
     """Get content of folder with specified id. It
     could be folders, products or folders and products."""
 
-    return await crud.get_folder_content(id, session)
+    return await crud.get_folder_content(id_, session)
 
 
 @router.delete('/delete_folder/{id}')
