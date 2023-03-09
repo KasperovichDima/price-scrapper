@@ -55,11 +55,11 @@ async def get_elements(cls_: type[db_type], session: AsyncSession,
     return (await session.scalars(stm)).all()
 
 
-async def get_folder_content(id: int, session: AsyncSession) -> FolderContent:
+async def get_folder_content(id_: int, session: AsyncSession) -> FolderContent:
     """Get content of folder with specified id."""
     return FolderContent(
-        products=await get_elements(Product, session, parent_id=(id,)),
-        folders=await get_elements(Folder, session, parent_id=(id,))
+        products=await get_elements(Product, session, parent_id=(id_,)),
+        folders=await get_elements(Folder, session, parent_id=(id_,))
     )
 
 
@@ -146,15 +146,24 @@ async def get_price_lines(*, prod_ids: Iterable[int] | None = None,
                               retailer_id=ret_ids)
 
 
-async def get_last_prices(prod_ids: Iterable[int],
-                          retailer_id: int,
-                          session: AsyncSession) -> Sequence[PriceLine]:
+async def get_last_prices(session: AsyncSession,
+                          retailer_ids: Iterable[int],
+                          prod_ids: Iterable[int] = None,
+                          folder_ids: Iterable[int] = None,
+                          ) -> Sequence[PriceLine]:
     """Get last price lines for products, specified by
     product_ids, in retailer, specified by reatiler_id."""
+    ids: list[int] = []
+    if prod_ids:
+        ids.extend(prod_ids)
+    if folder_ids:
+        ids.extend(_.id for _ in await get_products(session, folder_ids=folder_ids))
+    assert ids
+
     stm = select(PriceLine).distinct(PriceLine.product_id)\
         .order_by(PriceLine.product_id, PriceLine.date_created.desc())\
-        .where(PriceLine.retailer_id.in_((retailer_id,)),
-               PriceLine.product_id.in_(prod_ids))
+        .where(PriceLine.retailer_id.in_(retailer_ids),
+               PriceLine.product_id.in_(ids))
     return (await session.scalars(stm)).all()
 
 
@@ -178,7 +187,7 @@ async def switch_deprecated(to_switch: ToSwitchStatus,
         return (update(to_switch.cls_)
                 .where(to_switch.cls_.id.in_(ids))
                 .values(deprecated=status))
-    
+
     async def execute(stms: Iterable[Update]) -> None:
         for _ in stms:
             await session.execute(_)
