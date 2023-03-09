@@ -10,43 +10,40 @@ from database import DBSession
 from database import TestSession
 from database import test_engine
 
+from parsers.tavria import BoxTools
 from parsers.tavria import FactoryCreator
 from parsers.tavria import ProductFactory, TavriaParser
 from parsers.tavria import catalog
-from parsers.tavria import product_box
+# from parsers.tavria import product_box
 
 from retailer.retailer_typing import RetailerName
 
 
-session_maker = DBSession
+# session_maker = DBSession
 
-test_mode = False
+# test_mode = False
 # test_mode = True
-if test_mode:
-    target_metadata = Base.metadata
-    target_metadata.create_all(test_engine)
-    session_maker = TestSession
+# if test_mode:
+#     target_metadata = Base.metadata
+#     target_metadata.create_all(test_engine)
+#     session_maker = TestSession
 
 
-async def run_parser(session):
-    retailer = await crud.get_ratailer(RetailerName.TAVRIA, session)
-    await catalog.initialize(retailer.home_url, session)
-    f_creator = FactoryCreator(retailer, ProductFactory)
+async def run_parser():
+    async with DBSession() as session:
+        retailer = await crud.get_ratailer(RetailerName.TAVRIA, session)
+    await catalog.initialize(retailer.home_url, DBSession)
+    f_creator = FactoryCreator(retailer.home_url, ProductFactory)
     parser = TavriaParser(catalog, f_creator)
     await parser.update_catalog()
-    await product_box.initialize(catalog, session)
+    BoxTools.configurate(retailer.id, DBSession, catalog)
     await parser.update_products()
-
-
-async def main():
-    async with session_maker() as session:
-        await run_parser(session)
 
 
 if __name__ == '__main__':
     # profiler = cProfile.Profile()
     # profiler.enable()
-    asyncio.run(main())
+    asyncio.run(run_parser())
     # main()
     # profiler.disable()
     # stats = pstats.Stats(profiler).sort_stats('cumtime')
