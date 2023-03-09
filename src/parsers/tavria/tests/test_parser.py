@@ -11,7 +11,6 @@ from database import TestSession
 from parsers import TavriaParser
 from parsers.tavria import FactoryCreator
 from parsers.tavria import catalog
-from parsers.tavria import ResultHandler
 from parsers.tavria import BoxTools
 
 import pytest
