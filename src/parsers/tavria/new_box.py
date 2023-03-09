@@ -1,9 +1,5 @@
-import asyncio
 from collections import deque
 from itertools import chain
-
-from project_typing import PriceRecord  # TODO: we don't need it
-
 from typing import Iterable, Iterator
 
 from catalog.models import Product
@@ -12,12 +8,13 @@ from core.models import PriceLine
 
 import crud
 
+from project_typing import NameRetailPromo, PriceTuple  # TODO: we don't need it
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from .tavria_typing import Catalog_P
 from .support_classes import ToSwitchStatus
-from .tavria_typing import NameRetailPromo, Path
+from .tavria_typing import Catalog_P, Path
 
 
 class ResultHandler:
@@ -59,7 +56,7 @@ class ResultHandler:
     def add_record(self, record: NameRetailPromo) -> None:
         self._records.append(record)
 
-    def _get_price_lines(self) -> set[PriceRecord]:
+    def _get_price_lines(self) -> set[PriceTuple]:
         assert self._records
         name_to_id = self._prod_name_to_id
         return set(zip(
@@ -151,7 +148,7 @@ class ResultHandler:
 
     async def _get_last_db_lines(self) -> list[PriceLine]:
         return await crud.get_last_prices(
-            chain(self._depr_ids, self._actual_ids),
-            self._retailer_id,
-            self._db_session
+            self._db_session,
+            (self._retailer_id,),
+            prod_ids=chain(self._depr_ids, self._actual_ids)
         )
