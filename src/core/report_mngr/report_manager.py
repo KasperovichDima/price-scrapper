@@ -5,6 +5,8 @@ from authentication.models import User
 
 import crud
 
+from project_typing import NameRetailPromo
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .request import Request
@@ -53,19 +55,34 @@ class ReportManager:
 
         header.user_name = str(user)
         request = self.__requests.pop(user)
-        product_ids = (_.id for _ in request.products)
-        retailer_ids = (_.id for _ in request.retailers)
-        price_lines = await crud.get_price_lines(prod_ids=product_ids,
-                                                 ret_ids=retailer_ids,
-                                                 session=session)
-
-        return ReportScheme(
-            header=header,
-            folders=request.folders,
-            products=request.products,
-            retailers=request.retailers,
-            content=price_lines
+        price_lines = await crud.get_last_prices(
+            session, (_.id for _ in request.retailers),
+            prod_ids=(_.id for _ in request.products),
+            folder_ids=(_.id for _ in request.folders),
         )
+
+        return ReportScheme(header=header,
+                            folders=request.folders,
+                            products=request.products,
+                            retailers=request.retailers,
+                            content=price_lines)
+
+    @staticmethod
+    async def get_prices(folder_id: int,
+                         retailer_id: int,
+                         session: AsyncSession
+                         ) -> list[NameRetailPromo]:
+        """Returns product names, product retail prices,
+        product promo prices for products in specified folder"""
+
+        prices = await crud.get_last_prices(session, (retailer_id,),
+                                            folder_ids=(folder_id,))
+        id_to_name = {_.id: _.name for _ in await
+                      crud.get_products(session, folder_ids=(folder_id,))}
+        return sorted([(id_to_name[_.product_id],
+                        _.retail_price,
+                        _.promo_price)
+                       for _ in prices], key=lambda _: _[1])
 
 
 report_mngr = ReportManager()
