@@ -1,6 +1,6 @@
 """Factory and FactoryResults classes."""
 import asyncio
-# from collections import deque
+from collections import deque
 from decimal import Decimal
 from functools import cached_property
 from typing import Generator
@@ -12,65 +12,42 @@ from bs4 import ResultSet, Tag
 
 from exceptions import EqCompareError
 
-from .new_box import ResultHandler
-
 from parsers import exceptions as e
 
-# from project_typing import PriceRecord
+from project_typing import NameRetailPromo
 
-# from .product_box import product_box
-from .tavria_typing import ResultHandler_P, Path
-
-
-# class FactoryResults:
-#     """Implementation of FactoryResults protocol."""
-
-#     __slots__ = ('retailer_id', 'parent_path', 'records')
-
-#     def __init__(self, retailer_id: int, parent_path: Path) -> None:
-#         self.retailer_id = retailer_id
-#         self.parent_path = parent_path
-#         self.records: deque[NameRetailPromo] = deque()
-
-#     def add_record(self, record: NameRetailPromo) -> None:
-#         self.records.append(record)
-
-#     def get_price_lines(self, prod_name_to_id_table: dict[str, int]
-#                         ) -> set[PriceRecord]:
-
-#         return set(zip(
-#             (prod_name_to_id_table[rec[0]] for rec in self.records),
-#             (self.retailer_id for _ in self.records),
-#             (rec[1] for rec in self.records),
-#             (rec[2] for rec in self.records),
-#             strict=True
-#         ))
+from .func_box import save_results
+from .support_classes import FactoryResults
+from .tavria_typing import Path
 
 
 class ProductFactory:
 
     _product_tags: ResultSet[Tag]
-    _results: ResultHandler
+    _records: deque[NameRetailPromo]
 
     __PARSER_ERROR_MSG = """
-    Something went wrong while parsing {}...
+    Error while getting response from {}...
     """
 
     def __init__(self, url: str) -> None:
         self._main_url = self._url = url
+        self._records: deque[NameRetailPromo] = deque()
 
     async def run(self, aio_session: aiohttp.ClientSession) -> None:
         self._aio_session = aio_session
         try:
             await self._get_page_tags()
-            self._results = ResultHandler(self.parent_path)
             self._collect_prices()
             await self._get_paginated_content()
-            await  self._results.update()
+
         except Exception as e:
-            print(f'Unsuccessful attempt to get data from {self._url}\n'
+            print(f'Unsuccessful attempt for {self._url}\n'
                   f'Failed with "{e.__class__.__name__}, {e}"')
-            return
+
+        else:
+            print(f'Saving results for {self._url}...')
+            await save_results(FactoryResults(self.parent_path, self._records))
 
     async def _get_page_tags(self) -> None:
         """TODO: Add loginfo here!"""
@@ -108,7 +85,7 @@ class ProductFactory:
 
     def _collect_prices(self) -> None:
         for tag in self._product_tags:
-            self._results.add_record(
+            self._records.append(
                 (tag.get('data-name'),
                  Decimal(tag.get('data-price')),
                  self._get_promo_price(tag))
