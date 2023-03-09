@@ -15,26 +15,6 @@ from . import constants as c
 from .tavria_typing import Path
 
 
-def get_catalog(url: str) -> ResultSet[Tag]:
-    """Parses home page and returns parsed tags of catalog menu."""
-    response = request.urlopen(url)
-    return bs(response, 'lxml').find(
-        'aside', {'class': 'col-md-3 sidebar__container'}
-    )
-
-
-def get_group_tags(url: str) -> Iterable[Tag]:
-    """Returns only group tags from catalog menu."""
-    return (_ for _ in get_catalog(url).find_all('a')
-            if 'catalog' in _.get('href'))
-
-
-def get_url(tag: Tag) -> str | None:
-    if 'catalog' in (url := tag.get('href', '').strip()):
-        return url
-    return None
-
-
 def aiohttp_session_maker() -> aiohttp.ClientSession:
     timeout = aiohttp.ClientTimeout(total=c.TAVRIA_SESSION_TIMEOUT_SEC)
     connector = aiohttp.TCPConnector(limit=c.TAVRIA_CONNECTIONS_LIMIT)
@@ -43,48 +23,51 @@ def aiohttp_session_maker() -> aiohttp.ClientSession:
                                  timeout=timeout)
 
 
-def tasks_are_finished() -> None:
-    """Just raise TimeoutError, which will be normally captured."""
-    raise asyncio.exceptions.TimeoutError
+def get_catalog_urls(url: str) -> list[str]:
+    """Get all catalog groups urls from specified page by url."""
+    return [cat_url for tag in __get_group_tags(url)
+            if (cat_url := __get_url(tag))]
 
 
-def is_subcategory(tag: Tag) -> bool:
-    return (
-        tag.name == 'span'
-        and tag.attrs.get('class') == ['top-sub-catalog-name']
+def __get_group_tags(url: str) -> Iterable[Tag]:
+    """Returns only group tags from catalog menu."""
+    return (_ for _ in __get_catalog(url).find_all('a')
+            if 'catalog' in _.get('href'))
+
+
+def __get_catalog(url: str) -> ResultSet[Tag]:
+    """Parses home page and returns parsed tags of catalog menu."""
+    response = request.urlopen(url)
+    return bs(response, 'lxml').find(
+        'aside', {'class': 'col-md-3 sidebar__container'}
     )
 
 
-def remove_discount(pathes: deque[Path]) -> deque[Path]:
-    """Remove 'discount' path if it is first in pathes."""
-    if pathes[0][2] == 'Акції':
-        pathes.popleft()
-    assert pathes[0][0]
-    return pathes
+def __get_url(tag: Tag) -> str | None:
+    if 'catalog' in (url := tag.get('href', '').strip()):
+        return url
+    return None
 
 
-def group_is_outstanding(tag: Tag) -> bool:
-    """Check if group has no subgroup parent."""
-    try:
-        return tag.parent.name == 'h4'
-    except AttributeError:
-        return False
+def tasks_are_finished() -> None:
+    """Just raise TimeoutError, which will be normally captured."""
+    raise asyncio.exceptions.TimeoutError
 
 
 def get_page_catalog_pathes(url: str) -> deque[Path]:
     pathes: deque[Path] = deque()
     c_name = s_name = g_name = None
     tag: Tag
-    for tag in get_catalog(url).find_all():
+    for tag in __get_catalog(url).find_all():
         if tag.name == 'a':
             if 'catalog' in tag.get('href'):
                 g_name = tag.text.strip()
-                if group_is_outstanding(tag):
+                if __group_is_outstanding(tag):
                     s_name = None
             elif tag.get('href') == '#':
                 c_name = tag.text.strip()
                 s_name = g_name = None
-        elif is_subcategory(tag):
+        elif __tag_is_subcat(tag):
             s_name = tag.text.strip()
             g_name = None
         else:
@@ -92,13 +75,34 @@ def get_page_catalog_pathes(url: str) -> deque[Path]:
 
         pathes.append((c_name, s_name, g_name))
 
-    return remove_discount(pathes)
+    return __remove_discount(pathes)
+
+
+def __group_is_outstanding(tag: Tag) -> bool:
+    """Check if group has no subgroup parent."""
+    try:
+        return tag.parent.name == 'h4'
+    except AttributeError:
+        return False
+
+
+def __tag_is_subcat(tag: Tag) -> bool:
+    return (tag.name == 'span'
+            and tag.attrs.get('class') == ['top-sub-catalog-name'])
+
+
+def __remove_discount(pathes: deque[Path]) -> deque[Path]:
+    """Remove 'discount' path if it is first in pathes."""
+    if pathes[0][2] == 'Акції':
+        pathes.popleft()
+    assert pathes[0][0]
+    return pathes
 
 
 @lru_cache(maxsize=1)
 def cut_path(path: Path) -> Path:  # type: ignore
     """
-    Cut passed path to get parent path. Attempt
+    Cut given path to get parent path. Attempt
     to cut path of category is not allowed.
     >>> cut_path('Cat_name', 'Sub_name', 'Group_name')
     ('Cat_name', 'Sub_name', None)

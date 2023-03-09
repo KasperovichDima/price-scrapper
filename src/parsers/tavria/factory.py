@@ -16,12 +16,17 @@ from parsers import exceptions as e
 
 from project_typing import NameRetailPromo
 
-from .func_box import save_results
+from .result_box import save_results
 from .support_classes import FactoryResults
 from .tavria_typing import Path
 
 
 class ProductFactory:
+
+    """ProductFactory collects product names and prices from specified page
+    and pages's paginated content. Then send them to product box, where they
+    will be processed and saved. Provides 'run' method to start factory.
+    aio_session needed."""
 
     _product_tags: ResultSet[Tag]
     _records: deque[NameRetailPromo]
@@ -35,19 +40,19 @@ class ProductFactory:
         self._records: deque[NameRetailPromo] = deque()
 
     async def run(self, aio_session: aiohttp.ClientSession) -> None:
+        # TODO: Add loginfo here
         self._aio_session = aio_session
         try:
             await self._get_page_tags()
             self._collect_prices()
             await self._get_paginated_content()
+            print(f'Saving results for {self._url}...')
+            await save_results(FactoryResults(self._parent_path,
+                                              self._records))
 
         except Exception as e:
             print(f'Unsuccessful attempt for {self._url}\n'
                   f'Failed with "{e.__class__.__name__}, {e}"')
-
-        else:
-            print(f'Saving results for {self._url}...')
-            await save_results(FactoryResults(self.parent_path, self._records))
 
     async def _get_page_tags(self) -> None:
         """TODO: Add loginfo here!"""
@@ -73,7 +78,7 @@ class ProductFactory:
             .find_all('div', {'class': "products__item"})
 
     @property
-    def parent_path(self) -> Path:
+    def _parent_path(self) -> Path:
         first_tag = self._product_tags[0]
         c_name = first_tag.get('data-item_category3')
         s_name = first_tag.get('data-item_category2')

@@ -11,8 +11,7 @@ from database import TestSession
 from database import test_engine
 
 from parsers.tavria import BoxTools
-from parsers.tavria import FactoryCreator
-from parsers.tavria import ProductFactory, TavriaParser
+from parsers.tavria import TavriaParser
 from parsers.tavria import catalog
 # from parsers.tavria import product_box
 
@@ -33,8 +32,7 @@ async def run_parser():
     async with DBSession() as session:
         retailer = await crud.get_ratailer(RetailerName.TAVRIA, session)
     await catalog.initialize(retailer.home_url, DBSession)
-    f_creator = FactoryCreator(retailer.home_url, ProductFactory)
-    parser = TavriaParser(catalog, f_creator)
+    parser = TavriaParser(catalog, retailer.home_url)
     await parser.update_catalog()
     BoxTools.configurate(retailer.id, DBSession, catalog)
     await parser.update_products()

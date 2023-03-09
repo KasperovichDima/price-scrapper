@@ -1,18 +1,9 @@
 """
-- get all products of this group (by path)
-- get last prices of this group
-- sort their ids
-- create name to id table
-- check, if new products
+Result box module for processing page results.
+Provides next operations:
     - SAVE NEW PRODUCTS
     - CHANGE DEPRECATED STATUS
-    - update name to id table
-- check, if new prices (if price is different or new price for poroduct)
-- SAVE NEW PRICES
-
-TODO: Datatype optymization.
-TODO: Naming optymization.
-TODO: Docstrings.
+    - SAVE NEW PRICES
 """
 from itertools import chain
 from typing import Iterator, Sequence
@@ -65,13 +56,13 @@ def __get_new_prices(last_prices: Sequence[PriceLine],
                      results: FactoryResults,
                      name_to_id: dict[str, int_id]
                      ) -> Iterator[PriceLine] | None:
-    if not (price_tuples := tuple(results.get_price_tuples(
+    if not (page_price_tuples := tuple(results.get_price_tuples(
         BoxTools.retailer_id, name_to_id
     ))):
         return None
     existing_price_tuples = {_.as_tuple() for _ in last_prices}
-    return (PriceLine.from_tuple(_) for _ in price_tuples
-            if _ not in existing_price_tuples)
+    return (PriceLine.from_tuple(tpl) for tpl in page_price_tuples
+            if tpl not in existing_price_tuples)
 
 
 async def __perform_adding(results: FactoryResults,
@@ -104,9 +95,9 @@ async def __perform_adding(results: FactoryResults,
         session, (BoxTools.retailer_id,),
         prod_ids=chain(parsed_products.depr_ids, parsed_products.actual_ids)
     )
-    if new_prices := __get_new_prices(last_prices,
-                                      results,
-                                      name_to_id):
+    if new_prices := __get_new_prices(
+        last_prices, results, name_to_id
+    ):
         await crud.add_instances(new_prices, session)
 
 
