@@ -26,7 +26,7 @@ class TavriaParser:
         await self._catalog.update()
 
     async def update_products(self) -> None:
-
+        """Update products in database and save actual prices."""
         await self._get_factories()
         while self._factories:
             self._get_next_batch()
