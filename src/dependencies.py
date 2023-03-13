@@ -44,7 +44,7 @@ async def get_test_session():
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme),
-                           session = Depends(get_db_session)):
+                           session=Depends(get_db_session)):
     """Returns current user by token."""
     try:
         payload = jwt.decode(

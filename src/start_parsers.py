@@ -2,6 +2,7 @@
 import asyncio
 import cProfile  # noqa: F401
 import pstats  # noqa: F401
+from time import perf_counter
 
 import crud
 
@@ -33,9 +34,14 @@ async def run_parser():
         retailer = await crud.get_ratailer(RetailerName.TAVRIA, session)
     await catalog.initialize(retailer.home_url, DBSession)
     parser = TavriaParser(catalog, retailer.home_url)
+
+    t0 = perf_counter()
+
     await parser.update_catalog()
     BoxTools.configurate(retailer.id, DBSession, catalog)
     await parser.update_products()
+
+    print('time elapsed:', perf_counter() - t0)
 
 
 if __name__ == '__main__':

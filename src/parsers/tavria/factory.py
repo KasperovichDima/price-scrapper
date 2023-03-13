@@ -47,8 +47,8 @@ class ProductFactory:
             self._collect_prices()
             await self._get_paginated_content()
             print(f'Saving results for {self._url}...')
-            await save_results(FactoryResults(self._parent_path,
-                                              self._records))
+            asyncio.create_task(save_results(FactoryResults(self._parent_path,
+                                                            self._records)))
 
         except Exception as e:
             print(f'Unsuccessful attempt for {self._url}\n'

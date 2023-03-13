@@ -25,8 +25,11 @@ def aiohttp_session_maker() -> aiohttp.ClientSession:
 
 def get_catalog_urls(url: str) -> list[str]:
     """Get all catalog groups urls from specified page by url."""
-    return [cat_url for tag in __get_group_tags(url)
+    urls = [cat_url for tag in __get_group_tags(url)
             if (cat_url := __get_url(tag))]
+    if 'discount' in urls[0]:
+        return urls[1:]
+    return urls
 
 
 def __get_group_tags(url: str) -> Iterable[Tag]:
@@ -55,7 +58,10 @@ def tasks_are_finished() -> None:
 
 
 def get_page_catalog_pathes(url: str) -> deque[Path]:
+    """Return path of every group in catalog.
+    For example: ('beverages', 'beverages', 'beer')"""
     pathes: deque[Path] = deque()
+    # category subcategory group
     c_name = s_name = g_name = None
     tag: Tag
     for tag in __get_catalog(url).find_all():
