@@ -1,9 +1,6 @@
 """
 Result box module for processing page results.
-Provides next operations:
-    - SAVE NEW PRODUCTS
-    - CHANGE DEPRECATED STATUS
-    - SAVE NEW PRICES
+Provides the only one main function: 'save_results'
 """
 from itertools import chain
 from typing import Iterator, Sequence
@@ -113,6 +110,10 @@ async def __perform_saving(results: FactoryResults,
 async def save_results(results: FactoryResults) -> None:
     """
     Process factory results and save them to database.
+    Provides next operations:
+    - SAVE NEW PRODUCTS
+    - CHANGE DEPRECATED STATUS
+    - SAVE NEW PRICES
     TODO: Add logging.
     """
     async with BoxTools.sessionmaker() as session:
