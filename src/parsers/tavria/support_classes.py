@@ -12,7 +12,7 @@ from database import int_id
 
 from project_typing import NameRetailPromo, PriceTuple
 
-from .tavria_typing import Path
+from .tavria_typing import FolderPath
 
 
 @dataclass(repr=False, eq=False, kw_only=True, frozen=True, slots=True)
@@ -27,7 +27,7 @@ class ToSwitchStatus:
 
 
 class FactoryResults(NamedTuple):
-    folder_path: Path
+    folder_path: FolderPath
     records: deque[NameRetailPromo]
 
     def get_new_names(self, existing_names: Iterable[str]) -> list[str]:

@@ -19,7 +19,7 @@ from project_typing import NameRetailPromo
 
 from .result_box import save_results
 from .support_classes import FactoryResults
-from .tavria_typing import Path
+from .tavria_typing import FolderPath
 
 
 class ProductFactory:
@@ -81,7 +81,7 @@ class ProductFactory:
             .find_all('div', {'class': "products__item"})
 
     @property
-    def _parent_path(self) -> Path:
+    def _parent_path(self) -> FolderPath:
         first_tag = self._product_tags[0]
         c_name = first_tag.get('data-item_category3')
         s_name = first_tag.get('data-item_category2')

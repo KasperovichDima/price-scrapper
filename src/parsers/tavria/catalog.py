@@ -9,18 +9,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from . import utils as u
-from .support_classes import Path, ToSwitchStatus
+from .support_classes import FolderPath, ToSwitchStatus
 
 
 class PathesToCreate:
     """Implementation of 'to create' list. Can
     save and return folder pathes in correct order."""
 
-    __categories: deque[Path] = deque()
-    __subcategories: deque[Path] = deque()
-    __groups: deque[Path] = deque()
+    __categories: deque[FolderPath] = deque()
+    __subcategories: deque[FolderPath] = deque()
+    __groups: deque[FolderPath] = deque()
 
-    def add(self, path: Path) -> None:
+    def add(self, path: FolderPath) -> None:
         """Add path in 'to create' list."""
 
         assert path[0]
@@ -32,10 +32,11 @@ class PathesToCreate:
             self.__subcategories.append(path)
 
     @property
-    def path_batches(self) -> Iterable[deque[Path]]:
-        return (batch for batch in
-                (self.__categories, self.__subcategories, self.__groups)
-                if batch)
+    def path_batches(self) -> Iterable[deque[FolderPath]]:
+        return (batch for batch in (self.__categories,
+                                    self.__subcategories,
+                                    self.__groups)
+                                if batch)  # noqa: E127
 
 
 class Catalog:
@@ -54,7 +55,7 @@ class Catalog:
     _ids_to_deprecate: set[int]
 
     _id_to_folder: dict[int, Folder]
-    _path_to_id: dict[Path, int]
+    _path_to_id: dict[FolderPath, int]
 
     _to_create: PathesToCreate
 
@@ -74,7 +75,7 @@ class Catalog:
         self._ids_to_actualize: deque[int] = deque()
 
         self._id_to_folder: dict[int, Folder] = {}
-        self._path_to_id: dict[Path, int] = {}
+        self._path_to_id: dict[FolderPath, int] = {}
 
         async with self._session_maker() as db_session:
             self._db_folders = await crud.get_folders(db_session)
@@ -101,10 +102,10 @@ class Catalog:
         (self._deprecated_ids.add(folder.id) if folder.deprecated
          else self._ids_to_deprecate.add(folder.id))
 
-    def _get_path(self, folder: Folder) -> Path:
+    def _get_path(self, folder: Folder) -> FolderPath:
         if self._folder_is_group(folder):
             p_name, gp_name = self._get_parents(folder)
-            path: Path = (gp_name if gp_name else p_name,
+            path: FolderPath = (gp_name if gp_name else p_name,
                           p_name if gp_name else None, folder.name)
         else:
             try:  # SUBCATEGORY
@@ -131,7 +132,7 @@ class Catalog:
         del self._ids_with_childs
         del self._db_folders
 
-    def get_id_by_path(self, path: Path) -> int:
+    def get_id_by_path(self, path: FolderPath) -> int:
         assert self._path_to_id
         return self._path_to_id[path]
 
@@ -159,7 +160,7 @@ class Catalog:
 
         self._post_update_clear()
 
-    def _update_path_status(self, path: Path) -> None:
+    def _update_path_status(self, path: FolderPath) -> None:
         id_ = self._path_to_id[path]
         if id_ in self._ids_to_deprecate:
             self._ids_to_deprecate.remove(id_)
@@ -178,7 +179,7 @@ class Catalog:
             self._id_to_folder.update({_.id: _ for _ in new_folders})
             self._path_to_id.update(zip(batch, (_.id for _ in new_folders)))
 
-    def _get_parent_id(self, path: Path) -> int | None:
+    def _get_parent_id(self, path: FolderPath) -> int | None:
         if not any((path[1], path[2])):
             return None
         if parent_id := self._path_to_id.get(u.cut_path(path)):

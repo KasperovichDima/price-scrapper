@@ -8,7 +8,7 @@ from catalog.models import BaseCatalogElement
 from project_typing import NameRetailPromo
 
 
-Path = tuple[str, str | None, str | None]
+FolderPath = tuple[str, str | None, str | None]
 
 
 class Catalog_P(Protocol):
@@ -20,7 +20,7 @@ class Catalog_P(Protocol):
         """Get actual data from the page
         and update in_db catalog structure."""
 
-    def get_id_by_path(self, path: Path) -> int:
+    def get_id_by_path(self, path: FolderPath) -> int:
         """Get id of folder with specified path."""
 
 
@@ -36,5 +36,5 @@ class ToSwitchStatus:
 
 
 class Results(NamedTuple):
-    folder_path: Path
+    folder_path: FolderPath
     records: deque[NameRetailPromo]

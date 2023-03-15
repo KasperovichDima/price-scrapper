@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from .support_classes import FactoryResults, ParsedProducts
-from .tavria_typing import Catalog_P, Path
+from .tavria_typing import Catalog_P, FolderPath
 
 
 class BoxTools:
@@ -35,7 +35,7 @@ class BoxTools:
     __catalog: Catalog_P
 
     @classmethod
-    def get_folder_id(cls, path: Path) -> int:
+    def get_folder_id(cls, path: FolderPath) -> int:
         """Return id: int for specified path: Path."""
         return cls.__catalog.get_id_by_path(path)
 
@@ -82,14 +82,16 @@ async def __perform_saving(results: FactoryResults,
 
     async def save_new_prices() -> None:
         last_prices = await crud.get_last_prices(
-            session, (BoxTools.retailer_id,),
-            prod_ids=chain(parsed_products.depr_ids, parsed_products.actual_ids)
+            session,
+            (BoxTools.retailer_id,),
+            prod_ids=chain(parsed_products.depr_ids,
+                           parsed_products.actual_ids)
         )
         if new_prices := get_new_prices(last_prices):
             await crud.add_instances(new_prices, session)
 
     def get_new_prices(last_prices: Sequence[PriceLine] | None
-                       )  -> Iterator[PriceLine] | None:
+                       ) -> Iterator[PriceLine] | None:
         if not (page_price_tuples := tuple(results.get_price_tuples(
             BoxTools.retailer_id, name_to_id
         ))):
@@ -97,7 +99,7 @@ async def __perform_saving(results: FactoryResults,
         existing_price_tuples = {_.as_tuple() for _ in last_prices}\
             if last_prices else tuple()
         return (PriceLine.from_tuple(tpl) for tpl in page_price_tuples
-            if tpl not in existing_price_tuples)
+                if tpl not in existing_price_tuples)
 
     # MAIN FLOW:
     folder_id = BoxTools.get_folder_id(results.folder_path)
@@ -123,8 +125,10 @@ async def save_results(results: FactoryResults) -> None:
                 await session.commit()
             except Exception as e:
                 await session.rollback()
-                msg = (f'Error while saving results for\n{results.folder_path}:'
-                       f'\nFailed with "{e.__class__.__name__}, {e}"')
+                msg = (
+                    f'Error while saving results for\n{results.folder_path}:'
+                    f'\nFailed with "{e.__class__.__name__}, {e}"'
+                )
                 raise SavingResultsException(msg) from e
             else:
                 print(f'Successfully saved: {results.folder_path}', end='\n')

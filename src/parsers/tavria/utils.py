@@ -12,7 +12,7 @@ from bs4 import ResultSet
 from bs4.element import Tag
 
 from . import constants as c
-from .tavria_typing import Path
+from .tavria_typing import FolderPath
 
 
 def aiohttp_session_maker() -> aiohttp.ClientSession:
@@ -57,10 +57,10 @@ def tasks_are_finished() -> None:
     raise asyncio.exceptions.TimeoutError
 
 
-def get_page_catalog_pathes(url: str) -> deque[Path]:
+def get_page_catalog_pathes(url: str) -> deque[FolderPath]:
     """Return path of every group in catalog.
     For example: ('beverages', 'beverages', 'beer')"""
-    pathes: deque[Path] = deque()
+    pathes: deque[FolderPath] = deque()
     # category subcategory group
     c_name = s_name = g_name = None
     tag: Tag
@@ -97,7 +97,7 @@ def __tag_is_subcat(tag: Tag) -> bool:
             and tag.attrs.get('class') == ['top-sub-catalog-name'])
 
 
-def __remove_discount(pathes: deque[Path]) -> deque[Path]:
+def __remove_discount(pathes: deque[FolderPath]) -> deque[FolderPath]:
     """Remove 'discount' path if it is first in pathes."""
     if pathes[0][2] == 'Акції':
         pathes.popleft()
@@ -106,7 +106,7 @@ def __remove_discount(pathes: deque[Path]) -> deque[Path]:
 
 
 @lru_cache(maxsize=1)
-def cut_path(path: Path) -> Path:  # type: ignore
+def cut_path(path: FolderPath) -> FolderPath:  # type: ignore
     """
     Cut given path to get parent path. Attempt
     to cut path of category is not allowed.
@@ -122,7 +122,7 @@ def cut_path(path: Path) -> Path:  # type: ignore
             return path[:-i] + (None,) * i  # type: ignore
 
 
-def get_folder_name(path: Path) -> str:
+def get_folder_name(path: FolderPath) -> str:
     """
     Returns last specified name in the path.
     >>> get_folder_name('Cat_name', 'Sub_name', 'Group_name')
