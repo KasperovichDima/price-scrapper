@@ -70,13 +70,19 @@ def __get_new_prices(last_prices: Sequence[PriceLine] | None,
 
 async def __perform_adding(results: FactoryResults,
                            session: AsyncSession) -> None:
-    folder_id = BoxTools.get_folder_id(results.folder_path)
-    db_products = await crud.get_products(session,
-                                          folder_ids=(folder_id,))
-    parsed_products = ParsedProducts.from_products(db_products)
-    name_to_id = {_.name: _.id for _ in db_products}
 
-    del db_products
+    async def get_db_products_data(
+    ) -> tuple[ParsedProducts, dict[str, int_id]]:
+        """Get parsed products from database from current
+        folder specified by id and name to id table."""
+        db_products = await crud.get_products(session,
+                                              folder_ids=(folder_id,))
+        return (ParsedProducts.from_products(db_products),
+                {_.name: _.id for _ in db_products})
+
+    folder_id = BoxTools.get_folder_id(results.folder_path)
+
+    parsed_products, name_to_id = await get_db_products_data()
 
     if new_prod_names := results.get_new_names(parsed_products.names):
         new_products = [Product(name=name, parent_id=folder_id)
