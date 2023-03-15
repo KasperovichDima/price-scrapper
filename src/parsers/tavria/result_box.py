@@ -68,7 +68,7 @@ def __get_new_prices(last_prices: Sequence[PriceLine] | None,
             if tpl not in existing_price_tuples)
 
 
-async def __perform_adding(results: FactoryResults,
+async def __perform_saving(results: FactoryResults,
                            session: AsyncSession) -> None:
 
     async def get_db_products_data(
@@ -90,15 +90,16 @@ async def __perform_adding(results: FactoryResults,
         nonlocal name_to_id  # type: ignore
         name_to_id.update({_.name: _.id for _ in new_products})
 
+    async def switch_depricated() -> None:
+        if to_switch := parsed_products.get_to_switch(
+            results.get_page_product_ids(name_to_id)
+        ):
+            await crud.switch_deprecated(to_switch, session)
+
     folder_id = BoxTools.get_folder_id(results.folder_path)
     parsed_products, name_to_id = await get_db_products_data()
     await save_new_products()
-    del folder_id
-
-    if to_switch := parsed_products.get_to_switch(
-        results.get_page_product_ids(name_to_id)
-    ):
-        await crud.switch_deprecated(to_switch, session)
+    await switch_depricated()
 
     last_prices = await crud.get_last_prices(
         session, (BoxTools.retailer_id,),
@@ -118,7 +119,7 @@ async def save_results(results: FactoryResults) -> None:
     async with BoxTools.sessionmaker() as session:
         async with session.begin():
             try:
-                await __perform_adding(results, session)
+                await __perform_saving(results, session)
                 await session.commit()
             except Exception as e:
                 await session.rollback()
