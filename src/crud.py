@@ -150,15 +150,17 @@ async def get_last_prices(session: AsyncSession,
                           retailer_ids: Iterable[int],
                           prod_ids: Iterable[int] = None,
                           folder_ids: Iterable[int] = None,
-                          ) -> Sequence[PriceLine]:
+                          ) -> Sequence[PriceLine] | None:
     """Get last price lines for products, specified by
     product_ids, in retailer, specified by reatiler_id."""
+    if not prod_ids or folder_ids:
+        return None
+
     ids: list[int] = []
     if prod_ids:
         ids.extend(prod_ids)
     if folder_ids:
         ids.extend(_.id for _ in await get_products(session, folder_ids=folder_ids))
-    assert ids
 
     stm = select(PriceLine).distinct(PriceLine.product_id)\
         .order_by(PriceLine.product_id, PriceLine.date_created.desc())\

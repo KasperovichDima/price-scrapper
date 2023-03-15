@@ -52,7 +52,7 @@ class TavriaParser:
 
     async def _complete_tasks(self, tasks: Iterator[Coroutine]) -> None:
         try:
-            await asyncio.gather(*tasks)
+            await asyncio.gather(*tasks, return_exceptions=True)
             u.tasks_are_finished()
         except asyncio.exceptions.TimeoutError:
             if self._url_batch:

@@ -16,6 +16,8 @@ import crud
 
 from database import int_id
 
+from parsers.exceptions import SavingResultsException
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
@@ -52,7 +54,7 @@ class BoxTools:
         cls.__catalog = catalog
 
 
-def __get_new_prices(last_prices: Sequence[PriceLine],
+def __get_new_prices(last_prices: Sequence[PriceLine] | None,
                      results: FactoryResults,
                      name_to_id: dict[str, int_id]
                      ) -> Iterator[PriceLine] | None:
@@ -60,7 +62,8 @@ def __get_new_prices(last_prices: Sequence[PriceLine],
         BoxTools.retailer_id, name_to_id
     ))):
         return None
-    existing_price_tuples = {_.as_tuple() for _ in last_prices}
+    existing_price_tuples = {_.as_tuple() for _ in last_prices}\
+        if last_prices else tuple()
     return (PriceLine.from_tuple(tpl) for tpl in page_price_tuples
             if tpl not in existing_price_tuples)
 
@@ -102,17 +105,19 @@ async def __perform_adding(results: FactoryResults,
 
 
 async def save_results(results: FactoryResults) -> None:
-    """Process factory results and save them to database."""
+    """
+    Process factory results and save them to database.
+    TODO: Add logging.
+    """
     async with BoxTools.sessionmaker() as session:
         async with session.begin():
             try:
                 await __perform_adding(results, session)
                 await session.commit()
-                msg = f'Results for {results.folder_path} successfully saved!'
             except Exception as e:
                 await session.rollback()
-                msg = (f'Saving results for {results.folder_path}'
-                       f'failed with "{e.__class__.__name__}, {e}"')
-            finally:
-                #  TODO: log msg
-                print(msg)
+                msg = (f'Error while saving results for\n{results.folder_path}:'
+                       f'\nFailed with "{e.__class__.__name__}, {e}"')
+                raise SavingResultsException(msg) from e
+            else:
+                print(f'Successfully saved: {results.folder_path}', end='\n')

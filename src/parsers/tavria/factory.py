@@ -1,5 +1,6 @@
 """Factory and FactoryResults classes."""
 import asyncio
+import traceback
 from collections import deque
 from decimal import Decimal
 from functools import cached_property
@@ -46,13 +47,15 @@ class ProductFactory:
             await self._get_page_tags()
             self._collect_prices()
             await self._get_paginated_content()
-            print(f'Saving results for {self._url}...')
-            asyncio.create_task(save_results(FactoryResults(self._parent_path,
-                                                            self._records)))
+            await save_results(FactoryResults(self._parent_path,
+                                              self._records))
 
         except Exception as e:
+            print('*' * 60)
             print(f'Unsuccessful attempt for {self._url}\n'
-                  f'Failed with "{e.__class__.__name__}, {e}"')
+                  f'Failed with "{e.__class__.__name__}, \n{e}"')
+            traceback.print_tb(e.__traceback__, -3)
+            print('*' * 60)
 
     async def _get_page_tags(self) -> None:
         """TODO: Add loginfo here!"""
@@ -68,7 +71,7 @@ class ProductFactory:
         async with self._aio_session.get(self._url) as rsp:
             if rsp.status != 200:
                 #  TODO: add log and email developer here
-                raise e.UnexpectedParserError(
+                raise e.UnexpectedParserException(
                     self.__PARSER_ERROR_MSG.format(self._url)
                 )
             return await rsp.text()
