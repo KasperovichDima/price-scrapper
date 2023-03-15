@@ -96,19 +96,31 @@ async def __perform_saving(results: FactoryResults,
         ):
             await crud.switch_deprecated(to_switch, session)
 
+    async def save_new_prices() -> None:
+        last_prices = await crud.get_last_prices(
+            session, (BoxTools.retailer_id,),
+            prod_ids=chain(parsed_products.depr_ids, parsed_products.actual_ids)
+        )
+        if new_prices := __get_new_prices(
+            last_prices, results, name_to_id
+        ):
+            await crud.add_instances(new_prices, session)
+
+
     folder_id = BoxTools.get_folder_id(results.folder_path)
     parsed_products, name_to_id = await get_db_products_data()
     await save_new_products()
     await switch_depricated()
+    await save_new_prices()
 
-    last_prices = await crud.get_last_prices(
-        session, (BoxTools.retailer_id,),
-        prod_ids=chain(parsed_products.depr_ids, parsed_products.actual_ids)
-    )
-    if new_prices := __get_new_prices(
-        last_prices, results, name_to_id
-    ):
-        await crud.add_instances(new_prices, session)
+    # last_prices = await crud.get_last_prices(
+    #     session, (BoxTools.retailer_id,),
+    #     prod_ids=chain(parsed_products.depr_ids, parsed_products.actual_ids)
+    # )
+    # if new_prices := __get_new_prices(
+    #     last_prices, results, name_to_id
+    # ):
+    #     await crud.add_instances(new_prices, session)
 
 
 async def save_results(results: FactoryResults) -> None:
