@@ -79,21 +79,21 @@ async def __perform_adding(results: FactoryResults,
                                               folder_ids=(folder_id,))
         return (ParsedProducts.from_products(db_products),
                 {_.name: _.id for _ in db_products})
-
-    folder_id = BoxTools.get_folder_id(results.folder_path)
-
-    parsed_products, name_to_id = await get_db_products_data()
-
-    if new_prod_names := results.get_new_names(parsed_products.names):
+    
+    async def save_new_products() -> None:
+        if not (new_prod_names := results.get_new_names(parsed_products.names)):
+            return
         new_products = [Product(name=name, parent_id=folder_id)
                         for name in new_prod_names]
         await crud.add_instances(new_products, session)
         await session.flush()
+        nonlocal name_to_id  # type: ignore
         name_to_id.update({_.name: _.id for _ in new_products})
 
-        del new_products
-
-    del folder_id, new_prod_names
+    folder_id = BoxTools.get_folder_id(results.folder_path)
+    parsed_products, name_to_id = await get_db_products_data()
+    await save_new_products()
+    del folder_id
 
     if to_switch := parsed_products.get_to_switch(
         results.get_page_product_ids(name_to_id)
