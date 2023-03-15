@@ -54,23 +54,10 @@ class BoxTools:
         cls.__catalog = catalog
 
 
-def __get_new_prices(last_prices: Sequence[PriceLine] | None,
-                     results: FactoryResults,
-                     name_to_id: dict[str, int_id]
-                     ) -> Iterator[PriceLine] | None:
-    if not (page_price_tuples := tuple(results.get_price_tuples(
-        BoxTools.retailer_id, name_to_id
-    ))):
-        return None
-    existing_price_tuples = {_.as_tuple() for _ in last_prices}\
-        if last_prices else tuple()
-    return (PriceLine.from_tuple(tpl) for tpl in page_price_tuples
-            if tpl not in existing_price_tuples)
-
-
 async def __perform_saving(results: FactoryResults,
                            session: AsyncSession) -> None:
 
+    # SUPPORT FUNCTIONS:
     async def get_db_products_data(
     ) -> tuple[ParsedProducts, dict[str, int_id]]:
         """Get parsed products from database from current
@@ -101,26 +88,26 @@ async def __perform_saving(results: FactoryResults,
             session, (BoxTools.retailer_id,),
             prod_ids=chain(parsed_products.depr_ids, parsed_products.actual_ids)
         )
-        if new_prices := __get_new_prices(
-            last_prices, results, name_to_id
-        ):
+        if new_prices := get_new_prices(last_prices):
             await crud.add_instances(new_prices, session)
 
+    def get_new_prices(last_prices: Sequence[PriceLine] | None
+                       )  -> Iterator[PriceLine] | None:
+        if not (page_price_tuples := tuple(results.get_price_tuples(
+            BoxTools.retailer_id, name_to_id
+        ))):
+            return None
+        existing_price_tuples = {_.as_tuple() for _ in last_prices}\
+            if last_prices else tuple()
+        return (PriceLine.from_tuple(tpl) for tpl in page_price_tuples
+            if tpl not in existing_price_tuples)
 
+    # MAIN FLOW:
     folder_id = BoxTools.get_folder_id(results.folder_path)
     parsed_products, name_to_id = await get_db_products_data()
     await save_new_products()
     await switch_depricated()
     await save_new_prices()
-
-    # last_prices = await crud.get_last_prices(
-    #     session, (BoxTools.retailer_id,),
-    #     prod_ids=chain(parsed_products.depr_ids, parsed_products.actual_ids)
-    # )
-    # if new_prices := __get_new_prices(
-    #     last_prices, results, name_to_id
-    # ):
-    #     await crud.add_instances(new_prices, session)
 
 
 async def save_results(results: FactoryResults) -> None:
