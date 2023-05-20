@@ -160,7 +160,8 @@ async def get_last_prices(session: AsyncSession,
     if prod_ids:
         ids.extend(prod_ids)
     if folder_ids:
-        ids.extend(_.id for _ in await get_products(session, folder_ids=folder_ids))
+        ids.extend(_.id for _ in await get_products(session,
+                                                    folder_ids=folder_ids))
 
     stm = select(PriceLine).distinct(PriceLine.product_id)\
         .order_by(PriceLine.product_id, PriceLine.date_created.desc())\

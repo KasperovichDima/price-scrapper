@@ -20,6 +20,7 @@ app.include_router(auth_router)
 app.include_router(catalog_router)
 app.include_router(core_router)
 
+
 @app.get("/items/")
 async def read_items(token: str = Depends(oauth2_scheme)):
     return {"token": token}
